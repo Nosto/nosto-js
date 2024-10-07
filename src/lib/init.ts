@@ -2,7 +2,7 @@ import { initNostoStub, setPageType } from "../utils/dom"
 import { PageType } from "../client/nosto"
 import { BackendEnvironment } from "../types"
 import { getBaseUrl } from "../utils/url"
-import { nostoApi } from "./nostoApi"
+import { nostojs } from "./nostoApi"
 
 type Props = {
   merchantId: string
@@ -16,7 +16,7 @@ export function init({ merchantId, pageType, env }: Props) {
   const url = new URL(`/include/${merchantId}`, getBaseUrl(env))
 
   const clientScriptPromise = new Promise<void>((resolve, reject) => {
-    nostoApi(() => resolve())
+    nostojs(() => resolve())
 
     const script = document.createElement("script")
     script.async = true

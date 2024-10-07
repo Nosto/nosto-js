@@ -1,4 +1,4 @@
-import { init, nostoApi } from "../src"
+import { init, nostojs } from "../src"
 import { bypassLocalhostBlock } from "./utils"
 
 async function main() {
@@ -11,7 +11,7 @@ async function main() {
   })
   console.info("Nosto client script ready")
 
-  await nostoApi(async api => {
+  await nostojs(async api => {
     const recommendations = await api.loadRecommendations()
     console.info(recommendations)
   })
