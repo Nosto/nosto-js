@@ -2,7 +2,7 @@
 
 NostoJS is a wrapper for the client script, providing an easy way to interact with the Nosto service from your JavaScript or TypeScript applications.
 
-For more information about JS API, see (https://docs.nosto.com/techdocs/apis/frontend/js-apis)[Our documentation].
+For more information about JS API, see [Our documentation](https://docs.nosto.com/techdocs/apis/frontend/js-apis).
 
 ## Installation
 
