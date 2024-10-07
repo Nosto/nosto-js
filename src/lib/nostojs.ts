@@ -1,5 +1,5 @@
 import { API } from "../client/nosto"
 
-export async function nostoApi(callback: (api: API) => unknown) {
+export async function nostojs(callback: (api: API) => unknown) {
   return window.nostojs(callback)
 }
