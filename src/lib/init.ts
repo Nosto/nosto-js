@@ -1,18 +1,13 @@
-import { initNostoStub, setPageType } from "../utils/dom"
-import { PageType } from "../client/nosto"
 import { BackendEnvironment } from "../types"
 import { getBaseUrl } from "../utils/url"
-import { nostojs } from "./nostoApi"
+import { nostojs } from "./nostojs"
 
 type Props = {
   merchantId: string
-  pageType?: PageType
   env?: BackendEnvironment
 }
 
-export function init({ merchantId, pageType, env }: Props) {
-  initNostoStub()
-
+export function init({ merchantId, env }: Props) {
   const url = new URL(`/include/${merchantId}`, getBaseUrl(env))
 
   const clientScriptPromise = new Promise<void>((resolve, reject) => {
@@ -24,10 +19,6 @@ export function init({ merchantId, pageType, env }: Props) {
     script.onerror = () => reject()
     document.head.appendChild(script)
   })
-
-  if (pageType) {
-    setPageType(pageType)
-  }
 
   return clientScriptPromise
 }

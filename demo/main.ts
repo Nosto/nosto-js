@@ -6,7 +6,6 @@ async function main() {
 
   await init({
     merchantId: "shopify-15138164",
-    pageType: "front",
     env: "production"
   })
   console.info("Nosto client script ready")
