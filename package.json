@@ -6,6 +6,7 @@
   "files": ["dist"],
   "main": "./dist/nosto-js.umd.cjs",
   "module": "./dist/nosto-js.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/nosto-js.js",
@@ -15,7 +16,9 @@
   "scripts": {
     "postinstall": "node scripts/updateTypedef.js",
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && yarn build-dts",
+    "build-dts": "tsc --noEmit false --emitDeclarationOnly && yarn copy-nosto-dts",
+    "copy-nosto-dts": "copyfiles -u 1 \"src/client/*.d.ts\" dist",
     "test": "vitest",
     "lint": "eslint",
     "preview": "vite preview"
@@ -24,6 +27,7 @@
     "@testing-library/dom": "^10.4.0",
     "@types/eslint-config-prettier": "^6.11.3",
     "@types/node": "^22.7.4",
+    "copyfiles": "^2.4.1",
     "eslint": "^9.11.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
