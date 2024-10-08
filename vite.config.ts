@@ -5,8 +5,9 @@ export default defineConfig({
   build: {
     lib: {
       name: "nosto-js",
-      fileName: "nosto-js",
-      entry: resolve(__dirname, "src/index.ts")
+      entry: resolve(__dirname, "src/index.ts"),
+      formats: ["es", "cjs"],
+      fileName: format => `index.${format}.js`
     }
   },
   server: {
