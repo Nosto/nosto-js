@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as axios from 'axios';
 
 declare const eventTypes: readonly ["vp", "lp", "dp", "rp", "bp", "vc", "or", "is", "cp", "ec", "es", "gc", "src", "cpr", "pl", "cc", "con"];

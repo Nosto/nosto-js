@@ -3,14 +3,20 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "files": ["dist"],
-  "main": "./dist/nosto-js.umd.cjs",
-  "module": "./dist/nosto-js.js",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.es.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/nosto-js.js",
-      "require": "./dist/nosto-js.umd.cjs"
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.cjs.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./client": {
+      "types": "./dist/client/nosto.d.ts"
     }
   },
   "scripts": {
