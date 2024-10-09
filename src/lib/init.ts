@@ -14,8 +14,6 @@ export function init({ merchantId, env, options }: Props) {
   const url = new URL(`/include/${merchantId}`, getBaseUrl(env))
 
   const clientScriptPromise = new Promise<void>((resolve, reject) => {
-    // nostojs(() => resolve())
-
     const script = document.createElement("script")
     script.src = url.toString()
     script.async = true
