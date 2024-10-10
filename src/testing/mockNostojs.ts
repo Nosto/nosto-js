@@ -15,7 +15,6 @@ export function restoreNostojs() {
 
 export function clearNostoGlobals() {
   Object.assign(window, {
-    ...window,
     // clearing Nosto iframe window handle
     nosto: undefined,
     // clearing nostojs stub

@@ -1,6 +1,5 @@
 import { initNostoStub } from "./utils/dom"
 
-export * from "./lib/getNostoWindow"
 export * from "./lib/helpers"
 export * from "./lib/init"
 export * from "./lib/nostojs"
