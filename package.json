@@ -22,10 +22,10 @@
   "scripts": {
     "postinstall": "node scripts/updateTypedef.js",
     "dev": "vite",
-    "build": "tsc && vite build && yarn build-dts",
-    "build-dts": "tsc --noEmit false --emitDeclarationOnly && yarn copy-nosto-dts",
+    "build": "tsc && vite build && npm run build-dts",
+    "build-dts": "tsc --noEmit false --emitDeclarationOnly && npm run copy-nosto-dts",
     "copy-nosto-dts": "copyfiles -u 1 \"src/client/*.d.ts\" dist",
-    "test": "vitest",
+    "test": "vitest --run",
     "lint": "eslint",
     "preview": "vite preview"
   },
