@@ -1,12 +1,10 @@
-import { NostoWindow } from "../types"
-
-export function getNostoWindow(): NostoWindow {
+export function getNostoWindow() {
   if (typeof window.nosto === "undefined") {
     throw new Error("Nosto is not defined")
   }
-  return window.nosto as NostoWindow
+  return window.nosto
 }
 
-export function getNostoWindowOrDefault(): NostoWindow | undefined {
-  return (window.nosto as NostoWindow) ?? undefined
+export function getNostoWindowOrDefault() {
+  return window.nosto
 }
