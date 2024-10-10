@@ -459,7 +459,7 @@ interface PopupTriggered extends PopupEvent {
 interface ProductPushResponse {
     messages: string[];
 }
-interface PushedCustomer {
+export interface PushedCustomer {
     customer_reference?: string;
     email: string;
     first_name: string;
@@ -471,7 +471,7 @@ interface PushedCustomer {
     source_id?: string;
     type?: string;
 }
-interface PushedProduct {
+export interface PushedProduct {
     age_group?: string;
     alternate_image_urls: string[];
     availability: string;
@@ -1931,11 +1931,11 @@ interface Cart$2 {
     hcid?: string;
     items: CartItem[];
 }
-type Product = {
+export type Product = {
     product_id: string;
     selected_sku_id?: string;
 };
-interface Data<ProductType extends Product = Product> {
+export interface Data<ProductType extends Product = Product> {
     cart: Cart$2 | undefined;
     customer: PushedCustomer | undefined;
     variation: string | undefined;
@@ -2173,7 +2173,7 @@ type RequestBuilder = {
     getData(): State;
 };
 
-interface Session {
+export interface Session {
     /**
      * Sets the information about the user's current shopping cart. It the user
      * does not have any items in his shopping cart, you can pass <code>null<code>.
@@ -2610,7 +2610,7 @@ interface Session {
      */
     recordAttribution(type: EventType, target: string, ref: string, refSrc: string): Attribution;
 }
-interface Action {
+export interface Action {
     /**
      * Handles click attribution for product recommendations.
      * This can be called when reporting a product view
@@ -2820,7 +2820,7 @@ interface Action {
     update(): unknown;
     load(flags?: RecommendationRequestFlags): Promise<ActionResponse>;
 }
-interface ActionResponse {
+export interface ActionResponse {
     recommendations: Record<string, unknown>;
     campaigns?: {
         recommendations: Record<string, unknown>;

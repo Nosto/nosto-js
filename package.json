@@ -1,5 +1,5 @@
 {
-  "name": "nosto-js",
+  "name": "@nosto/nosto-js",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -17,6 +17,11 @@
     },
     "./client": {
       "types": "./dist/client/nosto.d.ts"
+    },
+    "./testing": {
+      "import": "./dist/testing.es.js",
+      "require": "./dist/test/testing.cjs.js",
+      "types": "./dist/testing/testing.d.ts"
     }
   },
   "scripts": {
