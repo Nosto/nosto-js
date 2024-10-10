@@ -1,21 +1,24 @@
-import { BackendEnvironment } from "../types"
+import { BackendEnvironment, ScriptLoadOptions } from "../types"
 import { getBaseUrl } from "../utils/url"
 
 type Props = {
   merchantId: string
   env?: BackendEnvironment
-  options?: {
-    position?: "head" | "body"
-    attributes?: Record<string, string>
-  }
+  options?: ScriptLoadOptions
+  scriptLoader?: (scriptSrc: string, options?: ScriptLoadOptions) => Promise<void>
 }
 
-export function init({ merchantId, env, options }: Props) {
+export function init({ merchantId, env, options, scriptLoader }: Props) {
   const url = new URL(`/include/${merchantId}`, getBaseUrl(env))
 
+  const loader = scriptLoader ?? defaultScriptLoader
+  return loader(url.toString(), options)
+}
+
+function defaultScriptLoader(url: string, options?: ScriptLoadOptions) {
   const clientScriptPromise = new Promise<void>((resolve, reject) => {
     const script = document.createElement("script")
-    script.src = url.toString()
+    script.src = url
     script.async = true
     script.type = "text/javascript"
     script.onload = () => resolve()
