@@ -4,7 +4,7 @@ export function isNostoLoaded() {
   return typeof window.nosto !== "undefined"
 }
 
-export function reloadNostoWindow(settings: Partial<Settings>) {
+export function reloadNosto(settings: Partial<Settings>) {
   if (window.nosto) {
     window.nosto.reload(settings)
   }
