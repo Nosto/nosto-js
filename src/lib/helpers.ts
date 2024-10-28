@@ -19,7 +19,7 @@ export function reloadNosto(settings: Partial<Settings>) {
 }
 
 /**
- * Gets the correctly Nosto object.
+ * Gets the correctly typed Nosto object.
  */
 export function getNostoWindow() {
   return window.nosto
