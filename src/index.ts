@@ -1,3 +1,4 @@
+/** @module ./ */
 import { initNostoStub } from "./utils/dom"
 
 export * from "./lib/helpers"
