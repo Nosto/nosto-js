@@ -1,3 +1,4 @@
+/** @module client */
 // @ts-nocheck
 import * as axios from 'axios';
 

@@ -27,12 +27,13 @@
   "scripts": {
     "postinstall": "node scripts/updateTypedef.js",
     "dev": "vite",
-    "build": "tsc && vite build && npm run build-dts",
+    "build": "tsc && vite build && npm run build-dts && npm run typedoc",
     "build-dts": "tsc --noEmit false --emitDeclarationOnly && npm run copy-nosto-dts",
     "copy-nosto-dts": "copyfiles -u 1 \"src/client/*.d.ts\" dist",
     "test": "vitest --run",
     "lint": "eslint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typedoc": "typedoc src/index.ts src/client/nosto.d.ts src/testing/testing.ts"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",
@@ -44,6 +45,7 @@
     "eslint-plugin-prettier": "^5.2.1",
     "jsdom": "^25.0.1",
     "prettier": "^3.3.3",
+    "typedoc": "^0.26.10",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.10.0",
     "vite": "^5.4.9",

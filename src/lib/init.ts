@@ -8,6 +8,9 @@ type Props = {
   scriptLoader?: (scriptSrc: string, options?: ScriptLoadOptions) => Promise<void>
 }
 
+/**
+ * Initializes the Nosto client script on the page.
+ */
 export function init({ merchantId, env, options, scriptLoader }: Props) {
   const url = new URL(`/include/${merchantId}`, getBaseUrl(env))
 

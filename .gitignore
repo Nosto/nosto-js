@@ -1,5 +1,7 @@
 # Dynamically loaded Nosto client script type definitions
 src/nosto/nosto.d.ts
+# Typedoc docs
+/docs
 
 # Logs
 logs
