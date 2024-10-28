@@ -1,14 +1,14 @@
-import { getNostoWindow } from "../src"
+import { reloadNosto } from "../src/testing/testing"
 
 export function bypassLocalhostBlock() {
   const interval = setInterval(() => {
-    if (getNostoWindow() && "reload" in getNostoWindow()) {
+    const reloadSuccessful = reloadNosto({
+      site: location.hostname,
+      searchApiUrl: "https://search.nosto.com/api/",
+      searchEnabled: false
+    })
+    if (reloadSuccessful) {
       clearInterval(interval)
-      getNostoWindow().reload({
-        site: location.hostname,
-        searchApiUrl: "https://search.nosto.com/api/",
-        searchEnabled: false
-      })
     }
   }, 100)
 }
