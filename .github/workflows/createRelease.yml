@@ -1,0 +1,54 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        description: "Release mode"
+        required: true
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  github-release:
+    runs-on:
+      group: Personalisation
+      labels: [self-hosted, linux, x64]
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.RELEASE_PAT_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Create tag
+        id: tag-changelog
+        shell: bash
+        working-directory: ${{ github.workspace }}/.github/workflows
+        env:
+          mode: ${{ inputs.mode }}
+          workspace: ${{ github.workspace }}
+        run: ./scripts/release.sh
+
+      - name: Create Github Release
+        if: success() && steps.tag-changelog.outputs.new_version != ''
+        env:
+          tag: ${{ steps.tag-changelog.outputs.new_version }}
+          GH_TOKEN: ${{ secrets.RELEASE_PAT_TOKEN }}
+        shell: bash
+        run: |
+          gh release create "$tag" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "${GITHUB_REPOSITORY#*/} ${tag#v}" \
+            --generate-notes \
+            --verify-tag
