@@ -9,9 +9,9 @@ For more information about JS API, see [Our documentation](https://docs.nosto.co
 To install the package, use your preferred package manager:
 
 ```bash
-yarn add nosto-js
+yarn add @nosto/nosto-js
 # or
-npm install nosto-js --save
+npm install @nosto/nosto-js --save
 ```
 
 ## Nosto stub
