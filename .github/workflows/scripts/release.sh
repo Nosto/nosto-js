@@ -19,8 +19,8 @@ then
   # needed to be committed after the version update by npm version command
   git add $workspace/package*.json
   git commit -m 'Bump version'
-  git tag -a $new_version -m "Tag $new_version for design system"
-  git push origin master
+  git tag -a $new_version -m "Tag $new_version for nosto-js-sdk"
+  git push origin main
   git push origin $new_version
   echo "new_version=${new_version}" >> $GITHUB_OUTPUT
 else
