@@ -5,7 +5,7 @@ async function main() {
   bypassLocalhostBlock()
 
   await init({
-    merchantId: "shopify-15138164",
+    merchantId: "shopify-15195932",
     env: "production"
   })
   console.info("Nosto client script ready")
