@@ -32,7 +32,6 @@
     }
   },
   "scripts": {
-    "postinstall": "node scripts/updateTypedef.js",
     "dev": "vite",
     "build": "tsc && vite build && npm run build-dts && npm run typedoc",
     "build-dts": "tsc --noEmit false --emitDeclarationOnly && npm run copy-nosto-dts",
