@@ -4,8 +4,17 @@ import * as axios from 'axios';
 
 declare const eventTypes: readonly ["vp", "lp", "dp", "rp", "bp", "vc", "or", "is", "cp", "ec", "es", "gc", "src", "cpr", "pl", "cc", "con"];
 declare const refTypes: readonly ["email", "imgrec", "rec", "api", "oc", "cmp", "os"];
+/**
+ * @group Core
+ */
 type EventType = typeof eventTypes[number];
+/**
+ * @group Core
+ */
 type EventRefType = typeof refTypes[number];
+/**
+ * @group Core
+ */
 type EventTuple = [
     type: EventType,
     target?: string,
@@ -14,6 +23,9 @@ type EventTuple = [
     targetFragment?: string,
     refType?: EventRefType
 ];
+/**
+ * @group Core
+ */
 interface Event {
     type: EventType;
     target?: string;
@@ -281,7 +293,7 @@ interface EventFields {
 interface EventRequestMessageV1 {
     cart?: CartItem[];
     cart_hash?: string;
-    cart_popup: boolean;
+    cart_popup?: boolean;
     categories?: string[];
     category_ids?: string[];
     coupon_campaign?: string;
@@ -460,7 +472,7 @@ interface PopupTriggered extends PopupEvent {
 interface ProductPushResponse {
     messages: string[];
 }
-export interface PushedCustomer {
+interface PushedCustomer {
     customer_reference?: string;
     email: string;
     first_name: string;
@@ -472,7 +484,7 @@ export interface PushedCustomer {
     source_id?: string;
     type?: string;
 }
-export interface PushedProduct {
+interface PushedProduct {
     age_group?: string;
     alternate_image_urls: string[];
     availability: string;
@@ -685,22 +697,1139 @@ type CampaignId<T extends string = string> = string & {
     __kind: T;
 };
 
-type Maybe<T> = NonNullable<T> | undefined;
-type Widen<T> = T extends string ? string : T extends number ? number : T extends boolean ? boolean : T;
-declare function maybe<T>(value?: T): NonNullable<T> | undefined;
-declare const pageTypeAliases: {
-    front: string[];
-    category: string[];
-    product: string[];
-    cart: string[];
-    search: string[];
-    order: string[];
-    other: string[];
+interface Coupon {
+    campaign?: string;
+    code?: string;
+    used?: boolean;
+}
+interface Order {
+    items: CartItem[];
+}
+interface PushedCart {
+    items?: CartItem[];
+    hcid?: string;
+}
+type Product$1 = {
+    product_id: string;
+    selected_sku_id?: string;
 };
-declare function isPageType(val: string): val is PageType;
-type Extends<A extends B, B> = true;
-type Equals<X, Y> = (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? true : false;
-type Expect<T extends true> = T;
+
+interface PluginMetadata {
+    mainModule?: string;
+    cmpModule?: string;
+    msiModule?: string;
+}
+type Product = Partial<PushedProduct> & {
+    product_id: string;
+    valid_until?: string;
+    selected_sku_id?: string;
+};
+interface Cart {
+    hcid?: string;
+    items: CartItem[];
+}
+interface TaggingData {
+    cart: Cart | undefined;
+    customer: PushedCustomer | undefined;
+    variation: string | undefined;
+    restoreLink: string | undefined;
+    products: Product[];
+    order: WebsiteOrder | undefined;
+    searchTerms: string[] | undefined;
+    categories: string[] | undefined;
+    categoryIds: string[] | undefined;
+    parentCategoryIds: string[] | undefined;
+    tags: string[] | undefined;
+    customFields: Record<string, string[]> | undefined;
+    elements: string[] | undefined;
+    pageType: PageType | undefined;
+    sortOrder: string | undefined;
+    pluginVersion: PluginMetadata | undefined;
+}
+
+interface RecommendationRequestFlags {
+    skipPageViews?: boolean;
+    trackEvents?: boolean;
+    skipEvents?: boolean;
+    reloadCart?: boolean;
+}
+/**
+ * RequestBuilder is a low level API to interact with the Nosto API. It's primary purpose is to fetch recommendations
+ * and send events to the Nosto API. It is not recommended to use this API directly, but rather use the the higher level
+ * Tagging and Session APIs.
+ *
+ * @group Core
+ */
+interface RequestBuilder {
+    /**
+     * Sets the given list of forced segment identifiers to the current request. This
+     * method allows you explicitly associate the current customer with a segment.
+     *
+     * @private
+     * @param {String[]} segments the list of force segment identifiers
+     */
+    setForcedSegments(segments: string[]): RequestBuilder;
+    /**
+     * Sets the given list of manual segment identifiers to the current request. This
+     * method allows you explicitly associate the current customer with a segment.
+     *
+     * @public
+     * @param {String[]} segments the list of force segment identifiers
+     */
+    setSegmentCodes(segments: string[]): RequestBuilder;
+    /**
+     * Sets the identifier of the current page type to the current request. The different
+     * page types are product, front, search, cart, order, category, notfound and other.
+     *
+     * @public
+     * @param {String} pageType the current page type
+     */
+    setPageType(pageType: PageType | undefined): RequestBuilder;
+    /**
+     * Sets the identifier of the current sort order to the current request.
+     *
+     * @private
+     * @param {String} sortOrder the current sort order
+     */
+    setSortOrder(sortOrder: string): RequestBuilder;
+    /**
+     * Adds the given event to the current set of events. When viewing a product,
+     * it is required that you specify the "vp" as event and the product id as
+     * the target.
+     *
+     * Also supports legacy signature
+     * addEvent(type: string, target?: string, ref?: string, targetFragment?: string) {
+     * }
+     *
+     * @private
+     * @param {Event} event { type, target, ref, refSrc, targetFragment, refType }
+     */
+    addEvent(event: Event): RequestBuilder;
+    /**
+     * Sets the information about the currently logged in customer. If the current
+     * customer is not provided, you will not be able to leverage features such as
+     * triggered emails. While it is recommended to always provide the details of
+     * the currently logged in customer, it may be omitted if there are concerns
+     * about privacy or compliance.
+     * <br/><br/>
+     * It is not recommended to pass the current customer details to the request
+     * builder but rather use the customer tagging.
+     *
+     * @public
+     * @param {Customer} customer the details of the currently logged in customer
+     */
+    setCustomer(customer: PushedCustomer): RequestBuilder;
+    setCoupon(coupon: Coupon): RequestBuilder;
+    /**
+     * Adds the given elements (or placements) to the request. Any identifiers
+     * specified here are simply added to the elements already in the request.
+     *
+     * @example <caption>To load data for a single placement</caption>
+     * nostojs(api => api
+     *   .createRecommendationRequest()
+     *   .addElements(['bestseller-home'])
+     *   .loadRecommendations());
+     *
+     * @public
+     * @param {String[]} elements the array of placements
+     */
+    addElements(elements: string[]): RequestBuilder;
+    /**
+     * Sets the given elements (or placements) to the request. Any identifiers
+     * specified here override all elements already in the request.
+     *
+     * @example <caption>To load data for a single placement</caption>
+     * nostojs(api => api
+     *   .createRecommendationRequest()
+     *   .setElements(['bestseller-home'])
+     *   .loadRecommendations());
+     *
+     * @public
+     * @param {String[]} elements the array of placements
+     */
+    setElements(elements: string[] | undefined): RequestBuilder;
+    /**
+     * Adds the cart object to the current request. This should be preferably
+     * on every page load so as to keep the cart state as fresh as possible.
+     *
+     * @public
+     * @param {PushedCart} cart the details of the current shopping basket
+     */
+    setCartContent(cart: PushedCart | undefined): RequestBuilder;
+    /**
+     * Sets the restore link for the current session. Restore links can be leveraged
+     * in email campaigns. Restore links allow the the user to restore the cart
+     * contents in a single click.
+     * <br/><br/>
+     * Read more about
+     * {@link https://help.nosto.com/en/articles/664692|how to leverage the restore cart link}
+     * <br/><br/>
+     * It is not recommended to pass the current restore link to the request
+     * builder but rather use the tagging approach.
+     *
+     * @public
+     * @param restoreLink
+     */
+    setRestoreLink(restoreLink: string | undefined): RequestBuilder;
+    /**
+     * Adds the given identifiers of the products in the customer's shopping cart
+     * to the request.
+     *
+     * @deprecated since this only transported partial information about the cart
+     * @private
+     */
+    addCartItems(): RequestBuilder;
+    /**
+     * Sets the hash of the current cart cookie for ensure that the cart tagging
+     * isn't cached. In most cases, simply reading the customer's 2c.cid cookie
+     * and generating a SHA256 checksum will suffice.
+     *
+     * @deprecated
+     * @param {String} hcid the 32 character unique hash
+     */
+    addCartCookieHash(hash: string): RequestBuilder;
+    /**
+     * Sets the total value of the customer's shopping cart. This should be the
+     * numerical value of what the customer sees in the mini-cart element of the
+     * store.
+     *
+     * @deprecated since this only transported partial information about the cart
+     * @private
+     */
+    addCartTotal(): RequestBuilder;
+    /**
+     * Sets the total value of the customer's shopping cart. This should be the
+     * numerical value of what the customer sees in the mini-cart element of the
+     * store.
+     *
+     * @deprecated since this only transported partial information about the cart
+     * @private
+     */
+    addCartSize(): RequestBuilder;
+    /**
+     * @public
+     * @param {Array.<Product>} products
+     * @param {String} [ref] the placement id that resulted in the product views
+     */
+    setProducts(products: Product$1[], ref?: string): RequestBuilder;
+    /**
+     * Adds the given category names to the request. Any category name specified here
+     * are simply added to the request as personalisation filtering hints.
+     *
+     * @public
+     * @param {String[]} categories the array of category ids
+     */
+    addCurrentCategories(categories: string[]): RequestBuilder;
+    /**
+     * Sets the given category names to the request. Any category names specified here
+     * override the category names in the request.
+     *
+     * @public
+     * @param {String[]} categories the array of category ids
+     */
+    setCurrentCategories(categories: string[]): RequestBuilder;
+    /**
+     * Adds the given category ids to the request. Any category ids specified here
+     * are simply added to the request as personalisation filtering hints.
+     *
+     * @public
+     * @param {String[]} categoryIds the array of category ids
+     */
+    addCurrentCategoryIds(categoryIds: string[]): RequestBuilder;
+    /**
+     * Adds the given parent category ids to the request. Any parent category ids specified here
+     * are simply added to the request as personalisation filtering hints.
+     */
+    addCurrentParentCategoryIds(parentCategoryIds: string[]): RequestBuilder;
+    /**
+     * Adds the given current tags to the request. Any tags (tags1, tags12, or
+     * tags13) specified here are simply added to the request as personalisation
+     * filtering hints.
+     *
+     * @public
+     * @param {String[]} tags the array of tags
+     */
+    addCurrentTags(tags: string[]): RequestBuilder;
+    /**
+     * Sets the given current tags to the request. Any tags (tags1, tags12, or
+     * tags13) specified here are simply set to the request as personalisation
+     * filtering hints.
+     *
+     * @public
+     * @param {String[]} tags the array of tags
+     */
+    setCurrentTags(tags: string[]): RequestBuilder;
+    /**
+     * Adds the given current custom fields to the request. Any custom fields
+     * specified here are simply added to the request as personalisation filtering hints.
+     *
+     * @public
+     * @param { Object } fields custom field key-value pairs
+     */
+    addCurrentCustomFields(fields: Record<string, string[]>): RequestBuilder;
+    /**
+     * Sets the current lower price range to the request. Faceting needs to be
+     * enabled for the slot in order for this to function. Any lower value
+     * specified here are simply added to the request as personalisation filtering hints.
+     *
+     * @public
+     * @param {Number} value the lower range of the price
+     */
+    setCurrentPriceFrom(value: number): RequestBuilder;
+    /**
+     * Sets the current upper price range to the request. Faceting needs to be
+     * enabled for the slot in order for this to function. Any upper value
+     * specified here are simply added to the request as personalisation filtering hints.
+     *
+     * @public
+     * @param {Number} value the upper range of the price
+     */
+    setCurrentPriceTo(value: number): RequestBuilder;
+    /**
+     * Sets the current variation identifier for the session. A variation identifier
+     * identifies the current currency (or the current customer group). If your site
+     * uses multi-currency, you must provide the ISO code current currency being viewed.
+     * <br/><br/>
+     * It is not recommended to pass the variation identifier to an request builder but
+     * instead leverage the tagging.
+     *
+     * @public
+     * @param {String} variation the case-sensitive identifier of the current variation
+     */
+    addCurrentVariation(variation: string): RequestBuilder;
+    /**
+     * Sets the information about the currently logged in customer. If the current
+     * customer is not provided, you will not be able to leverage features such as
+     * triggered emails. While it is recommended to always provide the details of
+     * the currently logged in customer, it may be omitted if there are concerns
+     * about privacy or compliance.
+     * <br/><br/>
+     * It is not recommended to pass the current customer details to the request
+     * builder but rather use the customer tagging.
+     *
+     * @public
+     * @param {Customer} customer
+     */
+    addCustomer(customer: PushedCustomer): RequestBuilder;
+    /**
+     * Sets the response mode for the current request. The response mode can be
+     * used to switch between HTML and JSON. Here is an exhaustive list of the
+     * response modes.
+     *
+     * | Modes                | Description                                    |
+     * | -------------------- |:----------------------------------------------:|
+     * | HTML                 | HTML (SSR)                                     |
+     * | JSON_170x170         | Raw JSON with 170x170px original aspect images |
+     * | JSON_100_X_100       | Raw JSON with 100x100px original aspect images |
+     * | JSON_90x70           | Raw JSON with 90x70px original aspect images   |
+     * | JSON_50x50           | Raw JSON with 50x50px original aspect images   |
+     * | JSON_30x30           | Raw JSON with 30x30px original aspect images   |
+     * | JSON_100x140         | Raw JSON with 100x140px original aspect images |
+     * | JSON_200x200         | Raw JSON with 200x200px original aspect images |
+     * | JSON_400x400         | Raw JSON with 400x400px original aspect images |
+     * | JSON_750x750         | Raw JSON with 750x750px original aspect images |
+     * | JSON_10_MAX_SQUARE   | Raw JSON with 100x100px center squared images  |
+     * | JSON_200x200_SQUARE  | Raw JSON with 200x200px center squared images  |
+     * | JSON_400x400_SQUARE  | Raw JSON with 400x400px center squared images  |
+     * | JSON_750x750_SQUARE  | Raw JSON with 750x750px center squared images  |
+     * | JSON_ORIGINAL        | Raw JSON with the original untouched images    |
+     *
+     * @public
+     * @param {String} mode the response mode to be used
+     */
+    setResponseMode(mode: RenderMode): RequestBuilder;
+    setExperiments(experiments: Experiment[]): RequestBuilder;
+    disableCampaignInjection(): RequestBuilder;
+    /**
+     * Enables the preview mode for the current request. The preview mode is
+     * automatically gathered from the current context's preview mode. If the
+     * debug toolbar is showing and preview mode is enabled, there is no need
+     * to invoke this function.
+     */
+    enablePreview(): RequestBuilder;
+    /**
+     * Adds the order object to the current request. This should be invoked only
+     * on the order confirmation page.
+     *
+     * @public
+     * @param {Order} order the details of the order that was placed
+     */
+    addOrderData(order: Order): RequestBuilder;
+    setMailRef(refMail: string, recRef: string): RequestBuilder;
+    populateFrom(params: {
+        data: TaggingData;
+        forcedSegments: string[];
+    }, unwrappedReference?: string): RequestBuilder;
+    setRecommendationRef(recRef: string, recRefSrc?: string): RequestBuilder;
+    /**
+     * Builds the request and makes a request to Nosto.
+     *
+     * @example <caption>To load data for a single placement</caption>
+     * nostojs(api => api
+     *   .createRecommendationRequest()
+     *   .send({metadata: true}))
+     *   .then((response) => console.log(response));
+     *
+     * @deprecated since there is already a load method that does the same
+     * @private
+     * @param {RecommendationRequestFlags} flags
+     * @return {Promise}
+     */
+    send(flags: RecommendationRequestFlags): Promise<EventResponseMessage>;
+    /**
+     * Builds the request and makes a request to Nosto.
+     *
+     * @example <caption>To load data for a single placement</caption>
+     * nostojs(api => api
+     *   .createRecommendationRequest()
+     *   .addElements('bestseller-home')
+     *   .load())
+     *   .then((response) => console.log(response));
+     *
+     * @public
+     * @param {RecommendationRequestFlags} flags an object containing additional flags
+     * @return {Promise} the response returned by Nosto
+     */
+    load(flags?: RecommendationRequestFlags): Promise<EventResponseMessage>;
+    /**
+     * Builds the request and invokes it via JSONP to load the cart popup
+     * recommendations
+     *
+     * @todo the cart popup should be totally decouples from the event request
+     * @deprecated since this method should de decoupled from the request
+     * @private
+     * @return {Promise}
+     */
+    loadCartPopupRecommendations(alwaysShow: boolean): Promise<EventResponseMessage>;
+    /**
+     * Legacy method used to reloading the recommendations. This method is a
+     * simple wrapper around the other load method.
+     *
+     * @example <caption>To load data for a single placement</caption>
+     * nostojs(api => api
+     *   .createRecommendationRequest()
+     *   .addElements('bestseller-home')
+     *   .loadRecommendations())
+     *   .then((response) => console.log(response));
+     *
+     * @deprecated since the method name isn't aligned with it's behaviour
+     * @private
+     * @see {load}
+     * @param {RecommendationRequestFlags} flags an object containing additional flags
+     * @return {Promise}
+     */
+    loadRecommendations(flags?: RecommendationRequestFlags): Promise<EventResponseMessage>;
+    /**
+     * Adds attribution for the given product id to reference mappings
+     *
+     * @param refs
+     * @returns
+     */
+    setRefs(refs: Record<string, string>): RequestBuilder;
+    getEvents(): Event[];
+    getData(): EventRequestMessageV1;
+}
+
+interface Attribution {
+    recordAttribution: (event: Event) => Attribution;
+    dumpData: () => EventTuple[];
+    done: () => Promise<void>;
+}
+
+/**
+ * The Session API provides a programmatic way to interact with the Nosto API that is
+ * optimized for usage in SPA style web applications. The Session object maintains the session level
+ * data such as the user's shopping cart, the currently logged in customer, the current variation
+ * and provides function to execute actions such as viewing a product, category, cart, order etc.
+ *
+ * @group Core
+ */
+interface Session {
+    /**
+     * Sets the information about the user's current shopping cart. It the user
+     * does not have any items in his shopping cart, you can pass null.
+     * Passing null will nullify the user's shopping cart on Nosto's
+     * end. You must also pass in the shopping cart content in it's entirety as
+     * partial content are not supported.
+     *
+     * @example
+     * nostojs(api => api
+     *   .defaultSession()
+     *   .setCart({
+     *     items: [
+     *       product_id: "101",
+     *       sku_id: "101-S",
+     *       name: "Shoe",
+     *       unit_price: 34.99
+     *       price_currency_code: "EUR"
+     *     ]
+     *   })
+     *   .viewCart()
+     *   .setPlacements(["free-shipper"])
+     *   .update()
+     *   .then(data => console.log(data)))
+     *
+     * @public
+     * @param {Cart|undefined} cart the details of the user's shopping cart contents
+     * @returns {Session} the current session
+     */
+    setCart(cart: Cart | undefined): Session;
+    /**
+     * Sets the information about the currently logged in customer. If the current
+     * customer is not provided, you will not be able to leverage features such as
+     * triggered emails. While it is recommended to always provide the details of
+     * the currently logged in customer, it may be omitted if there are concerns
+     * about privacy or compliance.
+     *
+     * @example
+     * nostojs(api => api
+     *   .defaultSession()
+     *   .setCustomer({
+     *     first_name: "Mridang",
+     *     last_name: "Agarwalla",
+     *     email: "mridang@nosto.com",
+     *     newsletter: false,
+     *     customer_reference: "5e3d4a9c-cf58-11ea-87d0-0242ac130003"
+     *   })
+     *   .viewCart()
+     *   .setPlacements(["free-shipper"])
+     *   .load()
+     *   .then(data => console.log(data)))
+     *
+     * @public
+     * @param {Customer} customer the details of the currently logged in customer
+     * @returns {Session} the current session
+     */
+    setCustomer(customer: PushedCustomer | undefined): Session;
+    /**
+     * Sets the current variation identifier for the session. A variation identifier
+     * identifies the current currency (or the current customer group). If your site
+     * uses multi-currency, you must provide the ISO code current currency being viewed.
+     *
+     * @example
+     * nostojs(api => api
+     *   .defaultSession()
+     *   .setVariation("GBP")
+     *   .viewCart()
+     *   .setPlacements(["free-shipper"])
+     *   .load()
+     *   .then(data => console.log(data)))
+     *
+     * @public
+     * @param {String} variation the case-sensitive identifier of the current variation
+     * @returns {Session} the current session
+     */
+    setVariation(variation: string | undefined): Session;
+    /**
+     * Sets the restore link for the current session. Restore links can be leveraged
+     * in email campaigns. Restore links allow the the user to restore the cart
+     * contents in a single click.
+     * <br/><br/>
+     * Read more about
+     * {@link https://help.nosto.com/en/articles/664692|how to leverage the restore cart link}
+     *
+     * @example
+     * nostojs(api => api
+     *   .defaultSession()
+     *   .setRestoreLink("https://jeans.com/session/restore?sid=6bdb69d5-ed15-4d92")
+     *   .viewCart()
+     *   .setPlacements(["free-shipper"])
+     *   .load()
+     *   .then(data => console.log(data)))
+     *
+     * @public
+     * @param {String} restoreLink the secure URL to restore the user's current session
+     * @returns {Session} the current session
+     */
+    setRestoreLink(restoreLink: string): Session;
+    /**
+     * Sets the response type to HTML or JSON_ORIGINAL. This denotes the preferred
+     * response type of the recommendation result.
+     * If you would like to access the raw recommendation data in JSON form, specify
+     * JSON. When you specify JSON, you will need to template the result yourself.
+     * If you require a more simplified approach, specify HTML. When you specify
+     * HTML, you get back HTML blobs, that you may simply inject into
+     * you placements.
+     *
+     * @example
+     * nostojs(api => api
+     *   .defaultSession()
+     *   .setResponseMode("HTML")
+     *   .viewCart()
+     *   .setPlacements(["free-shipper"])
+     *   .load()
+     *   .then(data => console.log(data)))
+     *
+     * @public
+     * @param {String} mode the response mode for the recommendation data
+     * @returns {Session} the current session
+     */
+    setResponseMode(mode: RenderMode): Session;
+    /**
+     * Create a new action for a front page. This should be used when the user
+     * visits the home page.
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     * <br/><br/>
+     * You do not need to specify the page-type explicitly as it is inferred
+     * from the action.
+     *
+     * @example
+     * nostojs(api => api
+     *   .defaultSession()
+     *   .viewFrontPage()
+     *   .setPlacements(["best-seller"])
+     *   .load()
+     *   .then(data => console.log(data)))
+     *
+     *
+     * @public
+     * @returns {Action} the action instance to load content or track events.
+     */
+    viewFrontPage(): Action;
+    /**
+     * Create a new action for a cart page. This should be used on all cart and
+     * checkout pages. If your site has a multi-step checkout, it is recommended
+     * that you send this event on each checkout page.
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     * <br/><br/>
+     * You do not need to specify the page-type explicitly as it is inferred
+     * from the action.
+     *
+     * @example
+     * nostojs(api => api
+     *   .defaultSession()
+     *   .viewCart()
+     *   .setPlacements(["free-shipper"])
+     *   .load()
+     *   .then(data => console.log(data)))
+     *
+     * @public
+     * @returns {Action} the action instance to load content or track events.
+     */
+    viewCart(): Action;
+    /**
+     * Create a new action for a not found page. This should be used only on 404
+     * pages.
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     * <br/><br/>
+     * You do not need to specify the page-type explicitly as it is inferred
+     * from the action.
+     *
+     * @example
+     * nostojs(api => api
+     *   .defaultSession()
+     *   .viewNotFound()
+     *   .setPlacements(["best-seller"])
+     *   .load()
+     *   .then(data => console.log(data)))
+     *
+     * @public
+     * @returns {Action} the action instance to load content or track events.
+     */
+    viewNotFound(): Action;
+    /**
+     * Create a new action for a product page. This must be used only when a
+     * product is being viewed. In case a specific SKU of the product is being viewed, use viewProductSku instead.
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     * <br/><br/>
+     * You do not need to specify the page-type explicitly as it is inferred
+     * from the action.
+     *
+     * @example
+     * nostojs(api => api
+     *   .defaultSession()
+     *   .viewProduct("101")
+     *   .setCategories(["/men/trousers"])
+     *   .setRef("123", "example_reco_id")
+     *   .setPlacements(["cross-seller"])
+     *   .load()
+     *   .then(data => console.log(data)))
+     *
+     * @public
+     * @param product
+     * @returns {Action} the action instance to load content or track events.
+     */
+    viewProduct(product: string | Product): Action;
+    /**
+     * Create a new action for a product page when a specific SKU has been chosen. This must be used only when a
+     * product and specific SKU is being viewed.
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     * <br/><br/>
+     * You do not need to specify the page-type explicitly as it is inferred
+     * from the action.
+     *
+     * @example
+     * nostojs(api => api
+     *   .defaultSession()
+     *   .viewProductSku("101", "101-sku-1")
+     *   .setCategories(["/men/trousers"])
+     *   .setRef("123", "example_reco_id")
+     *   .setPlacements(["cross-seller"])
+     *   .load()
+     *   .then(data => console.log(data)))
+     *
+     * @public
+     * @param productId
+     * @param skuId
+     * @returns {Action} the action instance to load content or track events.
+     */
+    viewProductSku(productId: string, skuId: string): Action;
+    /**
+     * Create a new action for a category page. This should be used on all
+     * category, collection of brand pages.
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     * <br/><br/>
+     * You do not need to specify the page-type explicitly as it is inferred
+     * from the action.
+     *
+     * @example
+     * nostojs(api => api
+     *   .defaultSession()
+     *   .viewCategory("/men/shoes")
+     *   .setPlacements(["category123"])
+     *   .load()
+     *   .then(data => console.log(data)))
+     *
+     * @public
+     * @param {Array<String>} categories
+     * @returns {Action} the action instance to load content or track events.
+     */
+    viewCategory(...categories: string[]): Action;
+    /**
+     * Create a new action for a tag page. This should be used only on tag pages.
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     * <br/><br/>
+     * You do not need to specify the page-type explicitly as it is inferred
+     * from the action.
+     * Note: tags are not case-sensitive.
+     *
+     * @example
+     * nostojs(api => api
+     *   .defaultSession()
+     *   .viewTag("colourful")
+     *   .load()
+     *   .then(data => console.log(data)))
+     *
+     * @public
+     * @deprecated as this is an advanced action with a limited a use case
+     * @param {Array<String>} tags the set of the tags being viewed.
+     * @returns {Action} the action instance to load content or track events.
+     */
+    viewTag(...tags: string[]): Action;
+    /**
+     * Create a new action with custom fields.
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     * <br/><br/>
+     * You do not need to specify the page-type explicitly as it is inferred
+     * from the action.
+     * Note: tags are not case-sensitive.
+     *
+     * @example
+     * nostojs(api => api
+     *   .defaultSession()
+     *   .viewCustomField({material: "cotton"})
+     *   .load()
+     *   .then(data => console.log(data)))
+     *
+     * @public
+     * @deprecated as this is an advanced action with a limited a use case
+     * @param {Object} customFields custom fields being viewed.
+     * @returns {Action} the action instance to load content or track events.
+     */
+    viewCustomField(customFields: Record<string, string[]>): Action;
+    /**
+     * Create a new action for a search page. This should be used only
+     * on search pages. A search page action requires you to pass the search
+     * term. For example, if the user search for "black shoes", you must pass
+     * in "black shoes" and not an encoded version such as "black+shoes".
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     * <br/><br/>
+     * You do not need to specify the page-type explicitly as it is inferred
+     * from the action.
+     * Search terms are not case-sensitive.
+     *
+     * @example
+     * nostojs(api => api
+     *   .defaultSession()
+     *   .viewSearch("black shoes")
+     *   .load()
+     *   .then(data => console.log(data)))
+     *
+     * @public
+     * @param {Array.<String>} searchTerms the non-encoded search terms
+     * @returns {Action} the action instance to load content or track events.
+     */
+    viewSearch(...searchTerms: string[]): Action;
+    /**
+     * Create a new action for a general page. This should be used only on
+     * pages that don't have a corresponding action. For example, if the user
+     * is viewing a page such as a "Contact Us" page, you should use the viewOther
+     * action.
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     * <br/><br/>
+     * You do not need to specify the page-type explicitly as it is inferred
+     * from the action.
+     *
+     * @example
+     * nostojs(api => api
+     *   .defaultSession()
+     *   .viewOther()
+     *   .load()
+     *   .then(data => console.log(data)))
+     *
+     * @public
+     * @returns {Action} the action instance to load content or track events.
+     */
+    viewOther(): Action;
+    /**
+     * Create a new action for an order page. This should only be used on order
+     * confirmation / thank you pages.
+     * <br/><br/>
+     * You do not need to specify the page-type explicitly as it is inferred
+     * from the action.
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     *
+     * @example
+     * nostojs(api => {
+     *   api.defaultSession()
+     *    .addOrder({
+     *      external_order_ref: "145000006",
+     *      info: {
+     *        order_number: "195",
+     *        email: "mridang@nosto.com",
+     *        first_name: "Mridang",
+     *        last_name: "Agarwalla",
+     *        type: "order",
+     *        newsletter: true
+     *      },
+     *      items: [{
+     *        product_id: "406",
+     *        sku_id: "243",
+     *        name: "Linen Blazer (White, S)",
+     *        quantity: 1,
+     *        unit_price: 455,
+     *        price_currency_code: "EUR"
+     *      }]
+     *    })
+     *    .setPlacements(["order-related"])
+     *    .load()
+     *    .then(data => {
+     *      console.log(data.recommendations);
+     *    })
+     *  })
+     *
+     * @public
+     * @param {Order} order the information about the order that was placed
+     * @returns {Action} the action instance to load content or track events.
+     */
+    addOrder(order: WebsiteOrder): Action;
+    /**
+     * Creates an action to report that product was added to the shopping cart,
+     * e.g. from the recommendation slot with "Add to cart" button.
+     * <p>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     *
+     *
+     * @example
+     * nostojs(api => api
+     *   .defaultSession()
+     *   .reportAddToCart("123", "reco-slot-1")
+     *   .load()
+     *   .then(data => console.log(data)))
+     *
+     * @public
+     * @param product
+     * @param element
+     * @returns {Action} the action instance to load content or track events.
+     */
+    reportAddToCart(product: string, element: string): Action;
+    /**
+     * @example
+     * nostojs(api => api
+     *  .defaultSession()
+     *  .recordAttribution("vp", "12345678", "123456")
+     *  .done()
+     *  .then(data => console.log(data))
+     *
+     * @param { EventType } type
+     * @param { String } target
+     * @param { String | undefined } [ref]
+     * @param { String | undefined } [refSrc]
+     * @return { Object }
+     */
+    recordAttribution(type: EventType, target: string, ref: string, refSrc: string): Attribution;
+}
+/**
+ * Action in the Session API context means fetching recommendations for a specific view. For example when
+ * a visitor navigates from the front page to a product view you would most likely fetch recommendations
+ * related to a product. This would be considered as an Action. Setting the cart contents however would
+ * not be considered as action.
+ *
+ * @group Core
+ */
+interface Action {
+    /**
+     * Handles click attribution for product recommendations.
+     * This can be called when reporting a product view
+     * to signal that the view is a result of a click on a recommendation.
+     *
+     * @public
+     * @param {String} productId currently viewed product's product id
+     * @param {String} reference value of result_id from the recommendation response that was clicked
+     * @return {Action}
+     */
+    setRef(productId: string, reference: string): Action;
+    /**
+     * Allows you to provide an additional recommender hint that a product is being
+     * viewed.
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     *
+     * @public
+     * @param {String} product the identifier of the product being viewed
+     * @return {Action} the instance of the action
+     */
+    setProduct(product: string | Product): Action;
+    /**
+     * @deprecated
+     * @param {Array<String>} products
+     * @return {Action}
+     */
+    setProducts(products: (string | Product)[]): Action;
+    /**
+     * Sets the information about the user's current shopping cart. It the user
+     * does not have any items in his shopping cart, you can pass null.
+     * Passing null will nullify the user's shopping cart on Nosto's
+     * end. You must also pass in the shopping cart content in it's entirety as
+     * partial content are not supported.
+     * <br/><br/>
+     * It is not recommended to pass the current cart contents to an action but
+     * instead use the the session
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     *
+     * @see {@link Session#setCart}
+     * @return {Action}
+     */
+    setCart(cart: Cart | undefined): Action;
+    /**
+     * Sets the information about the currently logged in customer. If the current
+     * customer is not provided, you will not be able to leverage features such as
+     * triggered emails. While it is recommended to always provide the details of
+     * the currently logged in customer, it may be omitted if there are concerns
+     * about privacy or compliance.
+     * <br/><br/>
+     * It is not recommended to pass the current customer details to an action but
+     * instead use the the session
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     *
+     * @see {@link Session#setCustomer}
+     * @public
+     * @param {Customer} customer the details of the currently logged in customer
+     * @return {Action}
+     */
+    setCustomer(customer: PushedCustomer | undefined): Action;
+    /**
+     * @param {Order} order
+     * @return {Action}
+     */
+    setOrder(order: WebsiteOrder): Action;
+    /**
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     *
+     * @public
+     * @param searchTerms
+     * @return {Action}
+     */
+    setSearchTerms(searchTerms: string[]): Action;
+    /**
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     *
+     * @public
+     * @param {Array<String>} categories
+     * @return {Action}
+     */
+    setCategories(categories: string[]): Action;
+    /**
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     *
+     * @public
+     * @param {Array<String>} categoryIds
+     * @return {Action}
+     */
+    setCategoryIds(categoryIds: string[]): Action;
+    /**
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     *
+     * @public
+     * @param {Array<String>} parentCategoryIds
+     * @return {Action}
+     */
+    setParentCategoryIds(parentCategoryIds: string[]): Action;
+    /**
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     *
+     * @public
+     * @param tags
+     * @return {Action}
+     */
+    setTags(tags: string[]): Action;
+    /**
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     *
+     * @public
+     * @param customFields
+     * @return {Action}
+     */
+    setCustomFields(customFields: Record<string, string[]>): Action;
+    /**
+     * Sets the current variation identifier for the session. A variation identifier
+     * identifies the current currency (or the current customer group). If your site
+     * uses multi-currency, you must provide the ISO code current currency being viewed.
+     * <br/><br/>
+     * It is not recommended to pass the variation identifier to an action but
+     * instead use the the session.
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     *
+     * @see {@link Session#setVariation}
+     * @public
+     * @param {String} variation the case-sensitive identifier of the current variation
+     * @return {Action}
+     */
+    setVariation(variation: string | undefined): Action;
+    /**
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     *
+     * @public
+     * @param {Array.<String>} placements
+     * @return {Action}
+     */
+    setPlacements(placements: string[]): Action;
+    /**
+     * Sets the restore link for the current session. Restore links can be leveraged
+     * in email campaigns. Restore links allow the the user to restore the cart
+     * contents in a single click.
+     * <br/><br/>
+     * Read more about
+     * {@link https://help.nosto.com/en/articles/664692|how to leverage the restore cart link}
+     * <br/><br/>
+     * It is not recommended to pass the restore link to an action but instead use the the
+     * session.
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     *
+     * @see {@link Session#setRestoreLink}
+     * @public
+     * @param {String} restoreLink the secure URL to restore the user's current session
+     * @return {Action}
+     */
+    setRestoreLink(restoreLink: string): Action;
+    /**
+     * Sets the identifier of the current page type to the current request. The different
+     * page types are product, front, search, cart, order, category, notfound and other.
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     * <br/><br/>
+     * It is not recommended to pass the page type to an action but instead use the the
+     * session.
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     *
+     * @see {@link Session#viewFrontPage} for when a front or home page is being viewed
+     * @see {@link Session#viewCart} for when a cart or checkout page is being viewed
+     * @see {@link Session#viewNotFound} for when a not-found or 404 page is being viewed
+     * @see {@link Session#viewProduct} for when a product page is being viewed
+     * @see {@link Session#viewCategory} for when a category, collection or brand page is being viewed
+     * @see {@link Session#viewTag} for when a tag page is being viewed
+     * @see {@link Session#viewSearch} for when a search page is being viewed
+     * @see {@link Session#viewOther} for when a miscellaneous page is being viewed
+     * @public
+     */
+    setPageType(pageType: PageType): Action;
+    /**
+     * @public
+     * @return {Object}
+     * @hidden
+     */
+    dumpData(): TaggingData;
+    update(): unknown;
+    /**
+     * Execute the action and fetch the recommendations for the current action.
+     *
+     * @param flags
+     */
+    load(flags?: RecommendationRequestFlags): Promise<ActionResponse>;
+}
+/**
+ * Result object for an action that contains the recommendations and content that was requested for the current action.
+ *
+ * @group Core
+ */
+interface ActionResponse {
+    /** Recommendations that were requested for the current action. */
+    recommendations: Record<string, unknown>;
+    /** Recommendations and content that was requested for the current action. */
+    campaigns?: {
+        recommendations: Record<string, unknown>;
+        content: Record<string, unknown>;
+    };
+    /** Page view count  */
+    page_views: number;
+    /** Geo location metadarta  */
+    geo_location: string[];
+    /** Affinity metadata */
+    affinities: CustomerAffinityResponse;
+    /** Category Merchandising result id */
+    cmpid: string;
+}
+
+type Maybe<T> = NonNullable<T> | undefined;
 
 interface Store {
     getCustomerId(): Maybe<string>;
@@ -740,22 +1869,6 @@ type CurrencyFormats = {
     [code: string]: CurrencySettings;
 };
 declare function currencyFormats(): Promise<CurrencyFormats>;
-
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
-
-interface Attribution {
-    recordAttribution: (event: Event) => Attribution;
-    dumpData: () => EventTuple[];
-    done: () => Promise<void>;
-}
 
 type SearchTrackOptions = "serp" | "autocomplete" | "category";
 type SearchAnalyticsOptions = {
@@ -1145,8 +2258,16 @@ interface InputSearchQuery {
     /** Segment ID's user belongs to */
     segments?: string[];
     sessionParams?: InputSearchQuery;
+    abTests?: InputSearchABTest[];
     /** `(Private key only)` Overwrites current time. Used to trigger scheduled rules ahead of schedule */
     time?: number;
+}
+interface InputSearchABTest {
+    id: string;
+    activeVariation: InputSearchABTestVariation;
+}
+interface InputSearchABTestVariation {
+    id: string;
 }
 /**
  *
@@ -1720,26 +2841,8 @@ declare function recordSearchSubmit(query: string): void;
 declare function recordSearchClick(type: SearchTrackOptions, hit: SearchProduct): void;
 declare function storeSearchClick(productId: string | undefined, metadata: SearchEventMetadata, productUrl: string, properties: Maybe<AnalyticEventProperties>): void;
 
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 declare function addSegment(segment: string): Promise<void>;
 
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 /**
  * Resends the cart tagging to Nosto. Only the cart information is sent over
  * and nothing else - no placements, no events, nothing.
@@ -1758,159 +2861,14 @@ declare function resendCartTagging(): Promise<void>;
  */
 declare function resendCustomerTagging(): Promise<void>;
 
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 declare function setCustomer(customer: PushedCustomer): Promise<void>;
 
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 declare function setExperiments(experiments: Experiment[]): Promise<void>;
 
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 declare function recommendedProductAddedToCart(productId: string, recoId: string): Promise<void>;
 
-type ParseUriResult = Pick<URL, "href" | "protocol" | "hostname" | "hash" | "search" | "searchParams">;
-
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
-
-interface Location {
-    source?: unknown;
-    value?: {
-        referrer: string;
-        current: string;
-    };
-    referrer?: string;
-    current?: ParseUriResult;
-}
-interface Coupon {
-    campaign?: string;
-    code?: string;
-    used?: boolean;
-}
-interface Range {
-    from?: number;
-    to?: number;
-}
-interface ExtraParams {
-    at?: Date;
-    ep?: boolean;
-    fs?: string[];
-    tp?: TestPreviewsDTO;
-}
-interface Debug {
-    debugToken?: string;
-    skipCache?: boolean;
-    extraParams?: ExtraParams | null;
-    recoTrace?: string;
-    previewMode?: boolean;
-}
-interface Reference {
-    mail?: {
-        id: string;
-        target: string;
-    };
-    campaign?: {
-        id: string;
-        target?: string;
-    };
-}
-interface Segment {
-    forced?: string | string[];
-    manual?: string[];
-}
-interface Order {
-    items: CartItem[];
-    info: OrderInfo;
-    hcid: string;
-}
-interface Cart$3 {
-    items?: CartItem[];
-    hcid?: string;
-}
-type Product$1 = {
-    product_id: string;
-    selected_sku_id?: string;
-};
-interface State {
-    segments: Segment;
-    url?: string;
-    cartPopup: boolean;
-    events: Event[];
-    categories?: string[];
-    products: Product$1[];
-    customer?: PushedCustomer;
-    coupon: Coupon;
-    categoryIds?: string[];
-    parentCategoryIds?: string[];
-    tags?: string[];
-    customFields?: Record<string, string[]>;
-    order?: Order;
-    responseMode: RenderMode;
-    debug: Debug;
-    cart?: Cart$3;
-    restoreLink?: string;
-    pageType?: PageType;
-    sortOrder?: string;
-    price: Range;
-    variation?: string;
-    elements?: string[];
-    location: Location;
-    externalIdentifier?: string;
-    klaviyoCookie?: string;
-    reference: Reference;
-    experiments?: Experiment[];
-}
-
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 type Level = "log" | "warn" | "error" | "debug" | "info";
 
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 interface Violation {
     key: string;
     message_key: string;
@@ -1923,113 +2881,11 @@ interface OrderError {
     response: ErrorResponse;
 }
 
-interface PluginMetadata {
-    mainModule?: string;
-    cmpModule?: string;
-    msiModule?: string;
-}
-interface Cart$2 {
-    hcid?: string;
-    items: CartItem[];
-}
-export type Product = {
-    product_id: string;
-    selected_sku_id?: string;
-};
-export interface Data<ProductType extends Product = Product> {
-    cart: Cart$2 | undefined;
-    customer: PushedCustomer | undefined;
-    variation: string | undefined;
-    restoreLink: string | undefined;
-    products: ProductType[];
-    order: WebsiteOrder | undefined;
-    searchTerms: string[] | undefined;
-    categories: string[] | undefined;
-    categoryIds: string[] | undefined;
-    parentCategoryIds: string[] | undefined;
-    tags: string[] | undefined;
-    customFields: Record<string, string[]> | undefined;
-    elements: string[] | undefined;
-    pageType: PageType | undefined;
-    sortOrder: string | undefined;
-    pluginVersion: PluginMetadata | undefined;
-}
-
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
-interface Cart$1 {
-    hcid?: string;
-    items: CartItem[];
-}
-declare function findCart(): Cart$1 | undefined;
-
-declare function findProducts(): PushedProduct[];
-
-declare function findCustomer(): PushedCustomer | undefined;
-
-declare function findOrder(): WebsiteOrder | undefined;
-
-declare function findPluginVersions(): PluginMetadata | undefined;
-
-declare function findCurrentVariation(): Maybe<string>;
-declare function findSearchTerms(): Maybe<string[]>;
-declare function findCurrentCategories(): Maybe<string[]>;
-declare function findCurrentCategoryIds(): Maybe<string[]>;
-declare function findCurrentParentCategoryIds(): Maybe<string[]>;
-declare function findCurrentTags(): Maybe<string[]>;
-declare function findCurrentCustomFields(): Maybe<Record<string, string[]>>;
-declare function findRestoreLink(): Maybe<string>;
-declare function findPageType(): Maybe<PageType>;
-declare function findSortOrder(): Maybe<string>;
-declare function findElements(ignoredPlacements: string[]): Maybe<string[]>;
-
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 /**
- * Resends all the tagging to Nosto. Only the page tagging is sent over
- * and nothing else - no placements, no events, nothing.
- * This method was originally used by the Magento 2 plugin. In the Magento 2 plugin
- * the order tagging was loaded asynchronously so a method like this was needed.
+ * Payload for prerender event
  *
- * @return {Promise}
+ * @group Core
  */
-declare function resendAllTagging(): Promise<void>;
-type Tagging = Data<PushedProduct>;
-declare function pageTagging(): Tagging;
-declare const taggingProviders: {
-    products: typeof findProducts;
-    cart: typeof findCart;
-    customer: typeof findCustomer;
-    order: typeof findOrder;
-    searchTerms: typeof findSearchTerms;
-    categories: typeof findCurrentCategories;
-    categoryIds: typeof findCurrentCategoryIds;
-    parentCategoryIds: typeof findCurrentParentCategoryIds;
-    tags: typeof findCurrentTags;
-    customFields: typeof findCurrentCustomFields;
-    variation: typeof findCurrentVariation;
-    pluginVersion: typeof findPluginVersions;
-    elements: typeof findElements;
-    restoreLink: typeof findRestoreLink;
-    pageType: typeof findPageType;
-    sortOrder: typeof findSortOrder;
-};
-declare function setTaggingProvider<T extends keyof Tagging>(name: T, provider: typeof taggingProviders[T]): void;
-
 interface Prerender {
     customerId?: string;
     affinityScores: CustomerAffinityResponse;
@@ -2038,40 +2894,95 @@ interface Prerender {
     pageViews: number;
     segments: SegmentsResponseBean;
 }
+/**
+ * Payload for postrender event
+ *
+ * @group Core
+ */
 interface Postrender {
     responseData: Record<string, unknown>;
     filledElements: string[];
     unFilledElements: string[];
 }
+/**
+ * Payload for setexperiments event
+ *
+ * @group Core
+ */
 interface Setexperiments {
     experiments: Experiment[];
 }
+/**
+ * Payload for coupongiven event
+ *
+ * @group Core
+ */
 interface Coupongiven {
     coupon_code: string;
     coupon_campaign: string;
     coupon_used: boolean;
 }
+/**
+ * Payload for scripterror event
+ *
+ * @group Core
+ */
 interface Scripterror {
     msg: string;
     stack?: string;
     level: Level;
 }
+/**
+ * Payload for addtocart event
+ *
+ * @group Core
+ */
 interface Addtocart {
     productId: string;
     placementId: string;
 }
+/**
+ * Payload for carttaggingresent event
+ *
+ * @group Core
+ */
 interface Carttaggingresent {
     cart_items: CartItem[];
     restore_link?: string;
 }
+/**
+ * Payload for setsegments event
+ *
+ * @group Core
+ */
 interface Segments {
     segment: string;
 }
+interface SearchSuccessEventDTO {
+    query: SearchQuery;
+    graphqlQuery: string;
+    response: SearchResult;
+}
+interface SearchFailureEventDTO {
+    query: SearchQuery;
+    graphqlQuery: string;
+    error: string;
+}
+/**
+ * Payload for popupopened event
+ *
+ * @group Core
+ */
 interface Popupopened {
     campaignId: string;
     error?: unknown;
     type: "api" | string;
 }
+/**
+ * Payload for popupmaximized, popupminimized, popupclosed and popupribbonshown events
+ *
+ * @group Core
+ */
 interface Popup {
     campaignId: string;
 }
@@ -2080,7 +2991,7 @@ type LifecyleEvents = {
     prerender: [Prerender];
     postrender: [Postrender];
     taggingsent: [EventResponseMessage];
-    taggingresent: [Tagging];
+    taggingresent: [TaggingData];
     carttaggingresent: [Carttaggingresent];
     customertaggingresent: [PushedCustomer];
     emailgiven: [PushedCustomer];
@@ -2105,765 +3016,89 @@ type InternalEvents = {
     addtocart: [Addtocart];
     ev1end: [];
     debugdata: [DebugToolbarDataDTO];
+    searchsuccess: [SearchSuccessEventDTO];
+    searchfailure: [SearchFailureEventDTO];
+    searchclick: [SearchClick];
+    searchimpression: [SearchImpression];
+    categoryclick: [CategoryClick];
+    categoryimpression: [CategoryImpression];
 };
+/** @hidden */
 type EventMapping = LifecyleEvents & PopupEvents & InternalEvents;
 
 declare function setAutoLoad(flag: boolean): void;
 declare function isAutoLoad(): boolean;
 
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
-
-interface RecommendationRequestFlags {
-    skipPageViews?: boolean;
-    trackEvents?: boolean;
-    skipEvents?: boolean;
-    reloadCart?: boolean;
-}
-type RequestBuilder = {
-    setForcedSegments(segments: string[]): RequestBuilder;
-    setSegmentCodes(segments: string[]): RequestBuilder;
-    setPageType(pageType: PageType | undefined): RequestBuilder;
-    setSortOrder(sortOrder: string): RequestBuilder;
-    addEvent(event: Event): RequestBuilder;
-    setCustomer(customer: PushedCustomer): RequestBuilder;
-    setCoupon(coupon: Coupon): RequestBuilder;
-    addElements(elements: string[]): RequestBuilder;
-    setElements(elements: string[] | undefined): RequestBuilder;
-    setCartContent(cart: Cart$3 | undefined): RequestBuilder;
-    setRestoreLink(restoreLink: string | undefined): RequestBuilder;
-    addCartItems(): RequestBuilder;
-    addCartCookieHash(hash: string): RequestBuilder;
-    addCartTotal(): RequestBuilder;
-    addCartSize(): RequestBuilder;
-    setProducts(products: Product$1[], ref?: string): RequestBuilder;
-    addCurrentCategories(categories: string[]): RequestBuilder;
-    setCurrentCategories(categories: string[]): RequestBuilder;
-    addCurrentCategoryIds(categoryIds: string[]): RequestBuilder;
-    addCurrentParentCategoryIds(parentCategoryIds: string[]): RequestBuilder;
-    addCurrentTags(tags: string[]): RequestBuilder;
-    setCurrentTags(tags: string[]): RequestBuilder;
-    addCurrentCustomFields(fields: Record<string, string[]>): RequestBuilder;
-    setCurrentPriceFrom(value: number): RequestBuilder;
-    setCurrentPriceTo(value: number): RequestBuilder;
-    addCurrentVariation(variation: string): RequestBuilder;
-    addCustomer(customer: PushedCustomer): RequestBuilder;
-    setResponseMode(mode: RenderMode): RequestBuilder;
-    setExperiments(experiments: Experiment[]): RequestBuilder;
-    disableCampaignInjection(): RequestBuilder;
-    enablePreview(): RequestBuilder;
-    addOrderData(order: Order): RequestBuilder;
-    setMailRef(refMail: string, recRef: string): RequestBuilder;
-    populateFrom(params: {
-        data: Data;
-        forcedSegments: string[];
-    }, unwrappedReference?: string): RequestBuilder;
-    setRecommendationRef(recRef: string, recRefSrc?: string): RequestBuilder;
-    send(flags: RecommendationRequestFlags): Promise<EventResponseMessage>;
-    load(flags?: RecommendationRequestFlags): Promise<EventResponseMessage>;
-    loadCartPopupRecommendations(alwaysShow: boolean): Promise<EventResponseMessage>;
-    loadRecommendations(flags?: RecommendationRequestFlags): Promise<EventResponseMessage>;
-    getEvents(): Event[];
-    getData(): State;
-};
-
-export interface Session {
-    /**
-     * Sets the information about the user's current shopping cart. It the user
-     * does not have any items in his shopping cart, you can pass <code>null<code>.
-     * Passing <code>null<code> will nullify the user's shopping cart on Nosto's
-     * end. You must also pass in the shopping cart content in it's entirety as
-     * partial content are not supported.
-     *
-     * @example
-     * nostojs(api => api
-     *   .defaultSession()
-     *   .setCart({
-     *     items: [
-     *       product_id: "101",
-     *       sku_id: "101-S",
-     *       name: "Shoe",
-     *       unit_price: 34.99
-     *       price_currency_code: "EUR"
-     *     ]
-     *   })
-     *   .viewCart()
-     *   .setPlacements(["free-shipper"])
-     *   .update()
-     *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param {Cart|undefined} cart the details of the user's shopping cart contents
-     * @returns {Session} the current session
-     */
-    setCart(cart: Cart$2 | undefined): Session;
-    /**
-     * Sets the information about the currently logged in customer. If the current
-     * customer is not provided, you will not be able to leverage features such as
-     * triggered emails. While it is recommended to always provide the details of
-     * the currently logged in customer, it may be omitted if there are concerns
-     * about privacy or compliance.
-     *
-     * @example
-     * nostojs(api => api
-     *   .defaultSession()
-     *   .setCustomer({
-     *     first_name: "Mridang",
-     *     last_name: "Agarwalla",
-     *     email: "mridang@nosto.com",
-     *     newsletter: false,
-     *     customer_reference: "5e3d4a9c-cf58-11ea-87d0-0242ac130003"
-     *   })
-     *   .viewCart()
-     *   .setPlacements(["free-shipper"])
-     *   .load()
-     *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param {Customer} customer the details of the currently logged in customer
-     * @returns {Session} the current session
-     */
-    setCustomer(customer: PushedCustomer | undefined): Session;
-    /**
-     * Sets the current variation identifier for the session. A variation identifier
-     * identifies the current currency (or the current customer group). If your site
-     * uses multi-currency, you must provide the ISO code current currency being viewed.
-     *
-     * @example
-     * nostojs(api => api
-     *   .defaultSession()
-     *   .setVariation("GBP")
-     *   .viewCart()
-     *   .setPlacements(["free-shipper"])
-     *   .load()
-     *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param {String} variation the case-sensitive identifier of the current variation
-     * @returns {Session} the current session
-     */
-    setVariation(variation: string | undefined): Session;
-    /**
-     * Sets the restore link for the current session. Restore links can be leveraged
-     * in email campaigns. Restore links allow the the user to restore the cart
-     * contents in a single click.
-     * <br/><br/>
-     * Read more about
-     * {@link https://help.nosto.com/en/articles/664692|how to leverage the restore cart link}
-     *
-     * @example
-     * nostojs(api => api
-     *   .defaultSession()
-     *   .setRestoreLink("https://jeans.com/session/restore?sid=6bdb69d5-ed15-4d92")
-     *   .viewCart()
-     *   .setPlacements(["free-shipper"])
-     *   .load()
-     *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param {String} restoreLink the secure URL to restore the user's current session
-     * @returns {Session} the current session
-     */
-    setRestoreLink(restoreLink: string): Session;
-    /**
-     * Sets the response type to HTML or JSON_ORIGINAL. This denotes the preferred
-     * response type of the recommendation result.
-     * If you would like to access the raw recommendation data in <code>JSON</code> form, specify
-     * <code>JSON</code>. When you specify JSON, you will need to template the result yourself.
-     * If you require a more simplified approach, specify <code>HTML</code>. When you specify
-     * <code>HTML</code>, you get back HTML blobs, that you may simply inject into
-     * you placements.
-     *
-     * @example
-     * nostojs(api => api
-     *   .defaultSession()
-     *   .setResponseMode("HTML")
-     *   .viewCart()
-     *   .setPlacements(["free-shipper"])
-     *   .load()
-     *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param {String} mode the response mode for the recommendation data
-     * @returns {Session} the current session
-     */
-    setResponseMode(mode: RenderMode): Session;
-    /**
-     * Create a new action for a front page. This should be used when the user
-     * visits the home page.
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     * <br/><br/>
-     * You do not need to specify the page-type explicitly as it is inferred
-     * from the action.
-     *
-     * @example
-     * nostojs(api => api
-     *   .defaultSession()
-     *   .viewFrontPage()
-     *   .setPlacements(["best-seller"])
-     *   .load()
-     *   .then(data => console.log(data)))
-     *
-     *
-     * @public
-     * @returns {Action} the action instance to load content or track events.
-     */
-    viewFrontPage(): Action;
-    /**
-     * Create a new action for a cart page. This should be used on all cart and
-     * checkout pages. If your site has a multi-step checkout, it is recommended
-     * that you send this event on each checkout page.
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     * <br/><br/>
-     * You do not need to specify the page-type explicitly as it is inferred
-     * from the action.
-     *
-     * @example
-     * nostojs(api => api
-     *   .defaultSession()
-     *   .viewCart()
-     *   .setPlacements(["free-shipper"])
-     *   .load()
-     *   .then(data => console.log(data)))
-     *
-     * @public
-     * @returns {Action} the action instance to load content or track events.
-     */
-    viewCart(): Action;
-    /**
-     * Create a new action for a not found page. This should be used only on 404
-     * pages.
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     * <br/><br/>
-     * You do not need to specify the page-type explicitly as it is inferred
-     * from the action.
-     *
-     * @example
-     * nostojs(api => api
-     *   .defaultSession()
-     *   .viewNotFound()
-     *   .setPlacements(["best-seller"])
-     *   .load()
-     *   .then(data => console.log(data)))
-     *
-     * @public
-     * @returns {Action} the action instance to load content or track events.
-     */
-    viewNotFound(): Action;
-    /**
-     * Create a new action for a product page. This must be used only when a
-     * product is being viewed. In case a specific SKU of the product is being viewed, use viewProductSku instead.
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     * <br/><br/>
-     * You do not need to specify the page-type explicitly as it is inferred
-     * from the action.
-     *
-     * @example
-     * nostojs(api => api
-     *   .defaultSession()
-     *   .viewProduct("101")
-     *   .setCategories(["/men/trousers"])
-     *   .setRef("123", "example_reco_id")
-     *   .setPlacements(["cross-seller"])
-     *   .load()
-     *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param product
-     * @returns {Action} the action instance to load content or track events.
-     */
-    viewProduct(product: string | Product): Action;
-    /**
-     * Create a new action for a product page when a specific SKU has been chosen. This must be used only when a
-     * product and specific SKU is being viewed.
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     * <br/><br/>
-     * You do not need to specify the page-type explicitly as it is inferred
-     * from the action.
-     *
-     * @example
-     * nostojs(api => api
-     *   .defaultSession()
-     *   .viewProductSku("101", "101-sku-1")
-     *   .setCategories(["/men/trousers"])
-     *   .setRef("123", "example_reco_id")
-     *   .setPlacements(["cross-seller"])
-     *   .load()
-     *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param productId
-     * @param skuId
-     * @returns {Action} the action instance to load content or track events.
-     */
-    viewProductSku(productId: string, skuId: string): Action;
-    /**
-     * Create a new action for a category page. This should be used on all
-     * category, collection of brand pages.
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     * <br/><br/>
-     * You do not need to specify the page-type explicitly as it is inferred
-     * from the action.
-     *
-     * @example
-     * nostojs(api => api
-     *   .defaultSession()
-     *   .viewCategory("/men/shoes")
-     *   .setPlacements(["category123"])
-     *   .load()
-     *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param {Array<String>} categories
-     * @returns {Action} the action instance to load content or track events.
-     */
-    viewCategory(...categories: string[]): Action;
-    /**
-     * Create a new action for a tag page. This should be used only on tag pages.
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     * <br/><br/>
-     * You do not need to specify the page-type explicitly as it is inferred
-     * from the action.
-     * Note: tags are not case-sensitive.
-     *
-     * @example
-     * nostojs(api => api
-     *   .defaultSession()
-     *   .viewTag("colourful")
-     *   .load()
-     *   .then(data => console.log(data)))
-     *
-     * @public
-     * @deprecated as this is an advanced action with a limited a use case
-     * @param {Array<String>} tags the set of the tags being viewed.
-     * @returns {Action} the action instance to load content or track events.
-     */
-    viewTag(...tags: string[]): Action;
-    /**
-     * Create a new action with custom fields.
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     * <br/><br/>
-     * You do not need to specify the page-type explicitly as it is inferred
-     * from the action.
-     * Note: tags are not case-sensitive.
-     *
-     * @example
-     * nostojs(api => api
-     *   .defaultSession()
-     *   .viewCustomField({material: "cotton"})
-     *   .load()
-     *   .then(data => console.log(data)))
-     *
-     * @public
-     * @deprecated as this is an advanced action with a limited a use case
-     * @param {Object} customFields custom fields being viewed.
-     * @returns {Action} the action instance to load content or track events.
-     */
-    viewCustomField(customFields: Record<string, string[]>): Action;
-    /**
-     * Create a new action for a search page. This should be used only
-     * on search pages. A search page action requires you to pass the search
-     * term. For example, if the user search for "black shoes", you must pass
-     * in "black shoes" and not an encoded version such as "black+shoes".
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     * <br/><br/>
-     * You do not need to specify the page-type explicitly as it is inferred
-     * from the action.
-     * Search terms are not case-sensitive.
-     *
-     * @example
-     * nostojs(api => api
-     *   .defaultSession()
-     *   .viewSearch("black shoes")
-     *   .load()
-     *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param {Array.<String>} searchTerms the non-encoded search terms
-     * @returns {Action} the action instance to load content or track events.
-     */
-    viewSearch(...searchTerms: string[]): Action;
-    /**
-     * Create a new action for a general page. This should be used only on
-     * pages that don't have a corresponding action. For example, if the user
-     * is viewing a page such as a "Contact Us" page, you should use the viewOther
-     * action.
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     * <br/><br/>
-     * You do not need to specify the page-type explicitly as it is inferred
-     * from the action.
-     *
-     * @example
-     * nostojs(api => api
-     *   .defaultSession()
-     *   .viewOther()
-     *   .load()
-     *   .then(data => console.log(data)))
-     *
-     * @public
-     * @returns {Action} the action instance to load content or track events.
-     */
-    viewOther(): Action;
-    /**
-     * Create a new action for an order page. This should only be used on order
-     * confirmation / thank you pages.
-     * <br/><br/>
-     * You do not need to specify the page-type explicitly as it is inferred
-     * from the action.
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     *
-     * @example
-     * nostojs(api => {
-     *   api.defaultSession()
-     *    .addOrder({
-     *      external_order_ref: "145000006",
-     *      info: {
-     *        order_number: "195",
-     *        email: "mridang@nosto.com",
-     *        first_name: "Mridang",
-     *        last_name: "Agarwalla",
-     *        type: "order",
-     *        newsletter: true
-     *      },
-     *      items: [{
-     *        product_id: "406",
-     *        sku_id: "243",
-     *        name: "Linen Blazer (White, S)",
-     *        quantity: 1,
-     *        unit_price: 455,
-     *        price_currency_code: "EUR"
-     *      }]
-     *    })
-     *    .setPlacements(["order-related"])
-     *    .load()
-     *    .then(data => {
-     *      console.log(data.recommendations);
-     *    })
-     *  })
-     * @public
-     * @param {Order} order the information about the order that was placed
-     * @returns {Action} the action instance to load content or track events.
-     */
-    addOrder(order: WebsiteOrder): Action;
-    /**
-     * Creates an action to report that product was added to the shopping cart,
-     * e.g. from the recommendation slot with "Add to cart" button.
-     * <p>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     *
-     *
-     * @example
-     * nostojs(api => api
-     *   .defaultSession()
-     *   .reportAddToCart("123", "reco-slot-1")
-     *   .load()
-     *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param product
-     * @param element
-     * @returns {Action} the action instance to load content or track events.
-     */
-    reportAddToCart(product: string, element: string): Action;
-    /**
-     * @example
-     * nostojs(api => api
-     *  .defaultSession()
-     *  .recordAttribution("vp", "12345678", "123456")
-     *  .done()
-     *  .then(data => console.log(data))
-     *  @param { EventType } type
-     * @param { String } target
-     * @param { String | undefined } [ref]
-     * @param { String | undefined } [refSrc]
-     *  @return { Object }
-     *
-     */
-    recordAttribution(type: EventType, target: string, ref: string, refSrc: string): Attribution;
-}
-export interface Action {
-    /**
-     * Handles click attribution for product recommendations.
-     * This can be called when reporting a product view
-     * to signal that the view is a result of a click on a recommendation.
-     *
-     * @public
-     * @param {String} productId currently viewed product's product id
-     * @param {String} reference value of result_id from the recommendation response that was clicked
-     * @return {Action}
-     */
-    setRef(productId: string, reference: string): Action;
-    /**
-     * Allows you to provide an additional recommender hint that a product is being
-     * viewed.
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     *
-     * @public
-     * @param {String} product the identifier of the product being viewed
-     * @return {Action} the instance of the action
-     */
-    setProduct(product: string | Product): Action;
-    /**
-     * @deprecated
-     * @param {Array<String>} products
-     * @return {Action}
-     */
-    setProducts(products: (string | Product)[]): Action;
-    /**
-     * Sets the information about the user's current shopping cart. It the user
-     * does not have any items in his shopping cart, you can pass <code>null<code>.
-     * Passing <code>null<code> will nullify the user's shopping cart on Nosto's
-     * end. You must also pass in the shopping cart content in it's entirety as
-     * partial content are not supported.
-     * <br/><br/>
-     * It is not recommended to pass the current cart contents to an action but
-     * instead use the the session
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     *
-     * @see {@link Session#setCart}
-     * @return {Action}
-     */
-    setCart(cart: Cart$2 | undefined): Action;
-    /**
-     * Sets the information about the currently logged in customer. If the current
-     * customer is not provided, you will not be able to leverage features such as
-     * triggered emails. While it is recommended to always provide the details of
-     * the currently logged in customer, it may be omitted if there are concerns
-     * about privacy or compliance.
-     * <br/><br/>
-     * It is not recommended to pass the current customer details to an action but
-     * instead use the the session
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     *
-     * @see {@link Session#setCustomer}
-     * @public
-     * @param {Customer} customer the details of the currently logged in customer
-     * @return {Action}
-     */
-    setCustomer(customer: PushedCustomer | undefined): Action;
-    /**
-     * @param {Order} order
-     * @return {Action}
-     */
-    setOrder(order: WebsiteOrder): Action;
-    /**
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     *
-     * @public
-     * @param searchTerms
-     * @return {Action}
-     */
-    setSearchTerms(searchTerms: string[]): Action;
-    /**
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     *
-     * @public
-     * @param {Array<String>} categories
-     * @return {Action}
-     */
-    setCategories(categories: string[]): Action;
-    /**
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     *
-     * @public
-     * @param {Array<String>} categoryIds
-     * @return {Action}
-     */
-    setCategoryIds(categoryIds: string[]): Action;
-    /**
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     *
-     * @public
-     * @param {Array<String>} parentCategoryIds
-     * @return {Action}
-     */
-    setParentCategoryIds(parentCategoryIds: string[]): Action;
-    /**
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     *
-     * @public
-     * @param tags
-     * @return {Action}
-     */
-    setTags(tags: string[]): Action;
-    /**
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     *
-     * @public
-     * @param customFields
-     * @return {Action}
-     */
-    setCustomFields(customFields: Record<string, string[]>): Action;
-    /**
-     * Sets the current variation identifier for the session. A variation identifier
-     * identifies the current currency (or the current customer group). If your site
-     * uses multi-currency, you must provide the ISO code current currency being viewed.
-     * <br/><br/>
-     * It is not recommended to pass the variation identifier to an action but
-     * instead use the the session.
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     *
-     * @see {@link Session#setVariation}
-     * @public
-     * @param {String} variation the case-sensitive identifier of the current variation
-     * @return {Action}
-     */
-    setVariation(variation: string | undefined): Action;
-    /**
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     *
-     * @public
-     * @param {Array.<String>} placements
-     * @return {Action}
-     */
-    setPlacements(placements: string[]): Action;
-    /**
-     * Sets the restore link for the current session. Restore links can be leveraged
-     * in email campaigns. Restore links allow the the user to restore the cart
-     * contents in a single click.
-     * <br/><br/>
-     * Read more about
-     * {@link https://help.nosto.com/en/articles/664692|how to leverage the restore cart link}
-     * <br/><br/>
-     * It is not recommended to pass the restore link to an action but instead use the the
-     * session.
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     *
-     * @see {@link Session#setRestoreLink}
-     * @public
-     * @param {String} restoreLink the secure URL to restore the user's current session
-     * @return {Action}
-     */
-    setRestoreLink(restoreLink: string): Action;
-    /**
-     * Sets the identifier of the current page type to the current request. The different
-     * page types are product, front, search, cart, order, category, notfound and other.
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     * <br/><br/>
-     * It is not recommended to pass the page type to an action but instead use the the
-     * session.
-     * <br/><br/>
-     * You must invoke [the load method]{@link Action#load} on the resultant
-     * action in order for the request to be made.
-     *
-     * @see {@link Session#viewFrontPage} for when a front or home page is being viewed
-     * @see {@link Session#viewCart} for when a cart or checkout page is being viewed
-     * @see {@link Session#viewNotFound} for when a not-found or 404 page is being viewed
-     * @see {@link Session#viewProduct} for when a product page is being viewed
-     * @see {@link Session#viewCategory} for when a category, collection or brand page is being viewed
-     * @see {@link Session#viewTag} for when a tag page is being viewed
-     * @see {@link Session#viewSearch} for when a search page is being viewed
-     * @see {@link Session#viewOther} for when a miscellaneous page is being viewed
-     * @public
-     */
-    setPageType(pageType: PageType): Action;
-    /**
-     * @public
-     * @return {Object}
-     */
-    dumpData(): Data;
-    update(): unknown;
-    load(flags?: RecommendationRequestFlags): Promise<ActionResponse>;
-}
-export interface ActionResponse {
-    recommendations: Record<string, unknown>;
-    campaigns?: {
-        recommendations: Record<string, unknown>;
-        content: Record<string, unknown>;
-    };
-    page_views: number;
-    geo_location: string[];
-    affinities: CustomerAffinityResponse;
-    cmpid: string;
-}
-
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 declare function createSession(): Session;
 
-type Settings = ClientScriptSettingsDTO & {
+/**
+ * The Settings type defines merchant specific settings for the client script.
+ *
+ * @group Core
+ */
+interface Settings extends ClientScriptSettingsDTO {
     testing: boolean;
     live: boolean;
-};
+}
 declare function modifySettings(updates: Partial<Settings>): void;
 
 declare function load$1(): Promise<void>;
 
 declare function load(): Promise<void>;
 
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 declare function reportCouponGiven(campaignId: string, couponCode: string, couponUsed: boolean): Promise<void>;
+
+declare function findProducts(): Product[];
+
+declare function findCustomer(): PushedCustomer | undefined;
+
+declare function findCart(): Cart | undefined;
+
+declare function findOrder(): WebsiteOrder | undefined;
+
+declare function findPluginVersions(): PluginMetadata | undefined;
+
+declare function findCurrentVariation(): Maybe<string>;
+declare function findSearchTerms(): Maybe<string[]>;
+declare function findCurrentCategories(): Maybe<string[]>;
+declare function findCurrentCategoryIds(): Maybe<string[]>;
+declare function findCurrentParentCategoryIds(): Maybe<string[]>;
+declare function findCurrentTags(): Maybe<string[]>;
+declare function findCurrentCustomFields(): Maybe<Record<string, string[]>>;
+declare function findRestoreLink(): Maybe<string>;
+declare function findPageType(): Maybe<PageType>;
+declare function findSortOrder(): Maybe<string>;
+declare function findElements(ignoredPlacements: string[]): Maybe<string[]>;
+
+/**
+ * Resends all the tagging to Nosto. Only the page tagging is sent over
+ * and nothing else - no placements, no events, nothing.
+ * This method was originally used by the Magento 2 plugin. In the Magento 2 plugin
+ * the order tagging was loaded asynchronously so a method like this was needed.
+ *
+ * @return {Promise}
+ */
+declare function resendAllTagging(): Promise<void>;
+declare function pageTagging(): TaggingData;
+declare const taggingProviders: {
+    products: typeof findProducts;
+    cart: typeof findCart;
+    customer: typeof findCustomer;
+    order: typeof findOrder;
+    searchTerms: typeof findSearchTerms;
+    categories: typeof findCurrentCategories;
+    categoryIds: typeof findCurrentCategoryIds;
+    parentCategoryIds: typeof findCurrentParentCategoryIds;
+    tags: typeof findCurrentTags;
+    customFields: typeof findCurrentCustomFields;
+    variation: typeof findCurrentVariation;
+    pluginVersion: typeof findPluginVersions;
+    elements: typeof findElements;
+    restoreLink: typeof findRestoreLink;
+    pageType: typeof findPageType;
+    sortOrder: typeof findSortOrder;
+};
+declare function setTaggingProvider<T extends keyof TaggingData>(name: T, provider: typeof taggingProviders[T]): void;
 
 interface PopupAttributes {
     coupon?: string;
@@ -2904,7 +3139,7 @@ interface Condition {
     enabled?: boolean;
     treat_url_conditions_as_filters?: boolean;
 }
-interface Cart {
+interface PopupCart {
     total: number;
     size: number;
 }
@@ -2945,7 +3180,7 @@ declare function getOverlay(): {
                     effect: Partial<PopupEffect>;
                     trigger: string;
                     preview?: boolean;
-                    cart?: Cart;
+                    cart?: PopupCart;
                 }): void;
                 close(): void;
             };
@@ -2968,7 +3203,7 @@ declare function getOverlay(): {
                     effect: Partial<PopupEffect>;
                     trigger: string;
                     preview?: boolean;
-                    cart?: Cart;
+                    cart?: PopupCart;
                 }): void;
                 close(): void;
             };
@@ -3003,6 +3238,8 @@ declare function openPopup(popupId: string, options: object): void;
 declare function enablePopup(popupId: string): void;
 declare function disablePopup(popupId: string): void;
 
+type ParseUriResult = Pick<URL, "href" | "protocol" | "hostname" | "hash" | "search" | "searchParams">;
+
 declare function clear(): void;
 declare function isDebug(): boolean;
 declare function isPreview(): boolean;
@@ -3010,10 +3247,10 @@ declare function setPreview(optArg: boolean): void;
 declare function setRecotrace(optArg: boolean): void;
 declare function setSkipCache(optArg: boolean): void;
 declare function setDev(optArg: boolean): void;
-declare function setDebugState(optArg: ExtraParams | undefined): void;
+declare function setDebugState(optArg: DebugRequestParamsDTO | undefined): void;
 declare function isRecotraceEnabled(): boolean;
 declare function skipCache(): boolean;
-declare function getDebugState(): Maybe<ExtraParams>;
+declare function getDebugState(): Maybe<DebugRequestParamsDTO>;
 declare function isBot(): boolean;
 declare const mode: {
     isPreview: typeof isPreview;
@@ -3032,15 +3269,28 @@ declare const mode: {
 
 type Mode = typeof mode;
 
+/**
+ * Callback function for nostojs
+ *
+ * @group Core
+ */
 type NostojsCallback = (api: API) => unknown;
 type InitOptions = {
     responseMode?: RenderMode;
     disableAutoLoad?: boolean;
     disableRecommendations?: boolean;
 };
+/**
+ * Main function to interact with the Nosto API.
+ * The function receives a callback function as a parameter and executes it with the API object as a parameter.
+ *
+ * @group Core
+ */
 type nostojs = {
-    (cb: NostojsCallback): void;
+    (cb: NostojsCallback): unknown;
+    /** @hidden */
     q?: NostojsCallback[];
+    /** @hidden */
     o?: InitOptions;
 };
 
@@ -3054,6 +3304,9 @@ declare function windowTools(win: Window, scriptLoaderWindow: Window): {
     domReady: (fn: () => void) => void;
 };
 type WindowTools = ReturnType<typeof windowTools>;
+/**
+ * @hidden
+ */
 interface Context {
     namespace: string;
     created: Date;
@@ -3098,7 +3351,7 @@ declare function createOverlay(): {
                     effect: Partial<PopupEffect>;
                     trigger: string;
                     preview?: boolean;
-                    cart?: Cart;
+                    cart?: PopupCart;
                 }): void;
                 close(): void;
             };
@@ -3121,7 +3374,7 @@ declare function createOverlay(): {
                     effect: Partial<PopupEffect>;
                     trigger: string;
                     preview?: boolean;
-                    cart?: Cart;
+                    cart?: PopupCart;
                 }): void;
                 close(): void;
             };
@@ -3153,6 +3406,9 @@ declare function createOverlay(): {
     sortedCampaignsWithType?: undefined;
 };
 
+/**
+ * @hidden
+ */
 type Overlay = ReturnType<typeof createOverlay>;
 
 declare function noop(): void;
@@ -3161,7 +3417,17 @@ type Install = {
     settings: Settings;
     overlay: Overlay;
 };
+/**
+ * Main API object that is exposed to the client script. This object contains all the public methods
+ * that can be used to interact with the Nosto API.
+ *
+ * The main way to interact with the API is to use the nostojs function. This function receives a callback
+ * function as a parameter and executes it with the API object as a parameter.
+ *
+ * @group Core
+ */
 declare const api: {
+    /** @hidden */
     internal: {
         context: Context;
         logger: {
@@ -3204,11 +3470,11 @@ declare const api: {
         loadRecommendations: (element?: string | {
             markNostoElementClicked: string;
         }) => Promise<EventResponseMessage>;
-        loadCartPopupRecommendations: (products: PushedProduct[], cart: Cart$3, alwaysShow: boolean) => Promise<EventResponseMessage>;
+        loadCartPopupRecommendations: (products: PushedProduct[], cart: PushedCart, alwaysShow: boolean) => Promise<EventResponseMessage>;
         recommendedProductAddedToCart: typeof recommendedProductAddedToCart;
         setExperiments: typeof setExperiments;
         setCustomer: typeof setCustomer;
-        resendCartContent: (cart: Cart$3) => Promise<void>;
+        resendCartContent: (cart: PushedCart) => Promise<void>;
         resendCartTagging: typeof resendCartTagging;
         resendCustomerTagging: typeof resendCustomerTagging;
         sendTagging: typeof resendAllTagging;
@@ -3247,51 +3513,389 @@ declare const api: {
         setCustomerId: (id: string) => void;
         setCustomerIdentifierService: (s: Store) => Store;
     };
+    /**
+     * @deprecated since this was a quick hack for usage in Codepen.IO
+     * @hidden
+     */
     setResponseMode: typeof noop;
+    /**
+     * API method create a new session. This should be used when you might want to
+     * have multiple sessions on the same page. In most cases, using
+     * @see {@link defaultSession} will suffice.
+     *
+     * @deprecated
+     * @hidden
+     * @return {Session} the newly created session
+     */
     createSession: typeof createSession;
+    /**
+     * API method to access the default session. This should only be used when implementing
+     * Nosto on a single-page application atop a framework such as React, Vue, Angular or
+     * the likes.
+     * <br/><br/>
+     * If you are not using a single-page application but require programmatic access to the
+     * Nosto request builder use {@link createRecommendationRequest}.
+     *
+     * @public
+     * @return {Session} the instance of the default session
+     */
     defaultSession: () => Session;
+    /**
+     * API method to create a recommendation request. This should only be used when you
+     * require programmatic access to the Nosto request builder.
+     * <br/><br/>
+     * If your site is a single-page application atop a framework such as React, Vue, Angular or
+     * the likes, and  you are implementing Nosto, you must use the {@link defaultSession}
+     * method.
+     *
+     * @public
+     * @param {Object} flags a set of flags to customise to request behaviour (eg. {"includeTagging":true}
+     * to initialise the request from the page tagging.
+     * @return {RequestBuilder} the instance of the request.
+     */
     createRecommendationRequest: (flags?: {
         includeTagging?: boolean;
     }) => RequestBuilder;
+    /**
+     * API method to disable the automatic initialization of Nosto. This should be used in
+     * cases when you want to manually load content.
+     * <br/><br/>
+     * If your site is a single-page application atop a framework such as React, Vue, Angular or
+     * the likes, and you are implementing Nosto using the {@link Session} API, you must disable
+     * auto-loading.
+     *
+     * @example
+     * nostojs(api => api.setAutoLoad(false))
+     * nostojs(api => api.load())
+     *
+     * @param {Boolean} flag A true or false value indicating whether to automatically load or not
+     */
     setAutoLoad: typeof setAutoLoad;
+    /**
+     * API method to check the status of the autoload flag. This should be used for debugging
+     * purposes only.
+     *
+     * @deprecated since it served little or no purpose and clutters the API erasure
+     * @hidden
+     * @return {Boolean}
+     */
     isAutoLoad: typeof isAutoLoad;
+    /**
+     * @deprecated
+     * @hidden
+     * @param {Boolean} flag A true or false value indicating whether to disable placements or not
+     */
     setRecommendationsEnabled: (flag: boolean) => void;
+    /**
+     * API method to register a listener for JS API events. Nosto's JS API dispatches
+     * multiple events across the session lifetime.
+     * <br/><br/>
+     * Due to the wide gamut of events dispatched, listing them all is still a work in
+     * progress.
+     *
+     * @example <caption>to log a message whenever a request is made to Nosto</caption>
+     * nostojs(api => api.listen('taggingsent'), () => console.log("The tagging was sent"));
+     *
+     * @param {String} phase
+     * @param {Function} cb the callback function to be invoked
+     */
     listen: <T extends keyof EventMapping>(phase: T, callback: (...args: EventMapping[T]) => void) => void;
+    /**
+     * API method to reload all onsite recommendations and content. This should only be used when need to
+     * reload all recommendations and content e.g. on a overlay modal.
+     * <br/><br/>
+     * Incorrect or extraneous usage of this method will lead to skewed page-view
+     * statistics, ad every invocation of this method results in a +1 page-view count.
+     *
+     * @public
+     * @return {Promise}
+     */
     loadRecommendations: (element?: string | {
         markNostoElementClicked: string;
     }) => Promise<EventResponseMessage>;
+    /**
+     * API method to load Nosto. This function is automatically invoked when the page loads.
+     *
+     * @example <caption>to manually load recommendations after DOM ready</caption>
+     * nostojs(api => api.load());
+     *
+     * @return {Promise}
+     */
     load: () => Promise<void> | Promise<EventResponseMessage>;
+    /**
+     * API method that to debug the state the page tagging. This is useful for debugging
+     * what Nosto sees. You are able to see all the page tagging via the debug toolbar.
+     * <br/><br/>
+     * If your site is a single-page application atop a framework such as React, Vue, Angular or
+     * the likes, and you are implementing Nosto using the {@link Session} API, you do not
+     * ever need this method. Nosto implementations on the single-page applications don't
+     * rely on the tagging metadata and therefore, if used, this method will always return
+     * an empty object (as there shouldn't be any tagging/metadata on the page).
+     * <br/><br/>
+     * This is only for debugging purposes and should never be used in a production environment
+     *
+     * @example <caption>to log the page state to the console</caption>
+     * nostojs(api => console.log(api.pageTagging()));
+     *
+     * @return {Object} the representation of the page tagging
+     */
     pageTagging: typeof pageTagging;
-    loadCartPopupRecommendations: (products: PushedProduct[], cart: Cart$3, alwaysShow: boolean) => Promise<EventResponseMessage>;
+    /** @hidden */
+    loadCartPopupRecommendations: (products: PushedProduct[], cart: PushedCart, alwaysShow: boolean) => Promise<EventResponseMessage>;
+    /**
+     * @public
+     * @param cartItemId
+     * @param nostoElementId
+     * @return {Promise<Object>}
+     */
     reportAddToCart: typeof recommendedProductAddedToCart;
+    /** @hidden */
     captureError: (error: unknown, reporter: string, level?: Level) => void;
+    /**
+     * @public
+     * @param {String} productId
+     * @param {String} nostoElementId
+     * @return {Promise<Object>}
+     */
     recommendedProductAddedToCart: typeof recommendedProductAddedToCart;
+    /**
+     * API method to force the current session to be a part of the given experiment.
+     *
+     * @deprecated since no one knows what goes in here.
+     * @hidden
+     * @param experiments the experiments to move the session into
+     * @return {Promise<Object>}
+     */
     experiments: typeof setExperiments;
+    /**
+     * API method to resend the provided customer details to Nosto. This is used in situations
+     * when the customer details is loaded after the client script initialization.
+     * <br/><br/>
+     * If the current customer is not provided, you will not be able to leverage features such as
+     * triggered emails. While it is recommended to always provide the details of
+     * the currently logged in customer, it may be omitted if there are concerns
+     * about privacy or compliance.
+     * <br/><br/>
+     * It is not recommended to pass the current customer details to the request
+     * builder but rather use the customer tagging.
+     * <br/><br/>
+     * If your site is a single-page application atop a framework such as React, Vue, Angular or
+     * the likes, and you are implementing Nosto using the {@link Session} API, you do not
+     * ever need this method. Nosto implementations on the single-page applications don't
+     * rely on the tagging metadata and therefore, usage of this method is indicative of an
+     * incorrect usage pattern. You should be using the Session API @see {@link Session#setCustomer}
+     * to provide the customer information.
+     * <br/><br/>
+     * This method is legacy method and therefore named incorrectly. Is the customer equivalent
+     * of the resendCartContent method and actually should be called resendCustomerDetails.
+     *
+     * @todo deprecate this method and rename it to resendCustomerDetails
+     * @example
+     * nostojs(api => api.customer({
+     *   first_name: "Mridang",
+     *   last_name: "Agarwalla",
+     *   email: "mridang@nosto.com",
+     *   newsletter: false,
+     *   customer_reference: "5e3d4a9c-cf58-11ea-87d0-0242ac130003"
+     * }))
+     *
+     * @public
+     * @param {Customer} customer the details of the currently logged in customer
+     * @return {Promise<Object>}
+     */
     customer: (customer: PushedCustomer) => Promise<void>;
+    /** @hidden */
     popupCampaigns: typeof popupCampaigns;
+    /** @hidden */
     reloadOverlay: () => void;
+    /** @hidden */
     openPopup: typeof openPopup;
+    /** @hidden */
     enablePopup: typeof enablePopup;
+    /** @hidden */
     disablePopup: typeof disablePopup;
-    resendCartContent: (cart: Cart$3) => Promise<void>;
+    /**
+     * API method to resend the cart content to Nosto. This is used in situations
+     * when the cart tagging is loaded after the client script initialization.
+     * <br/><br/>
+     * If your site is a single-page application atop a framework such as React, Vue, Angular or
+     * the likes, and you are implementing Nosto using the {@link Session} API, you do not
+     * ever need this method. Nosto implementations on the single-page applications don't
+     * rely on the tagging metadata and therefore, usage of this method is indicative of an
+     * incorrect usage pattern. You should be using the Session API @see {@link Session#setCart}
+     * to provide the cart information.
+     *
+     * @example
+     * nostojs(api => api.resendCartContent({
+     *   items: [
+     *     product_id: "101",
+     *     sku_id: "101-S",
+     *     name: "Shoe",
+     *     unit_price: 34.99
+     *     price_currency_code: "EUR"
+     *   ]
+     * }))
+     *
+     * @public
+     * @param {Cart} cart content of the cart
+     * @return {Promise<Object>}
+     */
+    resendCartContent: (cart: PushedCart) => Promise<void>;
+    /**
+     * API method to resend the cart tagging to Nosto. This is used in situations
+     * when the cart tagging is loaded after the client script initialization. This method
+     * reads all metadata having the class "nosto_cart" and sends the extracted cart
+     * information to Nosto.
+     * <br/><br/>
+     * If your site is a single-page application atop a framework such as React, Vue, Angular or
+     * the likes, and you are implementing Nosto using the {@link Session} API, you do not
+     * ever need this method. Nosto implementations on the single-page applications don't
+     * rely on the tagging metadata and therefore, usage of this method is indicative of an
+     * incorrect usage pattern. You should be using the Session API @see {@link Session#setCart}
+     * to provide the cart information.
+     *
+     * @public
+     * @example
+     * nostojs(api => api.resendCartTagging())
+     *
+     * @return {Promise<Object>}
+     */
     resendCartTagging: typeof resendCartTagging;
+    /**
+     * API method to resend the customer tagging to Nosto. This is used in situations
+     * when the customer tagging is loaded after the client script initialization. This method
+     * reads all metadata having the class "nosto_customer" and sends the extracted customer
+     * information to Nosto.
+     * <br/><br/>
+     * If your site is a single-page application atop a framework such as React, Vue, Angular or
+     * the likes, and you are implementing Nosto using the {@link Session} API, you do not
+     * ever need this method. Nosto implementations on the single-page applications don't
+     * rely on the tagging metadata and therefore, usage of this method is indicative of an
+     * incorrect usage pattern. You should be using the Session API @see {@link Session#setCustomer}
+     * to provide the customer information.
+     *
+     * @public
+     * @example
+     * nostojs(api => api.resendCustomerTagging())
+     *
+     * @return {Promise<Object>}
+     */
     resendCustomerTagging: typeof resendCustomerTagging;
+    /**
+     * API method to resend all the tagging to Nosto. This is used in situations when
+     * the cart and the customer tagging is loaded after the client script initialization.
+     *
+     * While you can use resendCartTagging and the resendCustomerTagging to achieve the
+     * same - this method will make a single request to Nosto.
+     * <br/><br/>
+     * If your site is a single-page application atop a framework such as React, Vue, Angular or
+     * the likes, and you are implementing Nosto using the {@link Session} API, you do not
+     * ever need this method. Nosto implementations on the single-page applications don't
+     * rely on the tagging metadata and therefore, usage of this method is indicative of an
+     * incorrect usage pattern.
+     *
+     * @public
+     * @example
+     * nostojs(api => api.sendTagging())
+     *
+     * @return {Promise<Object>}
+     */
     sendTagging: typeof resendAllTagging;
+    /**
+     * API method to manually add a given segment code to the the current user.  This
+     * is used in situations when you want to segment users based on external logic.
+     * <br/><br/>
+     * Sending a segment code does not automatically create the corresponding segment.
+     *
+     * @public
+     * @example <caption>to add a user to segment when they've used a discount code</caption>
+     * nostojs(api => api.addSegmentCodeToVisit('discount code user'))
+     *
+     * @param {String} segment
+     */
     addSegmentCodeToVisit: typeof addSegment;
+    /**
+     * Removes injected content from the supplied divIds
+     * If campaign was injected statically, then static placement just clears its contents.
+     * If dynamically, the injected element gets removed from DOM
+     * @param {String[]} divIds
+     */
     removeCampaigns: (divIds: string[]) => void;
+    /**
+     * @deprecated since this is for debug-toolbar usage only and should not be in the public API
+     * @hidden
+     * @param placement
+     * @param content
+     */
     showPlacementPreviews: (placement: {
         element: HTMLElement;
         mode: InsertMode;
     }, content: string) => void;
+    /**
+     * @deprecated since this is for debug-toolbar usage only and should not be in the public API
+     * @hidden
+     * @param callbackFn
+     */
     install: (callbackFn: (cb: Install) => void) => void;
+    /**
+     * API method to retrieve search affinities and segments and transform it to partial search query.
+     * <br/><br/>
+     * Results are cached to sessionStorage and is refreshed after cacheRefreshInterval
+     * @example
+     * nostojs(api => api.getSearchSessionParams({ maxWait: 2000, cacheRefreshInterval: 60000 }).then((sessionParams) => sessionParams))
+     *
+     * @public
+     * @param {SearchSessionParamsOptions} options
+     * @returns {Promise<SearchSessionParams>}
+     */
     getSearchSessionParams: typeof getSearchSessionParams;
+    /**
+     * Search function which requests graphql search endpoint.
+     * <br/><br/>
+     * @example
+     * nostojs(api => {
+     *  api.search({
+     *    query: 'green',
+     *    products: {
+     *     fields: ['name', 'customFields.key', 'customFields.value']
+     *    }
+     *  })
+     *    .then(response => response)
+     *    .catch(err => err)
+     *  })
+     * })
+     *
+     * @public
+     * @param {SearchQuery} query Search query.
+     * @param {SearchOptions=} options Search custom options.
+     * @returns {Promise<SearchResult>}
+     */
     search: typeof search;
+    /**
+     * Record search event, should be send on any search
+     *
+     * @param {SearchTrackOptions} type search type
+     * @param {SearchQuery} query Full API query
+     * @param {SearchResult} response {object} Full API response
+     */
     recordSearch: typeof recordSearch;
+    /**
+     * Record search click event
+     *
+     * @param {SearchTrackOptions} type search type
+     * @param {object} hit Full hit object from search API
+     */
     recordSearchClick: typeof recordSearchClick;
+    /**
+     * Record search submit event (e.g. search form submit). Required to track organic searches.
+     *
+     * @param {string} query Search query
+     */
     recordSearchSubmit: typeof recordSearchSubmit;
     recordAttribution: (event: Event) => Attribution;
 };
 
+/** @hidden */
 type API = typeof api;
 
-export { type API, type AbTestDraftPreviewSettingsDTO, type AbTestPreviewSettingsBase, type AbTestPreviewSettingsDTO, type AbTestVariation, type AbTestVariationDTO, type AbstractFacebookPixelEvent, type AbstractStacklaPixelEvent, type ActiveVisitDTO, type Addtocart, type AnalyticEvent, type AnalyticEventProperties, type BigcommerceCustomerInfo, type CampaignId, type CartItem, type Carttaggingresent, type CategoryClick, type CategoryEvent, type CategoryEventMetadata, type CategoryImpression, type ClientScriptSettingsDTO, type ConditionDTO, type ContentDebugDTO, type ContentId, type Context, type ConversionItem, type Coupongiven, type CrawlResponse, type CustomerAffinityResponse, type CustomerAffinityResponseItem, type CustomerDTO, type CustomerToken, type DebugRequestParamsDTO, type DebugToolbarDataDTO, type DynamicPlacementDTO, type Effect, type Equals, type EventAttributionMetadata, type EventAttributionParams, type EventFields, type EventMapping, type EventRequestMessageV1, type EventResponseMessage, type Events, type Expect, type Experiment, type Extends, type FacebookData, type FilterOperator, type FilterRule, type ForcedTestDTO, type GoogleAnalyticsData, type InsertMode, type Maybe, type Method, type NostoSku, type NostoVariant, type OnsiteFeature, type OrderCustomer, type OrderInfo, type OverlapCampaignDTO, type Overlay, type PageType, type PlacementDebugDTO, type PlacementRuleDTO, type Popup, type PopupCampaignPreviewSettingsDTO, type PopupCouponGiven, type PopupEmailCollected, type PopupEvent, type PopupTriggerSettingsDTO, type PopupTriggered, type Popupopened, type Postrender, type Prerender, type ProductPushResponse, type PushedCustomer, type PushedProduct, type PushedProductSKU, type PushedVariation, type RecommendationDebugDTO, type RecommendationId, type RenderMode, type ScheduleTime, type Scripterror, type SearchClick, type SearchEvent, type SearchEventMetadata, type SearchImpression, type SegmentDebugDTO, type SegmentInfoBean, type SegmentRuleDebugDTO, type Segments, type SegmentsResponseBean, type Setexperiments, type Settings, type Sku, type StacklaTrackingData, type StacklaWidgetDebugDTO, type StacklaWidgetEmbedId, type StacklaWidgetFilterType, type Tagging, type TargetType, type TestDebugDTO, type TestId, type TestPlacementRuleDTO, type TestPreviewsDTO, type UnsavedDraftPreviewSettingsDTO, type ValidationError, type VariationWithRulesDTO, type VisitDTO, type WebsiteOrder, type Widen, type WidgetPlacement, type WidgetPlacementRule, type WrapMode, isPageType, maybe, type nostojs, pageTypeAliases };
+export { type API, type AbTestDraftPreviewSettingsDTO, type AbTestPreviewSettingsBase, type AbTestPreviewSettingsDTO, type AbTestVariation, type AbTestVariationDTO, type AbstractFacebookPixelEvent, type AbstractStacklaPixelEvent, type Action, type ActionResponse, type ActiveVisitDTO, type Addtocart, type AnalyticEvent, type AnalyticEventProperties, type BigcommerceCustomerInfo, type CampaignId, type Cart, type CartItem, type Carttaggingresent, type CategoryClick, type CategoryEvent, type CategoryEventMetadata, type CategoryImpression, type ClientScriptSettingsDTO, type ConditionDTO, type ContentDebugDTO, type ContentId, type Context, type ConversionItem, type Coupongiven, type CrawlResponse, type CustomerAffinityResponse, type CustomerAffinityResponseItem, type CustomerDTO, type CustomerToken, type DebugRequestParamsDTO, type DebugToolbarDataDTO, type DynamicPlacementDTO, type Effect, type Event, type EventAttributionMetadata, type EventAttributionParams, type EventFields, type EventMapping, type EventRefType, type EventRequestMessageV1, type EventResponseMessage, type EventTuple, type EventType, type Events, type Experiment, type FacebookData, type FilterOperator, type FilterRule, type ForcedTestDTO, type GoogleAnalyticsData, type InsertMode, type Method, type NostoSku, type NostoVariant, type NostojsCallback, type OnsiteFeature, type OrderCustomer, type OrderInfo, type OverlapCampaignDTO, type Overlay, type PageType, type PlacementDebugDTO, type PlacementRuleDTO, type Popup, type PopupCampaignPreviewSettingsDTO, type PopupCouponGiven, type PopupEmailCollected, type PopupEvent, type PopupTriggerSettingsDTO, type PopupTriggered, type Popupopened, type Postrender, type Prerender, type Product, type ProductPushResponse, type PushedCustomer, type PushedProduct, type PushedProductSKU, type PushedVariation, type RecommendationDebugDTO, type RecommendationId, type RenderMode, type RequestBuilder, type ScheduleTime, type Scripterror, type SearchClick, type SearchEvent, type SearchEventMetadata, type SearchFailureEventDTO, type SearchImpression, type SearchSuccessEventDTO, type SegmentDebugDTO, type SegmentInfoBean, type SegmentRuleDebugDTO, type Segments, type SegmentsResponseBean, type Session, type Setexperiments, type Settings, type Sku, type StacklaTrackingData, type StacklaWidgetDebugDTO, type StacklaWidgetEmbedId, type StacklaWidgetFilterType, type TaggingData, type TargetType, type TestDebugDTO, type TestId, type TestPlacementRuleDTO, type TestPreviewsDTO, type UnsavedDraftPreviewSettingsDTO, type ValidationError, type VariationWithRulesDTO, type VisitDTO, type WebsiteOrder, type WidgetPlacement, type WidgetPlacementRule, type WrapMode, api, type nostojs };
