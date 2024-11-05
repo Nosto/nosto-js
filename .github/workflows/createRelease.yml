@@ -13,6 +13,11 @@ on:
           - minor
           - major
 
+# Allow only one concurrent release, and wait for the current one to finish
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   github-release:
     runs-on:
