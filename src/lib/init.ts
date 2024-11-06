@@ -1,7 +1,7 @@
 import { BackendEnvironment, ScriptLoadOptions } from "../types"
 import { getBaseUrl } from "../utils/url"
 
-type Props = {
+export type InitProps = {
   merchantId: string
   env?: BackendEnvironment
   options?: ScriptLoadOptions
@@ -11,7 +11,7 @@ type Props = {
 /**
  * Initializes the Nosto client script on the page.
  */
-export function init({ merchantId, env, options, scriptLoader }: Props) {
+export function init({ merchantId, env, options, scriptLoader }: InitProps) {
   const url = new URL(`/include/${merchantId}`, getBaseUrl(env))
 
   const loader = scriptLoader ?? defaultScriptLoader
