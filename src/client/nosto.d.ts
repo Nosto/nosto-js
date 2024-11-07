@@ -2,16 +2,62 @@
 // @ts-nocheck
 import * as axios from 'axios';
 
-declare const eventTypes: readonly ["vp", "lp", "dp", "rp", "bp", "vc", "or", "is", "cp", "ec", "es", "gc", "src", "cpr", "pl", "cc", "con"];
-declare const refTypes: readonly ["email", "imgrec", "rec", "api", "oc", "cmp", "os"];
 /**
  * @group Core
  */
-type EventType = typeof eventTypes[number];
+type EventType = 
+/**  view product */
+"vp"
+/** like product */
+ | "lp"
+/** dislike product */
+ | "dp"
+/** remove product */
+ | "rp"
+/** bought product */
+ | "bp"
+/** view category */
+ | "vc"
+/** order */
+ | "or"
+/** internal search */
+ | "is"
+/** add to cart */
+ | "cp"
+/** external campaign */
+ | "ec"
+/** external search */
+ | "es"
+/** give coupon */
+ | "gc"
+/** source */
+ | "src"
+/** cart popup recommendations */
+ | "cpr"
+/** page load */
+ | "pl"
+/** custom campaign */
+ | "cc"
+/** content campaign */
+ | "con";
 /**
  * @group Core
  */
-type EventRefType = typeof refTypes[number];
+type EventRefType = 
+/** triggered mail */
+"email"
+/** email widgets */
+ | "imgrec"
+/** onsite recommendations */
+ | "rec"
+/** api recommendations */
+ | "api"
+/** onsite campaigns */
+ | "oc"
+/** category merchandising */
+ | "cmp"
+/** onsite search */
+ | "os";
 /**
  * @group Core
  */
@@ -773,7 +819,6 @@ interface RequestBuilder {
      * Sets the given list of manual segment identifiers to the current request. This
      * method allows you explicitly associate the current customer with a segment.
      *
-     * @public
      * @param {String[]} segments the list of force segment identifiers
      */
     setSegmentCodes(segments: string[]): RequestBuilder;
@@ -781,7 +826,6 @@ interface RequestBuilder {
      * Sets the identifier of the current page type to the current request. The different
      * page types are product, front, search, cart, order, category, notfound and other.
      *
-     * @public
      * @param {String} pageType the current page type
      */
     setPageType(pageType: PageType | undefined): RequestBuilder;
@@ -815,7 +859,6 @@ interface RequestBuilder {
      * It is not recommended to pass the current customer details to the request
      * builder but rather use the customer tagging.
      *
-     * @public
      * @param {Customer} customer the details of the currently logged in customer
      */
     setCustomer(customer: PushedCustomer): RequestBuilder;
@@ -824,35 +867,34 @@ interface RequestBuilder {
      * Adds the given elements (or placements) to the request. Any identifiers
      * specified here are simply added to the elements already in the request.
      *
-     * @example <caption>To load data for a single placement</caption>
+     * @param {String[]} elements the array of placements
+     *
+     * @example
+     * <caption>To load data for a single placement</caption>
      * nostojs(api => api
      *   .createRecommendationRequest()
      *   .addElements(['bestseller-home'])
      *   .loadRecommendations());
-     *
-     * @public
-     * @param {String[]} elements the array of placements
      */
     addElements(elements: string[]): RequestBuilder;
     /**
      * Sets the given elements (or placements) to the request. Any identifiers
      * specified here override all elements already in the request.
      *
-     * @example <caption>To load data for a single placement</caption>
+     * @param {String[]} elements the array of placements
+     *
+     * @example
+     * <caption>To load data for a single placement</caption>
      * nostojs(api => api
      *   .createRecommendationRequest()
      *   .setElements(['bestseller-home'])
      *   .loadRecommendations());
-     *
-     * @public
-     * @param {String[]} elements the array of placements
      */
     setElements(elements: string[] | undefined): RequestBuilder;
     /**
      * Adds the cart object to the current request. This should be preferably
      * on every page load so as to keep the cart state as fresh as possible.
      *
-     * @public
      * @param {PushedCart} cart the details of the current shopping basket
      */
     setCartContent(cart: PushedCart | undefined): RequestBuilder;
@@ -867,7 +909,6 @@ interface RequestBuilder {
      * It is not recommended to pass the current restore link to the request
      * builder but rather use the tagging approach.
      *
-     * @public
      * @param restoreLink
      */
     setRestoreLink(restoreLink: string | undefined): RequestBuilder;
@@ -907,7 +948,6 @@ interface RequestBuilder {
      */
     addCartSize(): RequestBuilder;
     /**
-     * @public
      * @param {Array.<Product>} products
      * @param {String} [ref] the placement id that resulted in the product views
      */
@@ -916,7 +956,6 @@ interface RequestBuilder {
      * Adds the given category names to the request. Any category name specified here
      * are simply added to the request as personalisation filtering hints.
      *
-     * @public
      * @param {String[]} categories the array of category ids
      */
     addCurrentCategories(categories: string[]): RequestBuilder;
@@ -924,7 +963,6 @@ interface RequestBuilder {
      * Sets the given category names to the request. Any category names specified here
      * override the category names in the request.
      *
-     * @public
      * @param {String[]} categories the array of category ids
      */
     setCurrentCategories(categories: string[]): RequestBuilder;
@@ -932,7 +970,6 @@ interface RequestBuilder {
      * Adds the given category ids to the request. Any category ids specified here
      * are simply added to the request as personalisation filtering hints.
      *
-     * @public
      * @param {String[]} categoryIds the array of category ids
      */
     addCurrentCategoryIds(categoryIds: string[]): RequestBuilder;
@@ -946,7 +983,6 @@ interface RequestBuilder {
      * tags13) specified here are simply added to the request as personalisation
      * filtering hints.
      *
-     * @public
      * @param {String[]} tags the array of tags
      */
     addCurrentTags(tags: string[]): RequestBuilder;
@@ -955,7 +991,6 @@ interface RequestBuilder {
      * tags13) specified here are simply set to the request as personalisation
      * filtering hints.
      *
-     * @public
      * @param {String[]} tags the array of tags
      */
     setCurrentTags(tags: string[]): RequestBuilder;
@@ -963,7 +998,6 @@ interface RequestBuilder {
      * Adds the given current custom fields to the request. Any custom fields
      * specified here are simply added to the request as personalisation filtering hints.
      *
-     * @public
      * @param { Object } fields custom field key-value pairs
      */
     addCurrentCustomFields(fields: Record<string, string[]>): RequestBuilder;
@@ -972,7 +1006,6 @@ interface RequestBuilder {
      * enabled for the slot in order for this to function. Any lower value
      * specified here are simply added to the request as personalisation filtering hints.
      *
-     * @public
      * @param {Number} value the lower range of the price
      */
     setCurrentPriceFrom(value: number): RequestBuilder;
@@ -981,7 +1014,6 @@ interface RequestBuilder {
      * enabled for the slot in order for this to function. Any upper value
      * specified here are simply added to the request as personalisation filtering hints.
      *
-     * @public
      * @param {Number} value the upper range of the price
      */
     setCurrentPriceTo(value: number): RequestBuilder;
@@ -993,7 +1025,6 @@ interface RequestBuilder {
      * It is not recommended to pass the variation identifier to an request builder but
      * instead leverage the tagging.
      *
-     * @public
      * @param {String} variation the case-sensitive identifier of the current variation
      */
     addCurrentVariation(variation: string): RequestBuilder;
@@ -1007,7 +1038,6 @@ interface RequestBuilder {
      * It is not recommended to pass the current customer details to the request
      * builder but rather use the customer tagging.
      *
-     * @public
      * @param {Customer} customer
      */
     addCustomer(customer: PushedCustomer): RequestBuilder;
@@ -1034,7 +1064,6 @@ interface RequestBuilder {
      * | JSON_750x750_SQUARE  | Raw JSON with 750x750px center squared images  |
      * | JSON_ORIGINAL        | Raw JSON with the original untouched images    |
      *
-     * @public
      * @param {String} mode the response mode to be used
      */
     setResponseMode(mode: RenderMode): RequestBuilder;
@@ -1051,7 +1080,6 @@ interface RequestBuilder {
      * Adds the order object to the current request. This should be invoked only
      * on the order confirmation page.
      *
-     * @public
      * @param {Order} order the details of the order that was placed
      */
     addOrderData(order: Order): RequestBuilder;
@@ -1064,38 +1092,38 @@ interface RequestBuilder {
     /**
      * Builds the request and makes a request to Nosto.
      *
-     * @example <caption>To load data for a single placement</caption>
-     * nostojs(api => api
-     *   .createRecommendationRequest()
-     *   .send({metadata: true}))
-     *   .then((response) => console.log(response));
-     *
      * @deprecated since there is already a load method that does the same
      * @private
      * @param {RecommendationRequestFlags} flags
      * @return {Promise}
+     *
+     * @example
+     * <caption>To load data for a single placement</caption>
+     * nostojs(api => api
+     *   .createRecommendationRequest()
+     *   .send({metadata: true}))
+     *   .then((response) => console.log(response));
      */
     send(flags: RecommendationRequestFlags): Promise<EventResponseMessage>;
     /**
      * Builds the request and makes a request to Nosto.
      *
-     * @example <caption>To load data for a single placement</caption>
+     * @param {RecommendationRequestFlags} flags an object containing additional flags
+     * @return {Promise} the response returned by Nosto
+     *
+     * @example
+     * <caption>To load data for a single placement</caption>
      * nostojs(api => api
      *   .createRecommendationRequest()
      *   .addElements('bestseller-home')
      *   .load())
      *   .then((response) => console.log(response));
-     *
-     * @public
-     * @param {RecommendationRequestFlags} flags an object containing additional flags
-     * @return {Promise} the response returned by Nosto
      */
     load(flags?: RecommendationRequestFlags): Promise<EventResponseMessage>;
     /**
      * Builds the request and invokes it via JSONP to load the cart popup
      * recommendations
      *
-     * @todo the cart popup should be totally decouples from the event request
      * @deprecated since this method should de decoupled from the request
      * @private
      * @return {Promise}
@@ -1105,18 +1133,19 @@ interface RequestBuilder {
      * Legacy method used to reloading the recommendations. This method is a
      * simple wrapper around the other load method.
      *
-     * @example <caption>To load data for a single placement</caption>
-     * nostojs(api => api
-     *   .createRecommendationRequest()
-     *   .addElements('bestseller-home')
-     *   .loadRecommendations())
-     *   .then((response) => console.log(response));
-     *
      * @deprecated since the method name isn't aligned with it's behaviour
      * @private
      * @see {load}
      * @param {RecommendationRequestFlags} flags an object containing additional flags
      * @return {Promise}
+     *
+     * @example
+     * <caption>To load data for a single placement</caption>
+     * nostojs(api => api
+     *   .createRecommendationRequest()
+     *   .addElements('bestseller-home')
+     *   .loadRecommendations())
+     *   .then((response) => console.log(response));
      */
     loadRecommendations(flags?: RecommendationRequestFlags): Promise<EventResponseMessage>;
     /**
@@ -1152,6 +1181,9 @@ interface Session {
      * end. You must also pass in the shopping cart content in it's entirety as
      * partial content are not supported.
      *
+     * @param {Cart|undefined} cart the details of the user's shopping cart contents
+     * @returns {Session} the current session
+     *
      * @example
      * nostojs(api => api
      *   .defaultSession()
@@ -1168,10 +1200,6 @@ interface Session {
      *   .setPlacements(["free-shipper"])
      *   .update()
      *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param {Cart|undefined} cart the details of the user's shopping cart contents
-     * @returns {Session} the current session
      */
     setCart(cart: Cart | undefined): Session;
     /**
@@ -1180,6 +1208,9 @@ interface Session {
      * triggered emails. While it is recommended to always provide the details of
      * the currently logged in customer, it may be omitted if there are concerns
      * about privacy or compliance.
+     *
+     * @param {Customer} customer the details of the currently logged in customer
+     * @returns {Session} the current session
      *
      * @example
      * nostojs(api => api
@@ -1195,16 +1226,15 @@ interface Session {
      *   .setPlacements(["free-shipper"])
      *   .load()
      *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param {Customer} customer the details of the currently logged in customer
-     * @returns {Session} the current session
      */
     setCustomer(customer: PushedCustomer | undefined): Session;
     /**
      * Sets the current variation identifier for the session. A variation identifier
      * identifies the current currency (or the current customer group). If your site
      * uses multi-currency, you must provide the ISO code current currency being viewed.
+     *
+     * @param {String} variation the case-sensitive identifier of the current variation
+     * @returns {Session} the current session
      *
      * @example
      * nostojs(api => api
@@ -1214,10 +1244,6 @@ interface Session {
      *   .setPlacements(["free-shipper"])
      *   .load()
      *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param {String} variation the case-sensitive identifier of the current variation
-     * @returns {Session} the current session
      */
     setVariation(variation: string | undefined): Session;
     /**
@@ -1228,6 +1254,9 @@ interface Session {
      * Read more about
      * {@link https://help.nosto.com/en/articles/664692|how to leverage the restore cart link}
      *
+     * @param {String} restoreLink the secure URL to restore the user's current session
+     * @returns {Session} the current session
+     *
      * @example
      * nostojs(api => api
      *   .defaultSession()
@@ -1236,10 +1265,6 @@ interface Session {
      *   .setPlacements(["free-shipper"])
      *   .load()
      *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param {String} restoreLink the secure URL to restore the user's current session
-     * @returns {Session} the current session
      */
     setRestoreLink(restoreLink: string): Session;
     /**
@@ -1251,6 +1276,9 @@ interface Session {
      * HTML, you get back HTML blobs, that you may simply inject into
      * you placements.
      *
+     * @param {String} mode the response mode for the recommendation data
+     * @returns {Session} the current session
+     *
      * @example
      * nostojs(api => api
      *   .defaultSession()
@@ -1259,10 +1287,6 @@ interface Session {
      *   .setPlacements(["free-shipper"])
      *   .load()
      *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param {String} mode the response mode for the recommendation data
-     * @returns {Session} the current session
      */
     setResponseMode(mode: RenderMode): Session;
     /**
@@ -1275,6 +1299,8 @@ interface Session {
      * You do not need to specify the page-type explicitly as it is inferred
      * from the action.
      *
+     * @returns {Action} the action instance to load content or track events.
+     *
      * @example
      * nostojs(api => api
      *   .defaultSession()
@@ -1282,10 +1308,6 @@ interface Session {
      *   .setPlacements(["best-seller"])
      *   .load()
      *   .then(data => console.log(data)))
-     *
-     *
-     * @public
-     * @returns {Action} the action instance to load content or track events.
      */
     viewFrontPage(): Action;
     /**
@@ -1299,6 +1321,8 @@ interface Session {
      * You do not need to specify the page-type explicitly as it is inferred
      * from the action.
      *
+     * @returns {Action} the action instance to load content or track events.
+     *
      * @example
      * nostojs(api => api
      *   .defaultSession()
@@ -1306,9 +1330,6 @@ interface Session {
      *   .setPlacements(["free-shipper"])
      *   .load()
      *   .then(data => console.log(data)))
-     *
-     * @public
-     * @returns {Action} the action instance to load content or track events.
      */
     viewCart(): Action;
     /**
@@ -1321,6 +1342,8 @@ interface Session {
      * You do not need to specify the page-type explicitly as it is inferred
      * from the action.
      *
+     * @returns {Action} the action instance to load content or track events.
+     *
      * @example
      * nostojs(api => api
      *   .defaultSession()
@@ -1328,9 +1351,6 @@ interface Session {
      *   .setPlacements(["best-seller"])
      *   .load()
      *   .then(data => console.log(data)))
-     *
-     * @public
-     * @returns {Action} the action instance to load content or track events.
      */
     viewNotFound(): Action;
     /**
@@ -1343,6 +1363,9 @@ interface Session {
      * You do not need to specify the page-type explicitly as it is inferred
      * from the action.
      *
+     * @param product
+     * @returns {Action} the action instance to load content or track events.
+     *
      * @example
      * nostojs(api => api
      *   .defaultSession()
@@ -1352,10 +1375,6 @@ interface Session {
      *   .setPlacements(["cross-seller"])
      *   .load()
      *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param product
-     * @returns {Action} the action instance to load content or track events.
      */
     viewProduct(product: string | Product): Action;
     /**
@@ -1368,6 +1387,10 @@ interface Session {
      * You do not need to specify the page-type explicitly as it is inferred
      * from the action.
      *
+     * @param productId
+     * @param skuId
+     * @returns {Action} the action instance to load content or track events.
+     *
      * @example
      * nostojs(api => api
      *   .defaultSession()
@@ -1377,11 +1400,6 @@ interface Session {
      *   .setPlacements(["cross-seller"])
      *   .load()
      *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param productId
-     * @param skuId
-     * @returns {Action} the action instance to load content or track events.
      */
     viewProductSku(productId: string, skuId: string): Action;
     /**
@@ -1394,6 +1412,9 @@ interface Session {
      * You do not need to specify the page-type explicitly as it is inferred
      * from the action.
      *
+     * @param {Array<String>} categories
+     * @returns {Action} the action instance to load content or track events.
+     *
      * @example
      * nostojs(api => api
      *   .defaultSession()
@@ -1401,10 +1422,6 @@ interface Session {
      *   .setPlacements(["category123"])
      *   .load()
      *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param {Array<String>} categories
-     * @returns {Action} the action instance to load content or track events.
      */
     viewCategory(...categories: string[]): Action;
     /**
@@ -1417,17 +1434,16 @@ interface Session {
      * from the action.
      * Note: tags are not case-sensitive.
      *
+     * @deprecated as this is an advanced action with a limited a use case
+     * @param {Array<String>} tags the set of the tags being viewed.
+     * @returns {Action} the action instance to load content or track events.
+     *
      * @example
      * nostojs(api => api
      *   .defaultSession()
      *   .viewTag("colourful")
      *   .load()
      *   .then(data => console.log(data)))
-     *
-     * @public
-     * @deprecated as this is an advanced action with a limited a use case
-     * @param {Array<String>} tags the set of the tags being viewed.
-     * @returns {Action} the action instance to load content or track events.
      */
     viewTag(...tags: string[]): Action;
     /**
@@ -1440,17 +1456,16 @@ interface Session {
      * from the action.
      * Note: tags are not case-sensitive.
      *
+     * @deprecated as this is an advanced action with a limited a use case
+     * @param {Object} customFields custom fields being viewed.
+     * @returns {Action} the action instance to load content or track events.
+     *
      * @example
      * nostojs(api => api
      *   .defaultSession()
      *   .viewCustomField({material: "cotton"})
      *   .load()
      *   .then(data => console.log(data)))
-     *
-     * @public
-     * @deprecated as this is an advanced action with a limited a use case
-     * @param {Object} customFields custom fields being viewed.
-     * @returns {Action} the action instance to load content or track events.
      */
     viewCustomField(customFields: Record<string, string[]>): Action;
     /**
@@ -1466,16 +1481,15 @@ interface Session {
      * from the action.
      * Search terms are not case-sensitive.
      *
+     * @param {Array.<String>} searchTerms the non-encoded search terms
+     * @returns {Action} the action instance to load content or track events.
+     *
      * @example
      * nostojs(api => api
      *   .defaultSession()
      *   .viewSearch("black shoes")
      *   .load()
      *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param {Array.<String>} searchTerms the non-encoded search terms
-     * @returns {Action} the action instance to load content or track events.
      */
     viewSearch(...searchTerms: string[]): Action;
     /**
@@ -1490,15 +1504,14 @@ interface Session {
      * You do not need to specify the page-type explicitly as it is inferred
      * from the action.
      *
+     * @returns {Action} the action instance to load content or track events.
+     *
      * @example
      * nostojs(api => api
      *   .defaultSession()
      *   .viewOther()
      *   .load()
      *   .then(data => console.log(data)))
-     *
-     * @public
-     * @returns {Action} the action instance to load content or track events.
      */
     viewOther(): Action;
     /**
@@ -1510,6 +1523,9 @@ interface Session {
      * <br/><br/>
      * You must invoke [the load method]{@link Action#load} on the resultant
      * action in order for the request to be made.
+     *
+     * @param {Order} order the information about the order that was placed
+     * @returns {Action} the action instance to load content or track events.
      *
      * @example
      * nostojs(api => {
@@ -1539,10 +1555,6 @@ interface Session {
      *      console.log(data.recommendations);
      *    })
      *  })
-     *
-     * @public
-     * @param {Order} order the information about the order that was placed
-     * @returns {Action} the action instance to load content or track events.
      */
     addOrder(order: WebsiteOrder): Action;
     /**
@@ -1552,6 +1564,9 @@ interface Session {
      * You must invoke [the load method]{@link Action#load} on the resultant
      * action in order for the request to be made.
      *
+     * @param product
+     * @param element
+     * @returns {Action} the action instance to load content or track events.
      *
      * @example
      * nostojs(api => api
@@ -1559,26 +1574,21 @@ interface Session {
      *   .reportAddToCart("123", "reco-slot-1")
      *   .load()
      *   .then(data => console.log(data)))
-     *
-     * @public
-     * @param product
-     * @param element
-     * @returns {Action} the action instance to load content or track events.
      */
     reportAddToCart(product: string, element: string): Action;
     /**
+     * @param { EventType } type
+     * @param { String } target
+     * @param { String | undefined } [ref]
+     * @param { String | undefined } [refSrc]
+     * @return { Object }
+     *
      * @example
      * nostojs(api => api
      *  .defaultSession()
      *  .recordAttribution("vp", "12345678", "123456")
      *  .done()
      *  .then(data => console.log(data))
-     *
-     * @param { EventType } type
-     * @param { String } target
-     * @param { String | undefined } [ref]
-     * @param { String | undefined } [refSrc]
-     * @return { Object }
      */
     recordAttribution(type: EventType, target: string, ref: string, refSrc: string): Attribution;
 }
@@ -1596,7 +1606,6 @@ interface Action {
      * This can be called when reporting a product view
      * to signal that the view is a result of a click on a recommendation.
      *
-     * @public
      * @param {String} productId currently viewed product's product id
      * @param {String} reference value of result_id from the recommendation response that was clicked
      * @return {Action}
@@ -1609,7 +1618,6 @@ interface Action {
      * You must invoke [the load method]{@link Action#load} on the resultant
      * action in order for the request to be made.
      *
-     * @public
      * @param {String} product the identifier of the product being viewed
      * @return {Action} the instance of the action
      */
@@ -1651,7 +1659,6 @@ interface Action {
      * action in order for the request to be made.
      *
      * @see {@link Session#setCustomer}
-     * @public
      * @param {Customer} customer the details of the currently logged in customer
      * @return {Action}
      */
@@ -1666,7 +1673,6 @@ interface Action {
      * You must invoke [the load method]{@link Action#load} on the resultant
      * action in order for the request to be made.
      *
-     * @public
      * @param searchTerms
      * @return {Action}
      */
@@ -1676,7 +1682,6 @@ interface Action {
      * You must invoke [the load method]{@link Action#load} on the resultant
      * action in order for the request to be made.
      *
-     * @public
      * @param {Array<String>} categories
      * @return {Action}
      */
@@ -1686,7 +1691,6 @@ interface Action {
      * You must invoke [the load method]{@link Action#load} on the resultant
      * action in order for the request to be made.
      *
-     * @public
      * @param {Array<String>} categoryIds
      * @return {Action}
      */
@@ -1696,7 +1700,6 @@ interface Action {
      * You must invoke [the load method]{@link Action#load} on the resultant
      * action in order for the request to be made.
      *
-     * @public
      * @param {Array<String>} parentCategoryIds
      * @return {Action}
      */
@@ -1706,7 +1709,6 @@ interface Action {
      * You must invoke [the load method]{@link Action#load} on the resultant
      * action in order for the request to be made.
      *
-     * @public
      * @param tags
      * @return {Action}
      */
@@ -1716,7 +1718,6 @@ interface Action {
      * You must invoke [the load method]{@link Action#load} on the resultant
      * action in order for the request to be made.
      *
-     * @public
      * @param customFields
      * @return {Action}
      */
@@ -1733,7 +1734,6 @@ interface Action {
      * action in order for the request to be made.
      *
      * @see {@link Session#setVariation}
-     * @public
      * @param {String} variation the case-sensitive identifier of the current variation
      * @return {Action}
      */
@@ -1743,7 +1743,6 @@ interface Action {
      * You must invoke [the load method]{@link Action#load} on the resultant
      * action in order for the request to be made.
      *
-     * @public
      * @param {Array.<String>} placements
      * @return {Action}
      */
@@ -1763,7 +1762,6 @@ interface Action {
      * action in order for the request to be made.
      *
      * @see {@link Session#setRestoreLink}
-     * @public
      * @param {String} restoreLink the secure URL to restore the user's current session
      * @return {Action}
      */
@@ -1789,11 +1787,9 @@ interface Action {
      * @see {@link Session#viewTag} for when a tag page is being viewed
      * @see {@link Session#viewSearch} for when a search page is being viewed
      * @see {@link Session#viewOther} for when a miscellaneous page is being viewed
-     * @public
      */
     setPageType(pageType: PageType): Action;
     /**
-     * @public
      * @return {Object}
      * @hidden
      */
@@ -1836,13 +1832,19 @@ interface Store {
     setCustomerId(id: string): void;
 }
 
-declare function initialBody(): HTMLElement | null;
+interface Visits {
+    getCustomerId(): Maybe<string>;
+    getStore(): Store;
+    isDoNotTrack(): boolean;
+    setCustomerId(id: string): void;
+    setCustomerIdentifierService(s: Store): Store;
+    setDoNotTrack(dnt: boolean): boolean;
+    setStore(s: Store): Store;
+}
 
 type PerLinkAttributions = Record<string, Record<string, string>>;
 
 type StateMode = InsertMode | "HTML";
-declare function removeInjectedCampaign(divId: string): void;
-declare function resetElements(): void;
 declare function injectedCampaigns(): {
     [x: string]: Readonly<{
         mode: StateMode;
@@ -1858,6 +1860,19 @@ interface Campaign$1 {
     extra_attribution?: PerLinkAttributions;
 }
 
+interface Placements {
+    getPlacements(): string[];
+    initialBody(): null | HTMLElement;
+    injectCampaigns(campaigns: Record<string, string & Campaign$1>): {
+        filledElements: string[];
+        unFilledElements: string[];
+    };
+    isFiltered(placement: DynamicPlacementDTO): boolean;
+    isFilteringConfigured(placement: DynamicPlacementDTO): boolean;
+    removeContent(divId: string): void;
+    reset(): void;
+}
+
 type CurrencySettings = {
     currencyBeforeAmount: boolean;
     currencyToken?: string;
@@ -1870,10 +1885,31 @@ type CurrencyFormats = {
 };
 declare function currencyFormats(): Promise<CurrencyFormats>;
 
+/**
+ * @group Search
+ */
+type SearchHit = {
+    productId: string;
+    url: string;
+} & Record<string, unknown>;
+/**
+ * @group Search
+ */
 type SearchTrackOptions = "serp" | "autocomplete" | "category";
+/**
+ * @group Search
+ */
 type SearchAnalyticsOptions = {
     isKeyword?: boolean;
 };
+/**
+ * @group Search
+ */
+type Endpoint = "impression" | "click";
+/**
+ * @group Search
+ */
+type AnalyticsType = "search" | "category";
 
 /**
  *
@@ -1902,7 +1938,7 @@ type SearchAnalyticsOptions = {
  * }
  * ```
  *
- *
+ * @group Search
  */
 interface InputSearchBoost {
     /** Joins nested filters with logical AND */
@@ -1958,7 +1994,7 @@ interface InputSearchBoost {
  * }
  * ```
  *
- *
+ * @group Search
  */
 interface InputSearchFacetConfig {
     /** If facet is disabled, it won't be calculated. Used to disable facets created in dashboard */
@@ -2112,7 +2148,7 @@ interface InputSearchFacetConfig {
  * }
  * ```
  *
- *
+ * @group Search
  */
 interface InputSearchFilter {
     /** Joins nested filters with logical AND */
@@ -2154,12 +2190,15 @@ interface InputSearchFilter {
  * <mark>highlighted keyword</mark> rest of the text
  * ```
  *
- *
+ * @group Search
  */
 interface InputSearchHighlight {
     postTag: string;
     preTag: string;
 }
+/**
+ * @group Search
+ */
 interface InputSearchKeywords {
     /** List of custom boosts */
     boost?: InputSearchBoost[];
@@ -2182,7 +2221,7 @@ interface InputSearchKeywords {
  * Used to change positions of returned products.
  * Pinning rearranges returned product positions, which means that if product is not returned with search results, it won't be pinned.
  *
- *
+ * @group Search
  */
 interface InputSearchPin {
     /** Which product field will be used to match value on. If not provided, `productId` is used */
@@ -2192,6 +2231,9 @@ interface InputSearchPin {
     /** If product field matches any of the provided values, pin will be applied. Currently, only exact match of values is supported */
     value: string[];
 }
+/**
+ * @group Search
+ */
 interface InputSearchProducts {
     /** List of custom boosts */
     boost?: InputSearchBoost[];
@@ -2239,6 +2281,9 @@ interface InputSearchProducts {
     /** Selects product variation or currency */
     variationId?: string;
 }
+/**
+ * @group Search
+ */
 interface InputSearchQuery {
     /** Your account ID */
     accountId?: string;
@@ -2262,10 +2307,16 @@ interface InputSearchQuery {
     /** `(Private key only)` Overwrites current time. Used to trigger scheduled rules ahead of schedule */
     time?: number;
 }
+/**
+ * @group Search
+ */
 interface InputSearchABTest {
     id: string;
     activeVariation: InputSearchABTestVariation;
 }
+/**
+ * @group Search
+ */
 interface InputSearchABTestVariation {
     id: string;
 }
@@ -2297,7 +2348,7 @@ interface InputSearchABTestVariation {
  * }
  * ```
  *
- *
+ * @group Search
  */
 interface InputSearchRangeFilter {
     /** Greater than */
@@ -2309,7 +2360,10 @@ interface InputSearchRangeFilter {
     /** Lower than or equals */
     lte?: string;
 }
-/** Rules allow search query modification based on search parameters */
+/**
+ * Rules allow search query modification based on search parameters
+ * @group Search
+ * */
 interface InputSearchRule {
     /** Used to disable rules creating through dashboard */
     enabled?: boolean;
@@ -2430,7 +2484,7 @@ interface InputSearchRule {
  * }
  * ```
  *
- *
+ * @group Search
  */
 interface InputSearchRuleMatch {
     /** Applies logical AND to nested rule match clauses. Matches if all of them match */
@@ -2448,7 +2502,10 @@ interface InputSearchRuleMatch {
     /** Expected values to be compared against. Rule matches if at least one of them matches */
     value?: string[];
 }
-/** Defines when the rule will be applied based on date/time */
+/**
+ * Defines when the rule will be applied based on date/time
+ * @group Search
+ * */
 interface InputSearchSchedule {
     /** Date in format `yyyy-MM-dd'T'HH:mm:ss`. Only applies if type is `ONE_TIME` */
     from?: string;
@@ -2473,13 +2530,16 @@ interface InputSearchSchedule {
  * For example, if you set sort by availability status,
  * products with the same availability status will be sorted by relevance.
  *
- *
+ * @group Search
  */
 interface InputSearchSort {
     field: string;
     order: SearchSortOrder;
 }
-/** Same as `InputSearchFilter` type, but accepts an additional optional parameter `excludeFacets` */
+/**
+ * Same as `InputSearchFilter` type, but accepts an additional optional parameter `excludeFacets`
+ * @group Search
+ * */
 interface InputSearchTopLevelFilter {
     /** Joins nested filters with logical AND */
     all?: InputSearchFilter[];
@@ -2505,11 +2565,17 @@ interface InputSearchTopLevelFilter {
     /** List of values to filter by, joined by OR operator */
     value?: string[];
 }
-/** Query search engine for search results */
+/**
+ * Query search engine for search results
+ * @group Search
+ * */
 interface Query {
     search?: SearchResult;
 }
-/** Query search engine for search results */
+/**
+ * Query search engine for search results
+ * @group Search
+ * */
 interface QuerySearchArgs {
     accountId?: string;
     customRules?: InputSearchRule[];
@@ -2523,11 +2589,17 @@ interface QuerySearchArgs {
     sessionParams?: InputSearchQuery;
     time?: number;
 }
+/**
+ * @group Search
+ */
 interface SearchAutocorrect {
     /** Original query value before autocorrect */
     original: string;
 }
-/** Determines how excluded products are handled */
+/**
+ * Determines how excluded products are handled
+ * @group Search
+ * */
 type SearchExclusionBehaviour = 
 /** Moves excluded products to the end of search results */
 "deboost"
@@ -2535,11 +2607,17 @@ type SearchExclusionBehaviour =
  | "hide"
 /** Does not handle excluded products in any special way */
  | "none";
-/** Gives additional info on why search results are the way they are. */
+/**
+ * Gives additional info on why search results are the way they are.
+ * @group Search
+ * */
 interface SearchExplain {
     /** Matched rules are returned */
     matchedRules: SearchExplainRule[];
 }
+/**
+ * @group Search
+ */
 interface SearchExplainRule {
     id: string;
     /** Name of the rule that matched */
@@ -2547,13 +2625,22 @@ interface SearchExplainRule {
     /** JSON object scalar, parse on frontend. Which params were set after triggering query rule */
     set?: unknown;
 }
+/**
+ * @group Search
+ */
 type SearchFacet = SearchStatsFacet | SearchTermsFacet;
-/** Returned facet order. Only applies if facet type is `terms` */
+/**
+ * Returned facet order. Only applies if facet type is `terms`
+ * @group Search
+ * */
 type SearchFacetOrder = 
 /** Order by term count */
 "count"
 /** Order by term name */
  | "index";
+/**
+ * @group Search
+ */
 interface SearchFacetTerm {
     /** How many products had this term */
     count: number;
@@ -2562,15 +2649,24 @@ interface SearchFacetTerm {
     /** Term value */
     value: string;
 }
-/** Type of facet */
+/**
+ * Type of facet
+ * @group Search
+ */
 type SearchFacetType = 
 /** Returns min and max values for a numeric field */
 "stats"
 /** Returns all unique terms in a field */
  | "terms";
+/**
+ * @group Search
+ */
 interface SearchHighlight {
     keyword?: string;
 }
+/**
+ * @group Search
+ */
 interface SearchKeyword {
     _explain?: unknown;
     _highlight?: SearchHighlight;
@@ -2583,6 +2679,9 @@ interface SearchKeyword {
     priority: number;
     total: number;
 }
+/**
+ * @group Search
+ */
 interface SearchKeywords {
     /** Unmodified request parameter `from` to be used for further pagination */
     from?: number;
@@ -2595,7 +2694,10 @@ interface SearchKeywords {
     /** How many products were found */
     total: number;
 }
-/** Determines how out of stock products are handled */
+/**
+ * Determines how out of stock products are handled
+ * @group Search
+ */
 type SearchOutOfStockBehaviour = 
 /** Moves out of stock products to the end of search results */
 "deboost"
@@ -2603,7 +2705,10 @@ type SearchOutOfStockBehaviour =
  | "hide"
 /** Does not handle out of stock products in any special way */
  | "none";
-/** Defines how input values and expected values are compared */
+/**
+ * Defines how input values and expected values are compared
+ * @group Search
+ * */
 type SearchParamComparisonFunction = 
 /** Applies partial match on param value from expected values list */
 "contains"
@@ -2611,6 +2716,9 @@ type SearchParamComparisonFunction =
  | "stemmed"
 /** Applies stemming algorithm and does partial match on param value from expected values list */
  | "stemmedContains";
+/**
+ * @group Search
+ */
 interface SearchProduct {
     _explain?: unknown;
     _pinned?: boolean;
@@ -2665,29 +2773,47 @@ interface SearchProduct {
     variantId?: string;
     variations?: SearchProductKeyedVariation[];
 }
+/**
+ * @group Search
+ */
 interface SearchProductAiDetected {
     dominantColors?: string[];
     overridingColor?: string;
     primaryColor?: string;
 }
+/**
+ * @group Search
+ */
 interface SearchProductAffinities {
     brand?: string;
     categories?: string[];
     color?: string[];
     size?: string[];
 }
+/**
+ * @group Search
+ */
 interface SearchProductCustomField {
     key: string;
     value: string;
 }
+/**
+ * @group Search
+ */
 interface SearchProductExtra {
     key: string;
     value: string[];
 }
+/**
+ * @group Search
+ */
 interface SearchProductKeyedVariation {
     key: string;
     value: SearchVariationValue;
 }
+/**
+ * @group Search
+ */
 interface SearchProductSku {
     ai?: SearchProductAiDetected;
     availability?: string;
@@ -2701,6 +2827,9 @@ interface SearchProductSku {
     priceText?: string;
     url?: string;
 }
+/**
+ * @group Search
+ */
 interface SearchProductStats {
     age?: number;
     availabilityRatio?: number;
@@ -2727,6 +2856,9 @@ interface SearchProductStats {
     reviewCount?: number;
     views?: number;
 }
+/**
+ * @group Search
+ */
 interface SearchProducts {
     /** Unmodified request parameter `categoryId` */
     categoryId?: string;
@@ -2747,7 +2879,10 @@ interface SearchProducts {
     /** How many products were found */
     total: number;
 }
-/** Searchable fields of priority */
+/**
+ * Searchable fields of priority
+ * @group Search
+ * */
 type SearchQueryField = 
 /** Searchable fields with `High` priority */
 "high"
@@ -2755,14 +2890,20 @@ type SearchQueryField =
  | "low"
 /** Searchable fields with `Medium` priority */
  | "medium";
-/** AB tests variations */
+/**
+ * AB tests variations
+ * @group Search
+ * */
 interface ABTest {
     id: string;
     activeVariation: {
         id: string;
     };
 }
-/** Search response */
+/**
+ * Search response
+ * @group Search
+ * */
 interface SearchResult {
     /** Returned if autocorrect was triggered */
     autocorrect?: SearchAutocorrect;
@@ -2778,10 +2919,22 @@ interface SearchResult {
     redirect?: string;
     abTests?: ABTest[];
 }
+/**
+ * @group Search
+ */
 type SearchRuleScheduleType = "ONE_TIME" | "WEEKLY";
+/**
+ * @group Search
+ */
 type SearchRuleScheduleWeekday = "FRIDAY" | "MONDAY" | "SATURDAY" | "SUNDAY" | "THURSDAY" | "TUESDAY" | "WEDNESDAY";
-/** Order of the sort */
+/**
+ * Order of the sort
+ * @group Search
+ */
 type SearchSortOrder = "asc" | "desc";
+/**
+ * @group Search
+ */
 interface SearchStatsFacet {
     /** Numeric field for which min/max values were calculated */
     field: string;
@@ -2793,6 +2946,9 @@ interface SearchStatsFacet {
     name: string;
     type: SearchFacetType;
 }
+/**
+ * @group Search
+ */
 interface SearchTermsFacet {
     /** Facet term list */
     data: SearchFacetTerm[];
@@ -2802,14 +2958,23 @@ interface SearchTermsFacet {
     name: string;
     type: SearchFacetType;
 }
+/**
+ * @group Search
+ */
 interface SearchVariationValue {
     availability?: string;
     listPrice?: number;
     price?: number;
     priceCurrencyCode?: string;
 }
+/**
+ * @group Search
+ */
 type SearchPageType = "search" | "category" | "autocomplete";
-/** @interface */
+/**
+ * @group Search
+ * @interface
+ * */
 type SearchQuery = Omit<InputSearchQuery, "keywords" | "products"> & {
     keywords?: InputSearchQuery["keywords"] & {
         fields: string[];
@@ -2822,27 +2987,37 @@ type SearchQuery = Omit<InputSearchQuery, "keywords" | "products"> & {
 } & {
     name?: string;
 };
-
-type SearchOptions = {
-    redirect: boolean;
-    track: SearchTrackOptions;
-} & SearchAnalyticsOptions;
 /**
- * Search function
+ * @group Search
  */
-declare function search(query: SearchQuery, options?: SearchOptions): Promise<SearchResult>;
-
 type PersonalizationBoost = {
     field: string;
     value: string[];
     weight: number;
 };
+/**
+ * @group Search
+ */
 type SearchSessionParams = {
     segments?: string[];
     products?: {
         personalizationBoost: PersonalizationBoost[];
     };
 };
+/**
+ * @group Search
+ * @interface
+ * */
+type SearchOptions = {
+    redirect: boolean;
+    track: SearchTrackOptions;
+} & SearchAnalyticsOptions;
+
+/**
+ * Search function
+ */
+declare function search(query: SearchQuery, options?: SearchOptions): Promise<SearchResult>;
+
 declare function getSearchSessionParams(): Promise<SearchSessionParams>;
 
 /**
@@ -2858,7 +3033,7 @@ declare function recordSearchSubmit(query: string): void;
 /**
  * Record search click event
  */
-declare function recordSearchClick(type: SearchTrackOptions, hit: SearchProduct): void;
+declare function recordSearchClick(type: SearchTrackOptions, hit: SearchHit): void;
 declare function storeSearchClick(productId: string | undefined, metadata: SearchEventMetadata, productUrl: string, properties: Maybe<AnalyticEventProperties>): void;
 
 declare function addSegment(segment: string): Promise<void>;
@@ -3045,7 +3220,11 @@ type InternalEvents = {
     categoryclick: [CategoryClick];
     categoryimpression: [CategoryImpression];
 };
-/** @hidden */
+/**
+ * Mapping from event name to payload type
+ *
+ * @interface
+ */
 type EventMapping = LifecyleEvents & PopupEvents & InternalEvents;
 
 declare function setAutoLoad(flag: boolean): void;
@@ -3309,7 +3488,7 @@ type InitOptions = {
  * @group Core
  */
 type nostojs = {
-    (cb: NostojsCallback): unknown;
+    (cb: NostojsCallback): Promise<unknown>;
     /** @hidden */
     q?: NostojsCallback[];
     /** @hidden */
@@ -3514,27 +3693,8 @@ declare const api: {
         recordAttribution: (event: Event) => Attribution;
         getCurrencyFormats: typeof currencyFormats;
     };
-    placements: {
-        getPlacements: () => string[];
-        injectCampaigns: (campaigns: Record<string, string & Campaign$1>) => {
-            filledElements: string[];
-            unFilledElements: string[];
-        };
-        reset: typeof resetElements;
-        isFiltered: (placement: DynamicPlacementDTO) => boolean;
-        isFilteringConfigured: (placement: DynamicPlacementDTO) => boolean;
-        removeContent: typeof removeInjectedCampaign;
-        initialBody: typeof initialBody;
-    };
-    visit: {
-        getStore: () => Store;
-        setStore: (s: Store) => Store;
-        isDoNotTrack: () => boolean;
-        setDoNotTrack: (dnt: boolean) => boolean;
-        getCustomerId: () => Maybe<string>;
-        setCustomerId: (id: string) => void;
-        setCustomerIdentifierService: (s: Store) => Store;
-    };
+    placements: Placements;
+    visit: Visits;
     /**
      * @deprecated since this was a quick hack for usage in Codepen.IO
      * @hidden
@@ -3558,7 +3718,6 @@ declare const api: {
      * If you are not using a single-page application but require programmatic access to the
      * Nosto request builder use {@link createRecommendationRequest}.
      *
-     * @public
      * @return {Session} the instance of the default session
      */
     defaultSession: () => Session;
@@ -3570,7 +3729,6 @@ declare const api: {
      * the likes, and  you are implementing Nosto, you must use the {@link defaultSession}
      * method.
      *
-     * @public
      * @param {Object} flags a set of flags to customise to request behaviour (eg. {"includeTagging":true}
      * to initialise the request from the page tagging.
      * @return {RequestBuilder} the instance of the request.
@@ -3586,11 +3744,11 @@ declare const api: {
      * the likes, and you are implementing Nosto using the {@link Session} API, you must disable
      * auto-loading.
      *
+     * @param {Boolean} flag a true or false value indicating whether to automatically load or not
+     *
      * @example
      * nostojs(api => api.setAutoLoad(false))
      * nostojs(api => api.load())
-     *
-     * @param {Boolean} flag A true or false value indicating whether to automatically load or not
      */
     setAutoLoad: typeof setAutoLoad;
     /**
@@ -3605,7 +3763,7 @@ declare const api: {
     /**
      * @deprecated
      * @hidden
-     * @param {Boolean} flag A true or false value indicating whether to disable placements or not
+     * @param {Boolean} flag a true or false value indicating whether to disable placements or not
      */
     setRecommendationsEnabled: (flag: boolean) => void;
     /**
@@ -3615,11 +3773,12 @@ declare const api: {
      * Due to the wide gamut of events dispatched, listing them all is still a work in
      * progress.
      *
-     * @example <caption>to log a message whenever a request is made to Nosto</caption>
-     * nostojs(api => api.listen('taggingsent'), () => console.log("The tagging was sent"));
-     *
      * @param {String} phase
      * @param {Function} cb the callback function to be invoked
+     *
+     * @example
+     * <caption>to log a message whenever a request is made to Nosto</caption>
+     * nostojs(api => api.listen('taggingsent'), () => console.log("The tagging was sent"));
      */
     listen: <T extends keyof EventMapping>(phase: T, callback: (...args: EventMapping[T]) => void) => void;
     /**
@@ -3629,7 +3788,6 @@ declare const api: {
      * Incorrect or extraneous usage of this method will lead to skewed page-view
      * statistics, ad every invocation of this method results in a +1 page-view count.
      *
-     * @public
      * @return {Promise}
      */
     loadRecommendations: (element?: string | {
@@ -3638,10 +3796,11 @@ declare const api: {
     /**
      * API method to load Nosto. This function is automatically invoked when the page loads.
      *
-     * @example <caption>to manually load recommendations after DOM ready</caption>
-     * nostojs(api => api.load());
-     *
      * @return {Promise}
+     *
+     * @example
+     * <caption>to manually load recommendations after DOM ready</caption>
+     * nostojs(api => api.load());
      */
     load: () => Promise<void> | Promise<EventResponseMessage>;
     /**
@@ -3656,16 +3815,16 @@ declare const api: {
      * <br/><br/>
      * This is only for debugging purposes and should never be used in a production environment
      *
-     * @example <caption>to log the page state to the console</caption>
-     * nostojs(api => console.log(api.pageTagging()));
-     *
      * @return {Object} the representation of the page tagging
+     *
+     * @example
+     * <caption>to log the page state to the console</caption>
+     * nostojs(api => console.log(api.pageTagging()));
      */
     pageTagging: typeof pageTagging;
     /** @hidden */
     loadCartPopupRecommendations: (products: PushedProduct[], cart: PushedCart, alwaysShow: boolean) => Promise<EventResponseMessage>;
     /**
-     * @public
      * @param cartItemId
      * @param nostoElementId
      * @return {Promise<Object>}
@@ -3674,7 +3833,6 @@ declare const api: {
     /** @hidden */
     captureError: (error: unknown, reporter: string, level?: Level) => void;
     /**
-     * @public
      * @param {String} productId
      * @param {String} nostoElementId
      * @return {Promise<Object>}
@@ -3711,7 +3869,9 @@ declare const api: {
      * This method is legacy method and therefore named incorrectly. Is the customer equivalent
      * of the resendCartContent method and actually should be called resendCustomerDetails.
      *
-     * @todo deprecate this method and rename it to resendCustomerDetails
+     * @param {Customer} customer the details of the currently logged in customer
+     * @return {Promise<Object>}
+     *
      * @example
      * nostojs(api => api.customer({
      *   first_name: "Mridang",
@@ -3720,10 +3880,6 @@ declare const api: {
      *   newsletter: false,
      *   customer_reference: "5e3d4a9c-cf58-11ea-87d0-0242ac130003"
      * }))
-     *
-     * @public
-     * @param {Customer} customer the details of the currently logged in customer
-     * @return {Promise<Object>}
      */
     customer: (customer: PushedCustomer) => Promise<void>;
     /** @hidden */
@@ -3747,6 +3903,9 @@ declare const api: {
      * incorrect usage pattern. You should be using the Session API @see {@link Session#setCart}
      * to provide the cart information.
      *
+     * @param {Cart} cart content of the cart
+     * @return {Promise<Object>}
+     *
      * @example
      * nostojs(api => api.resendCartContent({
      *   items: [
@@ -3757,10 +3916,6 @@ declare const api: {
      *     price_currency_code: "EUR"
      *   ]
      * }))
-     *
-     * @public
-     * @param {Cart} cart content of the cart
-     * @return {Promise<Object>}
      */
     resendCartContent: (cart: PushedCart) => Promise<void>;
     /**
@@ -3776,11 +3931,10 @@ declare const api: {
      * incorrect usage pattern. You should be using the Session API @see {@link Session#setCart}
      * to provide the cart information.
      *
-     * @public
+     * @return {Promise<Object>}
+     *
      * @example
      * nostojs(api => api.resendCartTagging())
-     *
-     * @return {Promise<Object>}
      */
     resendCartTagging: typeof resendCartTagging;
     /**
@@ -3796,11 +3950,10 @@ declare const api: {
      * incorrect usage pattern. You should be using the Session API @see {@link Session#setCustomer}
      * to provide the customer information.
      *
-     * @public
+     * @return {Promise<Object>}
+     *
      * @example
      * nostojs(api => api.resendCustomerTagging())
-     *
-     * @return {Promise<Object>}
      */
     resendCustomerTagging: typeof resendCustomerTagging;
     /**
@@ -3816,11 +3969,10 @@ declare const api: {
      * rely on the tagging metadata and therefore, usage of this method is indicative of an
      * incorrect usage pattern.
      *
-     * @public
+     * @return {Promise<Object>}
+     *
      * @example
      * nostojs(api => api.sendTagging())
-     *
-     * @return {Promise<Object>}
      */
     sendTagging: typeof resendAllTagging;
     /**
@@ -3829,11 +3981,9 @@ declare const api: {
      * <br/><br/>
      * Sending a segment code does not automatically create the corresponding segment.
      *
-     * @public
-     * @example <caption>to add a user to segment when they've used a discount code</caption>
+     * @example
+     * <caption>to add a user to segment when they've used a discount code</caption>
      * nostojs(api => api.addSegmentCodeToVisit('discount code user'))
-     *
-     * @param {String} segment
      */
     addSegmentCodeToVisit: typeof addSegment;
     /**
@@ -3863,17 +4013,21 @@ declare const api: {
      * API method to retrieve search affinities and segments and transform it to partial search query.
      * <br/><br/>
      * Results are cached to sessionStorage and is refreshed after cacheRefreshInterval
-     * @example
-     * nostojs(api => api.getSearchSessionParams({ maxWait: 2000, cacheRefreshInterval: 60000 }).then((sessionParams) => sessionParams))
      *
-     * @public
      * @param {SearchSessionParamsOptions} options
      * @returns {Promise<SearchSessionParams>}
+     *
+     * @example
+     * nostojs(api => api.getSearchSessionParams({ maxWait: 2000, cacheRefreshInterval: 60000 }).then((sessionParams) => sessionParams))
      */
     getSearchSessionParams: typeof getSearchSessionParams;
     /**
      * Search function which requests graphql search endpoint.
-     * <br/><br/>
+     *
+     * @param {SearchQuery} query Search query.
+     * @param {SearchOptions=} options Search custom options.
+     * @returns {Promise<SearchResult>}
+     *
      * @example
      * nostojs(api => {
      *  api.search({
@@ -3886,11 +4040,6 @@ declare const api: {
      *    .catch(err => err)
      *  })
      * })
-     *
-     * @public
-     * @param {SearchQuery} query Search query.
-     * @param {SearchOptions=} options Search custom options.
-     * @returns {Promise<SearchResult>}
      */
     search: typeof search;
     /**
@@ -3917,36 +4066,10 @@ declare const api: {
     recordAttribution: (event: Event) => Attribution;
 };
 
-/** @interface */
+/**
+ * @group Core
+ * @interface
+ * */
 type API = typeof api;
 
-declare const placements: {
-    getPlacements: () => string[];
-    injectCampaigns: (campaigns: Record<string, string & Campaign$1>) => {
-        filledElements: string[];
-        unFilledElements: string[];
-    };
-    reset: typeof resetElements;
-    isFiltered: (placement: DynamicPlacementDTO) => boolean;
-    isFilteringConfigured: (placement: DynamicPlacementDTO) => boolean;
-    removeContent: typeof removeInjectedCampaign;
-    initialBody: typeof initialBody;
-};
-
-/** @interface */
-type Placements = typeof placements;
-
-declare const visits: {
-    getStore: () => Store;
-    setStore: (s: Store) => Store;
-    isDoNotTrack: () => boolean;
-    setDoNotTrack: (dnt: boolean) => boolean;
-    getCustomerId: () => Maybe<string>;
-    setCustomerId: (id: string) => void;
-    setCustomerIdentifierService: (s: Store) => Store;
-};
-
-/** @interface */
-type Visits = typeof visits;
-
-export type { ABTest, API, AbTestDraftPreviewSettingsDTO, AbTestPreviewSettingsBase, AbTestPreviewSettingsDTO, AbTestVariation, AbTestVariationDTO, AbstractFacebookPixelEvent, AbstractStacklaPixelEvent, Action, ActionResponse, ActiveVisitDTO, Addtocart, AnalyticEvent, AnalyticEventProperties, BigcommerceCustomerInfo, CampaignId, Cart, CartItem, Carttaggingresent, CategoryClick, CategoryEvent, CategoryEventMetadata, CategoryImpression, ClientScriptSettingsDTO, ConditionDTO, ContentDebugDTO, ContentId, Context, ConversionItem, Coupongiven, CrawlResponse, CustomerAffinityResponse, CustomerAffinityResponseItem, CustomerDTO, CustomerToken, DebugRequestParamsDTO, DebugToolbarDataDTO, DynamicPlacementDTO, Effect, Event, EventAttributionMetadata, EventAttributionParams, EventFields, EventMapping, EventRefType, EventRequestMessageV1, EventResponseMessage, EventTuple, EventType, Events, Experiment, FacebookData, FilterOperator, FilterRule, ForcedTestDTO, GoogleAnalyticsData, InputSearchABTest, InputSearchABTestVariation, InputSearchBoost, InputSearchFacetConfig, InputSearchFilter, InputSearchHighlight, InputSearchKeywords, InputSearchPin, InputSearchProducts, InputSearchQuery, InputSearchRangeFilter, InputSearchRule, InputSearchRuleMatch, InputSearchSchedule, InputSearchSort, InputSearchTopLevelFilter, InsertMode, Method, NostoSku, NostoVariant, NostojsCallback, OnsiteFeature, OrderCustomer, OrderInfo, OverlapCampaignDTO, Overlay, PageType, PlacementDebugDTO, PlacementRuleDTO, Placements, Popup, PopupCampaignPreviewSettingsDTO, PopupCouponGiven, PopupEmailCollected, PopupEvent, PopupTriggerSettingsDTO, PopupTriggered, Popupopened, Postrender, Prerender, Product, ProductPushResponse, PushedCustomer, PushedProduct, PushedProductSKU, PushedVariation, Query, QuerySearchArgs, RecommendationDebugDTO, RecommendationId, RecommendationRequestFlags, RenderMode, RequestBuilder, ScheduleTime, Scripterror, SearchAutocorrect, SearchClick, SearchEvent, SearchEventMetadata, SearchExclusionBehaviour, SearchExplain, SearchExplainRule, SearchFacet, SearchFacetOrder, SearchFacetTerm, SearchFacetType, SearchFailureEventDTO, SearchHighlight, SearchImpression, SearchKeyword, SearchKeywords, SearchOutOfStockBehaviour, SearchPageType, SearchParamComparisonFunction, SearchProduct, SearchProductAffinities, SearchProductAiDetected, SearchProductCustomField, SearchProductExtra, SearchProductKeyedVariation, SearchProductSku, SearchProductStats, SearchProducts, SearchQuery, SearchQueryField, SearchResult, SearchRuleScheduleType, SearchRuleScheduleWeekday, SearchSortOrder, SearchStatsFacet, SearchSuccessEventDTO, SearchTermsFacet, SearchVariationValue, SegmentDebugDTO, SegmentInfoBean, SegmentRuleDebugDTO, Segments, SegmentsResponseBean, Session, Setexperiments, Settings, Sku, StacklaTrackingData, StacklaWidgetDebugDTO, StacklaWidgetEmbedId, StacklaWidgetFilterType, TaggingData, TargetType, TestDebugDTO, TestId, TestPlacementRuleDTO, TestPreviewsDTO, UnsavedDraftPreviewSettingsDTO, ValidationError, VariationWithRulesDTO, VisitDTO, Visits, WebsiteOrder, WidgetPlacement, WidgetPlacementRule, WrapMode, nostojs };
+export type { ABTest, API, AbTestDraftPreviewSettingsDTO, AbTestPreviewSettingsBase, AbTestPreviewSettingsDTO, AbTestVariation, AbTestVariationDTO, AbstractFacebookPixelEvent, AbstractStacklaPixelEvent, Action, ActionResponse, ActiveVisitDTO, Addtocart, AnalyticEvent, AnalyticEventProperties, AnalyticsType, BigcommerceCustomerInfo, CampaignId, Cart, CartItem, Carttaggingresent, CategoryClick, CategoryEvent, CategoryEventMetadata, CategoryImpression, ClientScriptSettingsDTO, ConditionDTO, ContentDebugDTO, ContentId, Context, ConversionItem, Coupongiven, CrawlResponse, CustomerAffinityResponse, CustomerAffinityResponseItem, CustomerDTO, CustomerToken, DebugRequestParamsDTO, DebugToolbarDataDTO, DynamicPlacementDTO, Effect, Endpoint, Event, EventAttributionMetadata, EventAttributionParams, EventFields, EventMapping, EventRefType, EventRequestMessageV1, EventResponseMessage, EventTuple, EventType, Events, Experiment, FacebookData, FilterOperator, FilterRule, ForcedTestDTO, GoogleAnalyticsData, InputSearchABTest, InputSearchABTestVariation, InputSearchBoost, InputSearchFacetConfig, InputSearchFilter, InputSearchHighlight, InputSearchKeywords, InputSearchPin, InputSearchProducts, InputSearchQuery, InputSearchRangeFilter, InputSearchRule, InputSearchRuleMatch, InputSearchSchedule, InputSearchSort, InputSearchTopLevelFilter, InsertMode, Method, NostoSku, NostoVariant, NostojsCallback, OnsiteFeature, OrderCustomer, OrderInfo, OverlapCampaignDTO, Overlay, PageType, PersonalizationBoost, PlacementDebugDTO, PlacementRuleDTO, Placements, Popup, PopupCampaignPreviewSettingsDTO, PopupCouponGiven, PopupEmailCollected, PopupEvent, PopupTriggerSettingsDTO, PopupTriggered, Popupopened, Postrender, Prerender, Product, ProductPushResponse, PushedCustomer, PushedProduct, PushedProductSKU, PushedVariation, Query, QuerySearchArgs, RecommendationDebugDTO, RecommendationId, RecommendationRequestFlags, RenderMode, RequestBuilder, ScheduleTime, Scripterror, SearchAnalyticsOptions, SearchAutocorrect, SearchClick, SearchEvent, SearchEventMetadata, SearchExclusionBehaviour, SearchExplain, SearchExplainRule, SearchFacet, SearchFacetOrder, SearchFacetTerm, SearchFacetType, SearchFailureEventDTO, SearchHighlight, SearchHit, SearchImpression, SearchKeyword, SearchKeywords, SearchOptions, SearchOutOfStockBehaviour, SearchPageType, SearchParamComparisonFunction, SearchProduct, SearchProductAffinities, SearchProductAiDetected, SearchProductCustomField, SearchProductExtra, SearchProductKeyedVariation, SearchProductSku, SearchProductStats, SearchProducts, SearchQuery, SearchQueryField, SearchResult, SearchRuleScheduleType, SearchRuleScheduleWeekday, SearchSessionParams, SearchSortOrder, SearchStatsFacet, SearchSuccessEventDTO, SearchTermsFacet, SearchTrackOptions, SearchVariationValue, SegmentDebugDTO, SegmentInfoBean, SegmentRuleDebugDTO, Segments, SegmentsResponseBean, Session, Setexperiments, Settings, Sku, StacklaTrackingData, StacklaWidgetDebugDTO, StacklaWidgetEmbedId, StacklaWidgetFilterType, TaggingData, TargetType, TestDebugDTO, TestId, TestPlacementRuleDTO, TestPreviewsDTO, UnsavedDraftPreviewSettingsDTO, ValidationError, VariationWithRulesDTO, VisitDTO, Visits, WebsiteOrder, WidgetPlacement, WidgetPlacementRule, WrapMode, nostojs };
