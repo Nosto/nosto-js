@@ -20,9 +20,7 @@ concurrency:
 
 jobs:
   github-release:
-    runs-on:
-      group: Personalisation
-      labels: [self-hosted, linux, x64]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout current branch
         uses: actions/checkout@v4
