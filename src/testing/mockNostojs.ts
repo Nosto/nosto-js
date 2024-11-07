@@ -1,4 +1,4 @@
-import { API, nostojs } from "../client/nosto"
+import { API, nostojs, NostojsCallback } from "../client/nosto"
 
 let originalNostojs: nostojs
 
@@ -9,7 +9,7 @@ export function mockNostojs(mock?: Partial<API>) {
   if (!originalNostojs) {
     originalNostojs = window.nostojs
   }
-  window.nostojs = (callback: (api: API) => unknown) => callback(mock as API)
+  window.nostojs = (callback: NostojsCallback) => callback(mock as API) as Promise<unknown>
 }
 
 /**
