@@ -1,4 +1,4 @@
-# NostoJS SDK
+# NostoJS
 
 NostoJS is a wrapper for the client script, providing an easy way to interact with the Nosto service from your JavaScript or TypeScript applications.
 
@@ -16,7 +16,7 @@ npm install @nosto/nosto-js --save
 
 ## Nosto stub
 
-When using this SDK, it is not necessary to create the Nosto stub. It will be created automatically as soon as the SDK is imported for the first time.
+When using this library, it is not necessary to create the Nosto stub. It will be created automatically as soon as the library is imported for the first time.
 
 ## Initialization
 
@@ -32,7 +32,7 @@ It returns a promise that resolves when the client script is fully loaded and in
 
 ## API access
 
-Use the `nostojs` function exported from the SDK in the same way you would use `window.nostojs`. In fact, this is a typed wrapper over the window function.
+Use the `nostojs` function exported from the library in the same way you would use `window.nostojs`. In fact, this is a typed wrapper over the window function.
 
 ```js
 await nostojs(async api => {
