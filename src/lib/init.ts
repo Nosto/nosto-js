@@ -2,9 +2,22 @@ import { BackendEnvironment, ScriptLoadOptions } from "../types"
 import { getBaseUrl } from "../utils/url"
 
 export type InitProps = {
+  /**
+   * The merchant ID to use for the Nosto client script.
+   */
   merchantId: string
+  /**
+   * The environment to use for the Nosto client script
+   * @default "production"
+   */
   env?: BackendEnvironment
+  /**
+   * Options for the script loader
+   */
   options?: ScriptLoadOptions
+  /**
+   * A custom script loader function to use for loading the Nosto client script
+   */
   scriptLoader?: (scriptSrc: string, options?: ScriptLoadOptions) => Promise<void>
 }
 
