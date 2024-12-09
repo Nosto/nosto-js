@@ -3009,8 +3009,8 @@ type SearchSessionParams = {
  * @interface
  * */
 type SearchOptions = {
-    redirect: boolean;
-    track: SearchTrackOptions;
+    redirect?: boolean;
+    track?: SearchTrackOptions;
 } & SearchAnalyticsOptions;
 
 /**
