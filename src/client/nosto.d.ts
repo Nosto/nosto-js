@@ -685,16 +685,6 @@ type CampaignId<T extends string = string> = string & {
     __kind: T;
 };
 
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
-
 interface Coupon {
     campaign?: string;
     code?: string;
@@ -745,16 +735,6 @@ interface TaggingData {
     sortOrder: string | undefined;
     pluginVersion: PluginMetadata | undefined;
 }
-
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 
 interface RecommendationRequestFlags {
     skipPageViews?: boolean;
@@ -1807,16 +1787,6 @@ interface ActionResponse {
 
 type Maybe<T> = NonNullable<T> | undefined;
 
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
-
 /**
  * @group Core
  */
@@ -1895,16 +1865,6 @@ interface Event {
     targetFragment?: string;
     refType?: EventRefType;
 }
-
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 
 interface Attribution {
     recordAttribution: (event: Event) => Attribution;
@@ -2174,26 +2134,8 @@ interface Settings extends ClientScriptSettingsDTO {
 }
 declare function modifySettings(updates: Partial<Settings>): void;
 
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 declare function recommendedProductAddedToCart(productId: string, recoId: string): Promise<void>;
 
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 declare function reportCouponGiven(campaignId: string, couponCode: string, couponUsed: boolean): Promise<void>;
 
 declare function addSegment(segment: string): Promise<void>;
@@ -2201,16 +2143,6 @@ declare function addSegment(segment: string): Promise<void>;
 declare function findProducts(): Product[];
 
 declare function findCustomer(): PushedCustomer | undefined;
-
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 
 declare function findCart(): Cart | undefined;
 
@@ -2263,16 +2195,6 @@ declare function setTaggingProvider<T extends keyof TaggingData>(name: T, provid
  * the order tagging was loaded asynchronously so a method like this was needed.
  */
 declare function resendAllTagging(): Promise<void>;
-
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 
 declare function createSession(): Session;
 
@@ -3443,26 +3365,8 @@ declare function search(query: SearchQuery, options?: SearchOptions): Promise<Se
 
 declare function getSearchSessionParams(): Promise<SearchSessionParams>;
 
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 type Level = "log" | "warn" | "error" | "debug" | "info";
 
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 interface Violation {
     key: string;
     message_key: string;
@@ -4145,16 +4049,6 @@ interface Store {
     getCustomerId(): Maybe<string>;
     setCustomerId(id: string): void;
 }
-
-/** *****************************************************************************
- * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
- * <p>
- * This software is the confidential and proprietary information of
- * Nosto Solutions Ltd ("Confidential Information"). You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the agreement you entered into with
- * Nosto Solutions Ltd.
- ***************************************************************************** */
 
 interface Visits {
     getCustomerId(): Maybe<string>;
