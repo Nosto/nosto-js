@@ -2,85 +2,6 @@
 // @ts-nocheck
 import * as axios from 'axios';
 
-/**
- * @group Core
- */
-type EventType = 
-/**  view product */
-"vp"
-/** like product */
- | "lp"
-/** dislike product */
- | "dp"
-/** remove product */
- | "rp"
-/** bought product */
- | "bp"
-/** view category */
- | "vc"
-/** order */
- | "or"
-/** internal search */
- | "is"
-/** add to cart */
- | "cp"
-/** external campaign */
- | "ec"
-/** external search */
- | "es"
-/** give coupon */
- | "gc"
-/** source */
- | "src"
-/** cart popup recommendations */
- | "cpr"
-/** page load */
- | "pl"
-/** custom campaign */
- | "cc"
-/** content campaign */
- | "con";
-/**
- * @group Core
- */
-type EventRefType = 
-/** triggered mail */
-"email"
-/** email widgets */
- | "imgrec"
-/** onsite recommendations */
- | "rec"
-/** api recommendations */
- | "api"
-/** onsite campaigns */
- | "oc"
-/** category merchandising */
- | "cmp"
-/** onsite search */
- | "os";
-/**
- * @group Core
- */
-type EventTuple = [
-    type: EventType,
-    target?: string,
-    ref?: string,
-    refSrc?: string,
-    targetFragment?: string,
-    refType?: EventRefType
-];
-/**
- * @group Core
- */
-interface Event {
-    type: EventType;
-    target?: string;
-    ref?: string;
-    refSrc?: string;
-    targetFragment?: string;
-    refType?: EventRefType;
-}
-
 interface AbTestDraftPreviewSettingsDTO extends AbTestPreviewSettingsBase<AbTestVariationDTO> {
     variations: AbTestVariationDTO[];
 }
@@ -337,6 +258,9 @@ interface EventFields {
     target_fragment?: string;
 }
 interface EventRequestMessageV1 {
+    affinity_signals?: {
+        [index: string]: string[];
+    };
     cart?: CartItem[];
     cart_hash?: string;
     cart_popup?: boolean;
@@ -447,11 +371,11 @@ interface OrderCustomer {
     email?: string;
     first_name?: string;
     last_name?: string;
-    newsletter: string;
+    newsletter?: string;
     order_number: string;
     phone: string;
     post_code: string;
-    type: string;
+    type?: string;
 }
 interface OrderInfo {
     country_code: string;
@@ -514,6 +438,24 @@ interface PopupTriggerSettingsDTO {
 }
 interface PopupTriggered extends PopupEvent {
     campaignId: string;
+}
+interface PostPurchaseOffer {
+    customer: string;
+    discount_type: string;
+    discount_value: number;
+    recommendation: PostPurchaseRecommendation;
+}
+interface PostPurchaseRecommendation {
+    description: string;
+    image_url: string;
+    name: string;
+    product_id: string;
+    skus: PostPurchaseSku[];
+    title: string;
+}
+interface PostPurchaseSku {
+    id: string;
+    name: string;
 }
 interface ProductPushResponse {
     messages: string[];
@@ -708,12 +650,12 @@ interface VisitDTO {
 }
 interface WebsiteOrder {
     created_at?: Date;
-    external_order_ref: string;
+    external_order_ref?: string;
     info?: OrderCustomer;
     items: ConversionItem[];
     order_status?: string;
     order_status_label?: string;
-    payment_provider: string;
+    payment_provider?: string;
 }
 interface WidgetPlacement {
     enabled: boolean;
@@ -742,6 +684,16 @@ type WrapMode = "SIMPLE" | "PRESERVE_CLASS" | "CLONED" | "UNWRAPPED";
 type CampaignId<T extends string = string> = string & {
     __kind: T;
 };
+
+/** *****************************************************************************
+ * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
+ * <p>
+ * This software is the confidential and proprietary information of
+ * Nosto Solutions Ltd ("Confidential Information"). You shall not
+ * disclose such Confidential Information and shall use it only in
+ * accordance with the terms of the agreement you entered into with
+ * Nosto Solutions Ltd.
+ ***************************************************************************** */
 
 interface Coupon {
     campaign?: string;
@@ -789,9 +741,20 @@ interface TaggingData {
     customFields: Record<string, string[]> | undefined;
     elements: string[] | undefined;
     pageType: PageType | undefined;
+    affinitySignals: Record<string, string[]> | undefined;
     sortOrder: string | undefined;
     pluginVersion: PluginMetadata | undefined;
 }
+
+/** *****************************************************************************
+ * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
+ * <p>
+ * This software is the confidential and proprietary information of
+ * Nosto Solutions Ltd ("Confidential Information"). You shall not
+ * disclose such Confidential Information and shall use it only in
+ * accordance with the terms of the agreement you entered into with
+ * Nosto Solutions Ltd.
+ ***************************************************************************** */
 
 interface RecommendationRequestFlags {
     skipPageViews?: boolean;
@@ -836,6 +799,12 @@ interface RequestBuilder {
      * @param {String} sortOrder the current sort order
      */
     setSortOrder(sortOrder: string): RequestBuilder;
+    /**
+     * Adds affinity signals to the current request.
+     *
+     * @param signals signals to set
+     */
+    setAffinitySignals(signals: Record<string, string[]>): RequestBuilder;
     /**
      * Adds the given event to the current set of events. When viewing a product,
      * it is required that you specify the "vp" as event and the product id as
@@ -1157,12 +1126,6 @@ interface RequestBuilder {
     setRefs(refs: Record<string, string>): RequestBuilder;
     getEvents(): Event[];
     getData(): EventRequestMessageV1;
-}
-
-interface Attribution {
-    recordAttribution: (event: Event) => Attribution;
-    dumpData: () => EventTuple[];
-    done: () => Promise<void>;
 }
 
 /**
@@ -1790,6 +1753,14 @@ interface Action {
      */
     setPageType(pageType: PageType): Action;
     /**
+     * Sets the affinity signals for the current action.
+     * Subsequent invocations will be merged with the previous ones.
+     *
+     * @param affinity
+     * @param options
+     */
+    addAffinity(affinity: Record<string, string[]> | undefined, options?: AffinityOptions): Action;
+    /**
      * @return {Object}
      * @hidden
      */
@@ -1801,6 +1772,15 @@ interface Action {
      * @param flags
      */
     load(flags?: RecommendationRequestFlags): Promise<ActionResponse>;
+}
+interface AffinityOptions {
+    /**
+     * If set to true, the current affinity signals will be cleared before setting the new ones.
+     * Otherwise, the new signals will be appended to the existing ones, overriding the keys with the same name.
+     *
+     * @default false
+     */
+    clear?: boolean;
 }
 /**
  * Result object for an action that contains the recommendations and content that was requested for the current action.
@@ -1827,32 +1807,112 @@ interface ActionResponse {
 
 type Maybe<T> = NonNullable<T> | undefined;
 
-interface Store {
-    getCustomerId(): Maybe<string>;
-    setCustomerId(id: string): void;
+/** *****************************************************************************
+ * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
+ * <p>
+ * This software is the confidential and proprietary information of
+ * Nosto Solutions Ltd ("Confidential Information"). You shall not
+ * disclose such Confidential Information and shall use it only in
+ * accordance with the terms of the agreement you entered into with
+ * Nosto Solutions Ltd.
+ ***************************************************************************** */
+
+/**
+ * @group Core
+ */
+type EventType = 
+/**  view product */
+"vp"
+/** like product */
+ | "lp"
+/** dislike product */
+ | "dp"
+/** remove product */
+ | "rp"
+/** bought product */
+ | "bp"
+/** view category */
+ | "vc"
+/** order */
+ | "or"
+/** internal search */
+ | "is"
+/** add to cart */
+ | "cp"
+/** external campaign */
+ | "ec"
+/** external search */
+ | "es"
+/** give coupon */
+ | "gc"
+/** source */
+ | "src"
+/** cart popup recommendations */
+ | "cpr"
+/** page load */
+ | "pl"
+/** custom campaign */
+ | "cc"
+/** content campaign */
+ | "con";
+/**
+ * @group Core
+ */
+type EventRefType = 
+/** triggered mail */
+"email"
+/** email widgets */
+ | "imgrec"
+/** onsite recommendations */
+ | "rec"
+/** api recommendations */
+ | "api"
+/** onsite campaigns */
+ | "oc"
+/** category merchandising */
+ | "cmp"
+/** onsite search */
+ | "os";
+/**
+ * @group Core
+ */
+type EventTuple = [
+    type: EventType,
+    target?: string,
+    ref?: string,
+    refSrc?: string,
+    targetFragment?: string,
+    refType?: EventRefType
+];
+/**
+ * @group Core
+ */
+interface Event {
+    type: EventType;
+    target?: string;
+    ref?: string;
+    refSrc?: string;
+    targetFragment?: string;
+    refType?: EventRefType;
 }
 
-interface Visits {
-    getCustomerId(): Maybe<string>;
-    getStore(): Store;
-    isDoNotTrack(): boolean;
-    setCustomerId(id: string): void;
-    setCustomerIdentifierService(s: Store): Store;
-    setDoNotTrack(dnt: boolean): boolean;
-    setStore(s: Store): Store;
+/** *****************************************************************************
+ * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
+ * <p>
+ * This software is the confidential and proprietary information of
+ * Nosto Solutions Ltd ("Confidential Information"). You shall not
+ * disclose such Confidential Information and shall use it only in
+ * accordance with the terms of the agreement you entered into with
+ * Nosto Solutions Ltd.
+ ***************************************************************************** */
+
+interface Attribution {
+    recordAttribution: (event: Event) => Attribution;
+    dumpData: () => EventTuple[];
+    done: () => Promise<void>;
 }
 
 type PerLinkAttributions = Record<string, Record<string, string>>;
-
-type StateMode = InsertMode | "HTML";
-declare function injectedCampaigns(): {
-    [x: string]: Readonly<{
-        mode: StateMode;
-        original?: readonly HTMLElement[];
-        replacement?: readonly HTMLElement[];
-        wrapper?: WrapMode;
-    }>;
-};
 
 interface Campaign$1 {
     html: string;
@@ -1873,24 +1933,373 @@ interface Placements {
     reset(): void;
 }
 
-type CurrencySettings = {
-    currencyBeforeAmount: boolean;
-    currencyToken?: string;
-    decimalCharacter?: string;
-    groupingSeparator?: string;
-    decimalPlaces: number;
+type ParseUriResult = Pick<URL, "href" | "protocol" | "hostname" | "hash" | "search" | "searchParams">;
+
+declare function clear(): void;
+declare function isDebug(): boolean;
+declare function isPreview(): boolean;
+declare function setPreview(optArg: boolean): void;
+declare function setRecotrace(optArg: boolean): void;
+declare function setSkipCache(optArg: boolean): void;
+declare function setDev(optArg: boolean): void;
+declare function setDebugState(optArg: DebugRequestParamsDTO | undefined): void;
+declare function isRecotraceEnabled(): boolean;
+declare function skipCache(): boolean;
+declare function getDebugState(): Maybe<DebugRequestParamsDTO>;
+declare function isBot(): boolean;
+declare const mode: {
+    isPreview: typeof isPreview;
+    setPreview: typeof setPreview;
+    setRecotrace: typeof setRecotrace;
+    setSkipCache: typeof setSkipCache;
+    setDev: typeof setDev;
+    setDebugState: typeof setDebugState;
+    clear: typeof clear;
+    isDebug: typeof isDebug;
+    isRecotraceEnabled: typeof isRecotraceEnabled;
+    skipCache: typeof skipCache;
+    getDebugState: typeof getDebugState;
+    isBot: typeof isBot;
 };
-type CurrencyFormats = {
-    [code: string]: CurrencySettings;
+
+type Mode = typeof mode;
+
+/**
+ * Callback function for nostojs
+ *
+ * @group Core
+ */
+type NostojsCallback = (api: API) => unknown;
+type InitOptions = {
+    responseMode?: RenderMode;
+    disableAutoLoad?: boolean;
+    disableRecommendations?: boolean;
 };
-declare function currencyFormats(): Promise<CurrencyFormats>;
+/**
+ * Main function to interact with the Nosto API.
+ * The function receives a callback function as a parameter and executes it with the API object as a parameter.
+ *
+ * @group Core
+ */
+type nostojs = {
+    (cb: NostojsCallback): Promise<unknown>;
+    /** @hidden */
+    q?: NostojsCallback[];
+    /** @hidden */
+    o?: InitOptions;
+};
+
+declare function windowTools(win: Window, scriptLoaderWindow: Window): {
+    window: Window;
+    loadScript: (url: string, callbackFn?: () => void, options?: {
+        module?: boolean;
+    }) => Promise<void>;
+    loadOnce: (url: string, callbackFn: () => void) => void;
+    xdr: (url: string, data: EventRequestMessageV1) => axios.AxiosPromise<unknown>;
+    domReady: (fn: () => void) => void;
+};
+type WindowTools = ReturnType<typeof windowTools>;
+/**
+ * @hidden
+ */
+interface Context {
+    namespace: string;
+    created: Date;
+    domHasLoaded: boolean;
+    loader: nostojs;
+    initOptions?: InitOptions;
+    updateSiteUrl: () => void;
+    siteUrl: ParseUriResult;
+    siteUrlCleaned: string;
+    requests: {
+        sent: unknown[];
+        received: unknown[];
+    };
+    referer?: ParseUriResult;
+    site: WindowTools;
+    nosto: WindowTools;
+    debugToken: string;
+    mode: Mode;
+    popupShown: boolean;
+}
+
+type PopupTrigger = "api" | "newCustomer" | "exitIntent" | "allCustomers" | "externalCampaign" | "abandonedCart";
+
+interface PopupAttributes {
+    coupon?: string;
+    state?: string;
+    campaignId?: string;
+    checkout?: boolean;
+}
+
+declare function readPopupAttributes(): Record<string, PopupAttributes>;
+declare function readPopupAttributes(popupId: string): PopupAttributes;
+
+declare function writePopupAttribute<K extends keyof PopupAttributes>(popupId: string, key: K, val?: PopupAttributes[K] | null): void;
+
+interface PopupEffect {
+    opacity_min?: number;
+    fadein_min?: number;
+}
+interface Condition {
+    hide_on_desktop?: boolean;
+    hide_on_mobile?: boolean;
+    min_cart_value?: number;
+    min_cart_size?: number;
+    max_cart_value?: number;
+    max_cart_size?: number;
+    min_page_views?: number;
+    max_page_views?: number;
+    locations?: string[][];
+    exc_locations?: string[][];
+    categories?: string[];
+    tags?: string[];
+    brands?: string[];
+    page_types?: string[];
+    urls?: string[];
+    exc_urls?: string[];
+    referer_urls?: string[];
+    url_parameters?: string[];
+    enabledInJs?: boolean;
+    enabled?: boolean;
+    treat_url_conditions_as_filters?: boolean;
+}
+interface PopupCart {
+    total: number;
+    size: number;
+}
+interface ResponseData {
+    ct?: number;
+    cs?: number;
+    pv?: number;
+    gl?: string[];
+}
+
+declare function activateOverlay(): void;
+declare function popupCampaigns(): {
+    id: string;
+    name: string;
+    type: PopupTrigger | undefined;
+}[] | undefined;
+declare function getOverlay(): {
+    sortedCampaignsWithType: () => (PopupTriggerSettingsDTO & {
+        type?: PopupTrigger;
+    })[];
+    activate: () => void;
+    campaignList: () => (PopupTriggerSettingsDTO & {
+        type?: PopupTrigger;
+    })[];
+    openPopup: (popupId: string, opts?: {
+        preview?: boolean;
+        effects?: Record<string, unknown>;
+    }) => string | undefined;
+    enablePopup: (popupId: string) => void;
+    disablePopup: (popupId: string) => void;
+    setTriggers: (responseData: EventResponseMessage) => void;
+    discountPopup: {
+        instance: {
+            internal: {
+                showPopup(showPopupOptions: {
+                    campaignId?: string;
+                    popupId?: string;
+                    effect: Partial<PopupEffect>;
+                    trigger: PopupTrigger;
+                    preview?: boolean;
+                    cart?: PopupCart;
+                }): void;
+                close(): void;
+            };
+            preview: (popupId: string, campaignId: string, effect?: PopupEffect) => void;
+            previewById: (popupId: string, effect: PopupEffect) => void;
+            open: (popupId: string, response: ResponseData | null, effect: PopupEffect, trigger: PopupTrigger) => void;
+            okToOpen: (popupId: string, condition: Condition, responseData?: ResponseData) => boolean;
+            openCheck: (popupId: string, condition?: Condition, responseData?: ResponseData) => string | null;
+            stampOnCheckoutPage: () => void;
+            openMinimized: () => void;
+            done: (popupId: string) => void;
+            writePopupAttribute: typeof writePopupAttribute;
+            readPopupAttributes: typeof readPopupAttributes;
+        } | null;
+        preview(popupId: string, campaignId: string, effect?: PopupEffect): {
+            internal: {
+                showPopup(showPopupOptions: {
+                    campaignId?: string;
+                    popupId?: string;
+                    effect: Partial<PopupEffect>;
+                    trigger: PopupTrigger;
+                    preview?: boolean;
+                    cart?: PopupCart;
+                }): void;
+                close(): void;
+            };
+            preview: (popupId: string, campaignId: string, effect?: PopupEffect) => void;
+            previewById: (popupId: string, effect: PopupEffect) => void;
+            open: (popupId: string, response: ResponseData | null, effect: PopupEffect, trigger: PopupTrigger) => void;
+            okToOpen: (popupId: string, condition: Condition, responseData?: ResponseData) => boolean;
+            openCheck: (popupId: string, condition?: Condition, responseData?: ResponseData) => string | null;
+            stampOnCheckoutPage: () => void;
+            openMinimized: () => void;
+            done: (popupId: string) => void;
+            writePopupAttribute: typeof writePopupAttribute;
+            readPopupAttributes: typeof readPopupAttributes;
+        };
+    };
+} | {
+    activate(): void;
+    campaignList(): (PopupTriggerSettingsDTO & {
+        type?: PopupTrigger;
+    })[];
+    openPopup(): void;
+    enablePopup(): void;
+    disablePopup(): void;
+    setTriggers(): void;
+    discountPopup: {
+        instance: {};
+        preview(): void;
+    };
+    sortedCampaignsWithType?: undefined;
+};
+declare function openPopup(popupId: string, options: object): void;
+declare function enablePopup(popupId: string): void;
+declare function disablePopup(popupId: string): void;
+
+/**
+ * The Settings type defines merchant specific settings for the client script.
+ *
+ * @group Core
+ */
+interface Settings extends ClientScriptSettingsDTO {
+    testing: boolean;
+    live: boolean;
+}
+declare function modifySettings(updates: Partial<Settings>): void;
+
+/** *****************************************************************************
+ * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
+ * <p>
+ * This software is the confidential and proprietary information of
+ * Nosto Solutions Ltd ("Confidential Information"). You shall not
+ * disclose such Confidential Information and shall use it only in
+ * accordance with the terms of the agreement you entered into with
+ * Nosto Solutions Ltd.
+ ***************************************************************************** */
+declare function recommendedProductAddedToCart(productId: string, recoId: string): Promise<void>;
+
+/** *****************************************************************************
+ * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
+ * <p>
+ * This software is the confidential and proprietary information of
+ * Nosto Solutions Ltd ("Confidential Information"). You shall not
+ * disclose such Confidential Information and shall use it only in
+ * accordance with the terms of the agreement you entered into with
+ * Nosto Solutions Ltd.
+ ***************************************************************************** */
+declare function reportCouponGiven(campaignId: string, couponCode: string, couponUsed: boolean): Promise<void>;
+
+declare function addSegment(segment: string): Promise<void>;
+
+declare function findProducts(): Product[];
+
+declare function findCustomer(): PushedCustomer | undefined;
+
+/** *****************************************************************************
+ * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
+ * <p>
+ * This software is the confidential and proprietary information of
+ * Nosto Solutions Ltd ("Confidential Information"). You shall not
+ * disclose such Confidential Information and shall use it only in
+ * accordance with the terms of the agreement you entered into with
+ * Nosto Solutions Ltd.
+ ***************************************************************************** */
+
+declare function findCart(): Cart | undefined;
+
+declare function findOrder(): WebsiteOrder | undefined;
+
+declare function findPluginVersions(): PluginMetadata | undefined;
+
+declare function findCurrentVariation(): Maybe<string>;
+declare function findSearchTerms(): Maybe<string[]>;
+declare function findCurrentCategories(): Maybe<string[]>;
+declare function findCurrentCategoryIds(): Maybe<string[]>;
+declare function findCurrentParentCategoryIds(): Maybe<string[]>;
+declare function findCurrentTags(): Maybe<string[]>;
+declare function findCurrentCustomFields(): Maybe<Record<string, string[]>>;
+declare function findRestoreLink(): Maybe<string>;
+declare function findAffinitySignals(): Maybe<Record<string, string[]>>;
+declare function findPageType(): Maybe<PageType>;
+declare function findSortOrder(): Maybe<string>;
+declare function findElements(ignoredPlacements: string[]): Maybe<string[]>;
+
+declare function pageTagging(): TaggingData;
+declare const taggingProviders: {
+    products: typeof findProducts;
+    cart: typeof findCart;
+    customer: typeof findCustomer;
+    order: typeof findOrder;
+    searchTerms: typeof findSearchTerms;
+    categories: typeof findCurrentCategories;
+    categoryIds: typeof findCurrentCategoryIds;
+    parentCategoryIds: typeof findCurrentParentCategoryIds;
+    tags: typeof findCurrentTags;
+    customFields: typeof findCurrentCustomFields;
+    variation: typeof findCurrentVariation;
+    pluginVersion: typeof findPluginVersions;
+    elements: typeof findElements;
+    restoreLink: typeof findRestoreLink;
+    affinitySignals: typeof findAffinitySignals;
+    pageType: typeof findPageType;
+    sortOrder: typeof findSortOrder;
+};
+type Options = {
+    priority?: boolean;
+};
+declare function setTaggingProvider<T extends keyof TaggingData>(name: T, provider: (typeof taggingProviders)[T], options?: Options): void;
+
+/**
+ * Resends all the tagging to Nosto. Only the page tagging is sent over
+ * and nothing else - no placements, no events, nothing.
+ * This method was originally used by the Magento 2 plugin. In the Magento 2 plugin
+ * the order tagging was loaded asynchronously so a method like this was needed.
+ */
+declare function resendAllTagging(): Promise<void>;
+
+/** *****************************************************************************
+ * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
+ * <p>
+ * This software is the confidential and proprietary information of
+ * Nosto Solutions Ltd ("Confidential Information"). You shall not
+ * disclose such Confidential Information and shall use it only in
+ * accordance with the terms of the agreement you entered into with
+ * Nosto Solutions Ltd.
+ ***************************************************************************** */
+
+declare function createSession(): Session;
+
+/**
+ * Resends the cart tagging to Nosto. Only the cart information is sent over
+ * and nothing else - no placements, no events, nothing.
+ * This method was originally used by the Magento 2 plugin. In the Magento 2 plugin
+ * the cart tagging is loaded asynchronously so a method like this was needed.
+ * @return {Promise}
+ */
+declare function resendCartTagging(): Promise<void>;
+/**
+ * Resends the customer tagging to Nosto. Only the c  ustomer information is sent over
+ * and nothing else - no placements, no events, nothing.
+ * This method was originally used by the Magento 2 plugin. In the Magento 2 plugin
+ * the customer tagging is loaded asynchronously so a method like this was needed.
+ *
+ * @return {Promise}
+ */
+declare function resendCustomerTagging(): Promise<void>;
 
 /**
  * @group Search
  */
 type SearchHit = {
     productId: string;
-    url: string;
+    url?: string;
 } & Record<string, unknown>;
 /**
  * @group Search
@@ -3014,17 +3423,9 @@ type SearchOptions = {
 } & SearchAnalyticsOptions;
 
 /**
- * Search function
- */
-declare function search(query: SearchQuery, options?: SearchOptions): Promise<SearchResult>;
-
-declare function getSearchSessionParams(): Promise<SearchSessionParams>;
-
-/**
  * Record search event, should be send on any search
  */
 declare function recordSearch(type: SearchTrackOptions, query: SearchQuery, response: SearchResult, options?: SearchAnalyticsOptions): void;
-declare function reportSearchImpression(productIds: string[] | undefined, metadata: SearchEventMetadata, page: number | undefined, properties: Maybe<AnalyticEventProperties>): Promise<void>;
 /**
  * Record search submit event (e.g. search form submit). Required to track organic searches.
  */
@@ -3034,36 +3435,34 @@ declare function recordSearchSubmit(query: string): void;
  * Record search click event
  */
 declare function recordSearchClick(type: SearchTrackOptions, hit: SearchHit): void;
-declare function storeSearchClick(productId: string | undefined, metadata: SearchEventMetadata, productUrl: string, properties: Maybe<AnalyticEventProperties>): void;
-
-declare function addSegment(segment: string): Promise<void>;
 
 /**
- * Resends the cart tagging to Nosto. Only the cart information is sent over
- * and nothing else - no placements, no events, nothing.
- * This method was originally used by the Magento 2 plugin. In the Magento 2 plugin
- * the cart tagging is loaded asynchronously so a method like this was needed.
- * @return {Promise}
+ * Search function
  */
-declare function resendCartTagging(): Promise<void>;
-/**
- * Resends the customer tagging to Nosto. Only the c  ustomer information is sent over
- * and nothing else - no placements, no events, nothing.
- * This method was originally used by the Magento 2 plugin. In the Magento 2 plugin
- * the customer tagging is loaded asynchronously so a method like this was needed.
- *
- * @return {Promise}
- */
-declare function resendCustomerTagging(): Promise<void>;
+declare function search(query: SearchQuery, options?: SearchOptions): Promise<SearchResult>;
 
-declare function setCustomer(customer: PushedCustomer): Promise<void>;
+declare function getSearchSessionParams(): Promise<SearchSessionParams>;
 
-declare function setExperiments(experiments: Experiment[]): Promise<void>;
-
-declare function recommendedProductAddedToCart(productId: string, recoId: string): Promise<void>;
-
+/** *****************************************************************************
+ * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
+ * <p>
+ * This software is the confidential and proprietary information of
+ * Nosto Solutions Ltd ("Confidential Information"). You shall not
+ * disclose such Confidential Information and shall use it only in
+ * accordance with the terms of the agreement you entered into with
+ * Nosto Solutions Ltd.
+ ***************************************************************************** */
 type Level = "log" | "warn" | "error" | "debug" | "info";
 
+/** *****************************************************************************
+ * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
+ * <p>
+ * This software is the confidential and proprietary information of
+ * Nosto Solutions Ltd ("Confidential Information"). You shall not
+ * disclose such Confidential Information and shall use it only in
+ * accordance with the terms of the agreement you entered into with
+ * Nosto Solutions Ltd.
+ ***************************************************************************** */
 interface Violation {
     key: string;
     message_key: string;
@@ -3226,393 +3625,26 @@ type InternalEvents = {
  * @interface
  */
 type EventMapping = LifecyleEvents & PopupEvents & InternalEvents;
+type E = keyof EventMapping;
+type Callback<T extends E> = (...args: EventMapping[T]) => void;
+
+type CurrencySettings = {
+    currencyBeforeAmount: boolean;
+    currencyToken?: string;
+    decimalCharacter?: string;
+    groupingSeparator?: string;
+    decimalPlaces: number;
+};
+type CurrencyFormats = {
+    [code: string]: CurrencySettings;
+};
+declare function currencyFormats(): Promise<CurrencyFormats>;
 
 declare function setAutoLoad(flag: boolean): void;
 declare function isAutoLoad(): boolean;
 
-declare function createSession(): Session;
+declare function setExperiments(experiments: Experiment[]): Promise<void>;
 
-/**
- * The Settings type defines merchant specific settings for the client script.
- *
- * @group Core
- */
-interface Settings extends ClientScriptSettingsDTO {
-    testing: boolean;
-    live: boolean;
-}
-declare function modifySettings(updates: Partial<Settings>): void;
-
-declare function load$1(): Promise<void>;
-
-declare function load(): Promise<void>;
-
-declare function reportCouponGiven(campaignId: string, couponCode: string, couponUsed: boolean): Promise<void>;
-
-declare function findProducts(): Product[];
-
-declare function findCustomer(): PushedCustomer | undefined;
-
-declare function findCart(): Cart | undefined;
-
-declare function findOrder(): WebsiteOrder | undefined;
-
-declare function findPluginVersions(): PluginMetadata | undefined;
-
-declare function findCurrentVariation(): Maybe<string>;
-declare function findSearchTerms(): Maybe<string[]>;
-declare function findCurrentCategories(): Maybe<string[]>;
-declare function findCurrentCategoryIds(): Maybe<string[]>;
-declare function findCurrentParentCategoryIds(): Maybe<string[]>;
-declare function findCurrentTags(): Maybe<string[]>;
-declare function findCurrentCustomFields(): Maybe<Record<string, string[]>>;
-declare function findRestoreLink(): Maybe<string>;
-declare function findPageType(): Maybe<PageType>;
-declare function findSortOrder(): Maybe<string>;
-declare function findElements(ignoredPlacements: string[]): Maybe<string[]>;
-
-/**
- * Resends all the tagging to Nosto. Only the page tagging is sent over
- * and nothing else - no placements, no events, nothing.
- * This method was originally used by the Magento 2 plugin. In the Magento 2 plugin
- * the order tagging was loaded asynchronously so a method like this was needed.
- *
- * @return {Promise}
- */
-declare function resendAllTagging(): Promise<void>;
-declare function pageTagging(): TaggingData;
-declare const taggingProviders: {
-    products: typeof findProducts;
-    cart: typeof findCart;
-    customer: typeof findCustomer;
-    order: typeof findOrder;
-    searchTerms: typeof findSearchTerms;
-    categories: typeof findCurrentCategories;
-    categoryIds: typeof findCurrentCategoryIds;
-    parentCategoryIds: typeof findCurrentParentCategoryIds;
-    tags: typeof findCurrentTags;
-    customFields: typeof findCurrentCustomFields;
-    variation: typeof findCurrentVariation;
-    pluginVersion: typeof findPluginVersions;
-    elements: typeof findElements;
-    restoreLink: typeof findRestoreLink;
-    pageType: typeof findPageType;
-    sortOrder: typeof findSortOrder;
-};
-declare function setTaggingProvider<T extends keyof TaggingData>(name: T, provider: (typeof taggingProviders)[T]): void;
-
-interface PopupAttributes {
-    coupon?: string;
-    state?: string;
-    campaignId?: string;
-    checkout?: boolean;
-}
-
-declare function readPopupAttributes(): Record<string, PopupAttributes>;
-declare function readPopupAttributes(popupId: string): PopupAttributes;
-
-declare function writePopupAttribute<K extends keyof PopupAttributes>(popupId: string, key: K, val?: PopupAttributes[K] | null): void;
-
-interface PopupEffect {
-    opacity_min?: number;
-    fadein_min?: number;
-}
-interface Condition {
-    hide_on_desktop?: boolean;
-    hide_on_mobile?: boolean;
-    min_cart_value?: number;
-    min_cart_size?: number;
-    max_cart_value?: number;
-    max_cart_size?: number;
-    min_page_views?: number;
-    max_page_views?: number;
-    locations?: string[][];
-    exc_locations?: string[][];
-    categories?: string[];
-    tags?: string[];
-    brands?: string[];
-    page_types?: string[];
-    urls?: string[];
-    exc_urls?: string[];
-    referer_urls?: string[];
-    url_parameters?: string[];
-    enabledInJs?: boolean;
-    enabled?: boolean;
-    treat_url_conditions_as_filters?: boolean;
-}
-interface PopupCart {
-    total: number;
-    size: number;
-}
-interface ResponseData {
-    ct?: number;
-    cs?: number;
-    pv?: number;
-    gl?: string[];
-}
-
-declare function activateOverlay(): void;
-declare function popupCampaigns(): {
-    id: string;
-    name: string;
-    type: string | undefined;
-}[] | undefined;
-declare function getOverlay(): {
-    sortedCampaignsWithType: () => (PopupTriggerSettingsDTO & {
-        type?: string;
-    })[];
-    activate: () => void;
-    campaignList: () => (PopupTriggerSettingsDTO & {
-        type?: string;
-    })[];
-    openPopup: (popupId: string, opts?: {
-        preview?: boolean;
-        effects?: Record<string, unknown>;
-    }) => string | undefined;
-    enablePopup: (popupId: string) => void;
-    disablePopup: (popupId: string) => void;
-    setTriggers: (responseData: EventResponseMessage) => void;
-    discountPopup: {
-        instance: {
-            internal: {
-                showPopup(showPopupOptions: {
-                    campaignId?: string;
-                    popupId?: string;
-                    effect: Partial<PopupEffect>;
-                    trigger: string;
-                    preview?: boolean;
-                    cart?: PopupCart;
-                }): void;
-                close(): void;
-            };
-            preview: (popupId: string, campaignId: string, effect?: PopupEffect) => void;
-            previewById: (popupId: string, effect: PopupEffect) => void;
-            open: (popupId: string, response: ResponseData | null, effect: PopupEffect, trigger: string) => void;
-            okToOpen: (popupId: string, condition: Condition, responseData?: ResponseData) => boolean;
-            openCheck: (popupId: string, condition?: Condition, responseData?: ResponseData) => string | null;
-            stampOnCheckoutPage: () => void;
-            openMinimized: () => void;
-            done: (popupId: string) => void;
-            writePopupAttribute: typeof writePopupAttribute;
-            readPopupAttributes: typeof readPopupAttributes;
-        } | null;
-        preview(popupId: string, campaignId: string, effect?: PopupEffect): {
-            internal: {
-                showPopup(showPopupOptions: {
-                    campaignId?: string;
-                    popupId?: string;
-                    effect: Partial<PopupEffect>;
-                    trigger: string;
-                    preview?: boolean;
-                    cart?: PopupCart;
-                }): void;
-                close(): void;
-            };
-            preview: (popupId: string, campaignId: string, effect?: PopupEffect) => void;
-            previewById: (popupId: string, effect: PopupEffect) => void;
-            open: (popupId: string, response: ResponseData | null, effect: PopupEffect, trigger: string) => void;
-            okToOpen: (popupId: string, condition: Condition, responseData?: ResponseData) => boolean;
-            openCheck: (popupId: string, condition?: Condition, responseData?: ResponseData) => string | null;
-            stampOnCheckoutPage: () => void;
-            openMinimized: () => void;
-            done: (popupId: string) => void;
-            writePopupAttribute: typeof writePopupAttribute;
-            readPopupAttributes: typeof readPopupAttributes;
-        };
-    };
-} | {
-    activate(): void;
-    campaignList(): (PopupTriggerSettingsDTO & {
-        type?: string;
-    })[];
-    openPopup(): void;
-    enablePopup(): void;
-    disablePopup(): void;
-    setTriggers(): void;
-    discountPopup: {
-        instance: {};
-        preview(): void;
-    };
-    sortedCampaignsWithType?: undefined;
-};
-declare function openPopup(popupId: string, options: object): void;
-declare function enablePopup(popupId: string): void;
-declare function disablePopup(popupId: string): void;
-
-type ParseUriResult = Pick<URL, "href" | "protocol" | "hostname" | "hash" | "search" | "searchParams">;
-
-declare function clear(): void;
-declare function isDebug(): boolean;
-declare function isPreview(): boolean;
-declare function setPreview(optArg: boolean): void;
-declare function setRecotrace(optArg: boolean): void;
-declare function setSkipCache(optArg: boolean): void;
-declare function setDev(optArg: boolean): void;
-declare function setDebugState(optArg: DebugRequestParamsDTO | undefined): void;
-declare function isRecotraceEnabled(): boolean;
-declare function skipCache(): boolean;
-declare function getDebugState(): Maybe<DebugRequestParamsDTO>;
-declare function isBot(): boolean;
-declare const mode: {
-    isPreview: typeof isPreview;
-    setPreview: typeof setPreview;
-    setRecotrace: typeof setRecotrace;
-    setSkipCache: typeof setSkipCache;
-    setDev: typeof setDev;
-    setDebugState: typeof setDebugState;
-    clear: typeof clear;
-    isDebug: typeof isDebug;
-    isRecotraceEnabled: typeof isRecotraceEnabled;
-    skipCache: typeof skipCache;
-    getDebugState: typeof getDebugState;
-    isBot: typeof isBot;
-};
-
-type Mode = typeof mode;
-
-/**
- * Callback function for nostojs
- *
- * @group Core
- */
-type NostojsCallback = (api: API) => unknown;
-type InitOptions = {
-    responseMode?: RenderMode;
-    disableAutoLoad?: boolean;
-    disableRecommendations?: boolean;
-};
-/**
- * Main function to interact with the Nosto API.
- * The function receives a callback function as a parameter and executes it with the API object as a parameter.
- *
- * @group Core
- */
-type nostojs = {
-    (cb: NostojsCallback): Promise<unknown>;
-    /** @hidden */
-    q?: NostojsCallback[];
-    /** @hidden */
-    o?: InitOptions;
-};
-
-declare function windowTools(win: Window, scriptLoaderWindow: Window): {
-    window: Window;
-    loadScript: (url: string, callbackFn?: () => void, options?: {
-        module?: boolean;
-    }) => Promise<void>;
-    loadOnce: (url: string, callbackFn: () => void) => void;
-    xdr: (url: string, data: EventRequestMessageV1) => axios.AxiosPromise<unknown>;
-    domReady: (fn: () => void) => void;
-};
-type WindowTools = ReturnType<typeof windowTools>;
-/**
- * @hidden
- */
-interface Context {
-    namespace: string;
-    created: Date;
-    domHasLoaded: boolean;
-    loader: nostojs;
-    initOptions?: InitOptions;
-    updateSiteUrl: () => void;
-    siteUrl: ParseUriResult;
-    siteUrlCleaned: string;
-    requests: {
-        sent: unknown[];
-        received: unknown[];
-    };
-    referer?: ParseUriResult;
-    site: WindowTools;
-    nosto: WindowTools;
-    debugToken: string;
-    mode: Mode;
-    popupShown: boolean;
-}
-
-type Campaign = PopupTriggerSettingsDTO & {
-    type?: string;
-};
-declare function createOverlay(): {
-    sortedCampaignsWithType: () => Campaign[];
-    activate: () => void;
-    campaignList: () => Campaign[];
-    openPopup: (popupId: string, opts?: {
-        preview?: boolean;
-        effects?: Record<string, unknown>;
-    }) => string | undefined;
-    enablePopup: (popupId: string) => void;
-    disablePopup: (popupId: string) => void;
-    setTriggers: (responseData: EventResponseMessage) => void;
-    discountPopup: {
-        instance: {
-            internal: {
-                showPopup(showPopupOptions: {
-                    campaignId?: string;
-                    popupId?: string;
-                    effect: Partial<PopupEffect>;
-                    trigger: string;
-                    preview?: boolean;
-                    cart?: PopupCart;
-                }): void;
-                close(): void;
-            };
-            preview: (popupId: string, campaignId: string, effect?: PopupEffect) => void;
-            previewById: (popupId: string, effect: PopupEffect) => void;
-            open: (popupId: string, response: ResponseData | null, effect: PopupEffect, trigger: string) => void;
-            okToOpen: (popupId: string, condition: Condition, responseData?: ResponseData) => boolean;
-            openCheck: (popupId: string, condition?: Condition, responseData?: ResponseData) => string | null;
-            stampOnCheckoutPage: () => void;
-            openMinimized: () => void;
-            done: (popupId: string) => void;
-            writePopupAttribute: typeof writePopupAttribute;
-            readPopupAttributes: typeof readPopupAttributes;
-        } | null;
-        preview(popupId: string, campaignId: string, effect?: PopupEffect): {
-            internal: {
-                showPopup(showPopupOptions: {
-                    campaignId?: string;
-                    popupId?: string;
-                    effect: Partial<PopupEffect>;
-                    trigger: string;
-                    preview?: boolean;
-                    cart?: PopupCart;
-                }): void;
-                close(): void;
-            };
-            preview: (popupId: string, campaignId: string, effect?: PopupEffect) => void;
-            previewById: (popupId: string, effect: PopupEffect) => void;
-            open: (popupId: string, response: ResponseData | null, effect: PopupEffect, trigger: string) => void;
-            okToOpen: (popupId: string, condition: Condition, responseData?: ResponseData) => boolean;
-            openCheck: (popupId: string, condition?: Condition, responseData?: ResponseData) => string | null;
-            stampOnCheckoutPage: () => void;
-            openMinimized: () => void;
-            done: (popupId: string) => void;
-            writePopupAttribute: typeof writePopupAttribute;
-            readPopupAttributes: typeof readPopupAttributes;
-        };
-    };
-} | {
-    activate(): void;
-    campaignList(): (PopupTriggerSettingsDTO & {
-        type?: string;
-    })[];
-    openPopup(): void;
-    enablePopup(): void;
-    disablePopup(): void;
-    setTriggers(): void;
-    discountPopup: {
-        instance: {};
-        preview(): void;
-    };
-    sortedCampaignsWithType?: undefined;
-};
-
-/**
- * @hidden
- */
-type Overlay = ReturnType<typeof createOverlay>;
-
-declare function noop(): void;
 type Install = {
     context: Context;
     settings: Settings;
@@ -3630,7 +3662,6 @@ type Install = {
 declare const api: {
     /** @hidden */
     internal: {
-        context: Context;
         logger: {
             log: (...args: unknown[]) => void;
             warn: (...args: unknown[]) => void;
@@ -3638,60 +3669,15 @@ declare const api: {
             error: (...args: unknown[]) => void;
             debug: (...args: unknown[]) => void;
         };
-        activateOverlay: typeof activateOverlay;
-        popupCampaigns: typeof popupCampaigns;
-        reloadOverlay: () => void;
-        getOverlay: typeof getOverlay;
-        openPopup: typeof openPopup;
-        enablePopup: typeof enablePopup;
-        disablePopup: typeof disablePopup;
-        extractTagging: typeof pageTagging;
-        couponGiven: typeof reportCouponGiven;
-        loadToolbar: typeof load;
-        loadUnsubscribePanel: typeof load$1;
-        modifySettings: typeof modifySettings;
-        getSettings: () => Settings;
-        addPageTaggingToRequest: (request: RequestBuilder, sendElements: boolean, unwrappedReference?: string) => void;
-        removeCampaigns: (divIds: string[]) => void;
-        showPlacementPreviews: (placement: {
-            element: HTMLElement;
-            mode: InsertMode;
-        }, content: string) => void;
-        injectedCampaigns: typeof injectedCampaigns;
-        createSession: typeof createSession;
-        defaultSession: () => Session;
-        createRecommendationRequest: (flags?: {
-            includeTagging?: boolean;
-        }) => RequestBuilder;
-        setAutoLoad: typeof setAutoLoad;
-        isAutoLoad: typeof isAutoLoad;
-        setRecommendationsEnabled: (flag: boolean) => void;
-        listen: <T extends keyof EventMapping>(phase: T, callback: (...args: EventMapping[T]) => void) => void;
-        load: () => Promise<void> | Promise<EventResponseMessage>;
-        loadRecommendations: (element?: string | {
-            markNostoElementClicked: string;
-        }) => Promise<EventResponseMessage>;
-        loadCartPopupRecommendations: (products: PushedProduct[], cart: PushedCart, alwaysShow: boolean) => Promise<EventResponseMessage>;
-        recommendedProductAddedToCart: typeof recommendedProductAddedToCart;
-        setExperiments: typeof setExperiments;
-        setCustomer: typeof setCustomer;
-        resendCartContent: (cart: PushedCart) => Promise<void>;
-        resendCartTagging: typeof resendCartTagging;
-        resendCustomerTagging: typeof resendCustomerTagging;
-        sendTagging: typeof resendAllTagging;
         setTaggingProvider: typeof setTaggingProvider;
-        addSegment: typeof addSegment;
-        getSegments: () => Promise<SegmentsResponseBean>;
-        getCustomAffinities: () => Promise<CustomerAffinityResponse>;
-        reportSearchClick: typeof storeSearchClick;
-        reportSearchImpression: typeof reportSearchImpression;
-        getSearchSessionParams: typeof getSearchSessionParams;
-        search: typeof search;
-        recordSearch: typeof recordSearch;
-        recordSearchClick: typeof recordSearchClick;
-        recordSearchSubmit: typeof recordSearchSubmit;
-        recordAttribution: (event: Event) => Attribution;
+        getSettings: () => Settings;
+        modifySettings: typeof modifySettings;
+        getOverlay: typeof getOverlay;
+        activateOverlay: typeof activateOverlay;
+        context: Context;
         getCurrencyFormats: typeof currencyFormats;
+        couponGiven: typeof reportCouponGiven;
+        getCustomAffinities: () => Promise<CustomerAffinityResponse>;
     };
     placements: Placements;
     visit: Visits;
@@ -3699,7 +3685,7 @@ declare const api: {
      * @deprecated since this was a quick hack for usage in Codepen.IO
      * @hidden
      */
-    setResponseMode: typeof noop;
+    setResponseMode: () => void;
     /**
      * API method create a new session. This should be used when you might want to
      * have multiple sessions on the same page. In most cases, using
@@ -4002,7 +3988,7 @@ declare const api: {
     showPlacementPreviews: (placement: {
         element: HTMLElement;
         mode: InsertMode;
-    }, content: string) => void;
+    }, content: string | HTMLElement) => void;
     /**
      * @deprecated since this is for debug-toolbar usage only and should not be in the public API
      * @hidden
@@ -4072,4 +4058,112 @@ declare const api: {
  * */
 type API = typeof api;
 
-export type { ABTest, API, AbTestDraftPreviewSettingsDTO, AbTestPreviewSettingsBase, AbTestPreviewSettingsDTO, AbTestVariation, AbTestVariationDTO, AbstractFacebookPixelEvent, AbstractStacklaPixelEvent, Action, ActionResponse, ActiveVisitDTO, Addtocart, AnalyticEvent, AnalyticEventProperties, AnalyticsType, BigcommerceCustomerInfo, CampaignId, Cart, CartItem, Carttaggingresent, CategoryClick, CategoryEvent, CategoryEventMetadata, CategoryImpression, ClientScriptSettingsDTO, ConditionDTO, ContentDebugDTO, ContentId, Context, ConversionItem, Coupongiven, CrawlResponse, CustomerAffinityResponse, CustomerAffinityResponseItem, CustomerDTO, CustomerToken, DebugRequestParamsDTO, DebugToolbarDataDTO, DynamicPlacementDTO, Effect, Endpoint, Event, EventAttributionMetadata, EventAttributionParams, EventFields, EventMapping, EventRefType, EventRequestMessageV1, EventResponseMessage, EventTuple, EventType, Events, Experiment, FacebookData, FilterOperator, FilterRule, ForcedTestDTO, GoogleAnalyticsData, InputSearchABTest, InputSearchABTestVariation, InputSearchBoost, InputSearchFacetConfig, InputSearchFilter, InputSearchHighlight, InputSearchKeywords, InputSearchPin, InputSearchProducts, InputSearchQuery, InputSearchRangeFilter, InputSearchRule, InputSearchRuleMatch, InputSearchSchedule, InputSearchSort, InputSearchTopLevelFilter, InsertMode, Method, NostoSku, NostoVariant, NostojsCallback, OnsiteFeature, OrderCustomer, OrderInfo, OverlapCampaignDTO, Overlay, PageType, PersonalizationBoost, PlacementDebugDTO, PlacementRuleDTO, Placements, Popup, PopupCampaignPreviewSettingsDTO, PopupCouponGiven, PopupEmailCollected, PopupEvent, PopupTriggerSettingsDTO, PopupTriggered, Popupopened, Postrender, Prerender, Product, ProductPushResponse, PushedCustomer, PushedProduct, PushedProductSKU, PushedVariation, Query, QuerySearchArgs, RecommendationDebugDTO, RecommendationId, RecommendationRequestFlags, RenderMode, RequestBuilder, ScheduleTime, Scripterror, SearchAnalyticsOptions, SearchAutocorrect, SearchClick, SearchEvent, SearchEventMetadata, SearchExclusionBehaviour, SearchExplain, SearchExplainRule, SearchFacet, SearchFacetOrder, SearchFacetTerm, SearchFacetType, SearchFailureEventDTO, SearchHighlight, SearchHit, SearchImpression, SearchKeyword, SearchKeywords, SearchOptions, SearchOutOfStockBehaviour, SearchPageType, SearchParamComparisonFunction, SearchProduct, SearchProductAffinities, SearchProductAiDetected, SearchProductCustomField, SearchProductExtra, SearchProductKeyedVariation, SearchProductSku, SearchProductStats, SearchProducts, SearchQuery, SearchQueryField, SearchResult, SearchRuleScheduleType, SearchRuleScheduleWeekday, SearchSessionParams, SearchSortOrder, SearchStatsFacet, SearchSuccessEventDTO, SearchTermsFacet, SearchTrackOptions, SearchVariationValue, SegmentDebugDTO, SegmentInfoBean, SegmentRuleDebugDTO, Segments, SegmentsResponseBean, Session, Setexperiments, Settings, Sku, StacklaTrackingData, StacklaWidgetDebugDTO, StacklaWidgetEmbedId, StacklaWidgetFilterType, TaggingData, TargetType, TestDebugDTO, TestId, TestPlacementRuleDTO, TestPreviewsDTO, UnsavedDraftPreviewSettingsDTO, ValidationError, VariationWithRulesDTO, VisitDTO, Visits, WebsiteOrder, WidgetPlacement, WidgetPlacementRule, WrapMode, nostojs };
+type Campaign = PopupTriggerSettingsDTO & {
+    type?: PopupTrigger;
+};
+declare function createOverlay(): {
+    sortedCampaignsWithType: () => Campaign[];
+    activate: () => void;
+    campaignList: () => Campaign[];
+    openPopup: (popupId: string, opts?: {
+        preview?: boolean;
+        effects?: Record<string, unknown>;
+    }) => string | undefined;
+    enablePopup: (popupId: string) => void;
+    disablePopup: (popupId: string) => void;
+    setTriggers: (responseData: EventResponseMessage) => void;
+    discountPopup: {
+        instance: {
+            internal: {
+                showPopup(showPopupOptions: {
+                    campaignId?: string;
+                    popupId?: string;
+                    effect: Partial<PopupEffect>;
+                    trigger: PopupTrigger;
+                    preview?: boolean;
+                    cart?: PopupCart;
+                }): void;
+                close(): void;
+            };
+            preview: (popupId: string, campaignId: string, effect?: PopupEffect) => void;
+            previewById: (popupId: string, effect: PopupEffect) => void;
+            open: (popupId: string, response: ResponseData | null, effect: PopupEffect, trigger: PopupTrigger) => void;
+            okToOpen: (popupId: string, condition: Condition, responseData?: ResponseData) => boolean;
+            openCheck: (popupId: string, condition?: Condition, responseData?: ResponseData) => string | null;
+            stampOnCheckoutPage: () => void;
+            openMinimized: () => void;
+            done: (popupId: string) => void;
+            writePopupAttribute: typeof writePopupAttribute;
+            readPopupAttributes: typeof readPopupAttributes;
+        } | null;
+        preview(popupId: string, campaignId: string, effect?: PopupEffect): {
+            internal: {
+                showPopup(showPopupOptions: {
+                    campaignId?: string;
+                    popupId?: string;
+                    effect: Partial<PopupEffect>;
+                    trigger: PopupTrigger;
+                    preview?: boolean;
+                    cart?: PopupCart;
+                }): void;
+                close(): void;
+            };
+            preview: (popupId: string, campaignId: string, effect?: PopupEffect) => void;
+            previewById: (popupId: string, effect: PopupEffect) => void;
+            open: (popupId: string, response: ResponseData | null, effect: PopupEffect, trigger: PopupTrigger) => void;
+            okToOpen: (popupId: string, condition: Condition, responseData?: ResponseData) => boolean;
+            openCheck: (popupId: string, condition?: Condition, responseData?: ResponseData) => string | null;
+            stampOnCheckoutPage: () => void;
+            openMinimized: () => void;
+            done: (popupId: string) => void;
+            writePopupAttribute: typeof writePopupAttribute;
+            readPopupAttributes: typeof readPopupAttributes;
+        };
+    };
+} | {
+    activate(): void;
+    campaignList(): (PopupTriggerSettingsDTO & {
+        type?: PopupTrigger;
+    })[];
+    openPopup(): void;
+    enablePopup(): void;
+    disablePopup(): void;
+    setTriggers(): void;
+    discountPopup: {
+        instance: {};
+        preview(): void;
+    };
+    sortedCampaignsWithType?: undefined;
+};
+
+/**
+ * @hidden
+ */
+type Overlay = ReturnType<typeof createOverlay>;
+
+interface Store {
+    getCustomerId(): Maybe<string>;
+    setCustomerId(id: string): void;
+}
+
+/** *****************************************************************************
+ * Copyright (c) 2024 Nosto Solutions Ltd All Rights Reserved.
+ * <p>
+ * This software is the confidential and proprietary information of
+ * Nosto Solutions Ltd ("Confidential Information"). You shall not
+ * disclose such Confidential Information and shall use it only in
+ * accordance with the terms of the agreement you entered into with
+ * Nosto Solutions Ltd.
+ ***************************************************************************** */
+
+interface Visits {
+    getCustomerId(): Maybe<string>;
+    getStore(): Store;
+    isDoNotTrack(): boolean;
+    setCustomerId(id: string | undefined): void;
+    setCustomerIdentifierService(s: Store): Store;
+    setDoNotTrack(dnt: boolean): boolean;
+    setStore(s: Store): Store;
+}
+
+export type { ABTest, API, AbTestDraftPreviewSettingsDTO, AbTestPreviewSettingsBase, AbTestPreviewSettingsDTO, AbTestVariation, AbTestVariationDTO, AbstractFacebookPixelEvent, AbstractStacklaPixelEvent, Action, ActionResponse, ActiveVisitDTO, Addtocart, AnalyticEvent, AnalyticEventProperties, AnalyticsType, BigcommerceCustomerInfo, Callback, CampaignId, Cart, CartItem, Carttaggingresent, CategoryClick, CategoryEvent, CategoryEventMetadata, CategoryImpression, ClientScriptSettingsDTO, ConditionDTO, ContentDebugDTO, ContentId, Context, ConversionItem, Coupongiven, CrawlResponse, CustomerAffinityResponse, CustomerAffinityResponseItem, CustomerDTO, CustomerToken, DebugRequestParamsDTO, DebugToolbarDataDTO, DynamicPlacementDTO, Effect, Endpoint, Event, EventAttributionMetadata, EventAttributionParams, EventFields, EventMapping, EventRefType, EventRequestMessageV1, EventResponseMessage, EventTuple, EventType, Events, Experiment, FacebookData, FilterOperator, FilterRule, ForcedTestDTO, GoogleAnalyticsData, InputSearchABTest, InputSearchABTestVariation, InputSearchBoost, InputSearchFacetConfig, InputSearchFilter, InputSearchHighlight, InputSearchKeywords, InputSearchPin, InputSearchProducts, InputSearchQuery, InputSearchRangeFilter, InputSearchRule, InputSearchRuleMatch, InputSearchSchedule, InputSearchSort, InputSearchTopLevelFilter, InsertMode, Method, NostoSku, NostoVariant, NostojsCallback, OnsiteFeature, OrderCustomer, OrderInfo, OverlapCampaignDTO, Overlay, PageType, PersonalizationBoost, PlacementDebugDTO, PlacementRuleDTO, Placements, Popup, PopupCampaignPreviewSettingsDTO, PopupCouponGiven, PopupEmailCollected, PopupEvent, PopupTriggerSettingsDTO, PopupTriggered, Popupopened, PostPurchaseOffer, PostPurchaseRecommendation, PostPurchaseSku, Postrender, Prerender, Product, ProductPushResponse, PushedCustomer, PushedProduct, PushedProductSKU, PushedVariation, Query, QuerySearchArgs, RecommendationDebugDTO, RecommendationId, RecommendationRequestFlags, RenderMode, RequestBuilder, ScheduleTime, Scripterror, SearchAnalyticsOptions, SearchAutocorrect, SearchClick, SearchEvent, SearchEventMetadata, SearchExclusionBehaviour, SearchExplain, SearchExplainRule, SearchFacet, SearchFacetOrder, SearchFacetTerm, SearchFacetType, SearchFailureEventDTO, SearchHighlight, SearchHit, SearchImpression, SearchKeyword, SearchKeywords, SearchOptions, SearchOutOfStockBehaviour, SearchPageType, SearchParamComparisonFunction, SearchProduct, SearchProductAffinities, SearchProductAiDetected, SearchProductCustomField, SearchProductExtra, SearchProductKeyedVariation, SearchProductSku, SearchProductStats, SearchProducts, SearchQuery, SearchQueryField, SearchResult, SearchRuleScheduleType, SearchRuleScheduleWeekday, SearchSessionParams, SearchSortOrder, SearchStatsFacet, SearchSuccessEventDTO, SearchTermsFacet, SearchTrackOptions, SearchVariationValue, SegmentDebugDTO, SegmentInfoBean, SegmentRuleDebugDTO, Segments, SegmentsResponseBean, Session, Setexperiments, Settings, Sku, StacklaTrackingData, StacklaWidgetDebugDTO, StacklaWidgetEmbedId, StacklaWidgetFilterType, TaggingData, TargetType, TestDebugDTO, TestId, TestPlacementRuleDTO, TestPreviewsDTO, UnsavedDraftPreviewSettingsDTO, ValidationError, VariationWithRulesDTO, VisitDTO, Visits, WebsiteOrder, WidgetPlacement, WidgetPlacementRule, WrapMode, nostojs };
