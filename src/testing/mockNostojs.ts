@@ -2,16 +2,18 @@ import { API, nostojs, NostojsCallback } from "../client/nosto"
 
 let originalNostojs: nostojs
 
-type DeepPartial<T> = T extends (...args: never[]) => unknown
-  ? (...args: Parameters<T>) => DeepPartial<ReturnType<T>>
+type MockMember<T> = T extends (...args: never[]) => unknown
+  ? (...args: Parameters<T>) => Partial<ReturnType<T>>
   : T extends object
-    ? { [K in keyof T]?: DeepPartial<T[K]> }
+    ? { [K in keyof T]?: Partial<T[K]> }
     : T
+
+type MockApi = { [K in keyof API]?: MockMember<API[K]> }
 
 /**
  * Replaces the `nostojs` and `window.nostojs` functions with a mock implementation.
  */
-export function mockNostojs(mock?: DeepPartial<API>) {
+export function mockNostojs(mock?: MockApi) {
   if (!originalNostojs) {
     originalNostojs = window.nostojs
   }
