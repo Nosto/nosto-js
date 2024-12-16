@@ -27,7 +27,7 @@
     },
     "./testing": {
       "import": "./dist/testing.es.js",
-      "require": "./dist/test/testing.cjs.js",
+      "require": "./dist/testing.cjs.js",
       "types": "./dist/testing/testing.d.ts"
     }
   },
