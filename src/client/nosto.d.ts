@@ -1,7 +1,5 @@
 /** @module client */
 // @ts-nocheck
-import * as axios from 'axios';
-
 interface AbTestDraftPreviewSettingsDTO extends AbTestPreviewSettingsBase<AbTestVariationDTO> {
     variations: AbTestVariationDTO[];
 }
@@ -1955,7 +1953,7 @@ declare function windowTools(win: Window, scriptLoaderWindow: Window): {
         module?: boolean;
     }) => Promise<void>;
     loadOnce: (url: string, callbackFn: () => void) => void;
-    xdr: (url: string, data: EventRequestMessageV1) => axios.AxiosPromise<unknown>;
+    xdr: (url: string, data: EventRequestMessageV1) => Promise<unknown>;
     domReady: (fn: () => void) => void;
 };
 type WindowTools = ReturnType<typeof windowTools>;
