@@ -3,13 +3,24 @@ import { API, nostojs, NostojsCallback } from "../client/nosto"
 let originalNostojs: nostojs
 
 /**
+ * MockMember turns API members into functions returning partials or in case of objects partial objects.
+ */
+type MockMember<T> = T extends (...args: never[]) => unknown
+  ? (...args: Parameters<T>) => Partial<ReturnType<T>>
+  : T extends object
+    ? { [K in keyof T]?: Partial<T[K]> }
+    : T
+
+type MockApi = { [K in keyof API]?: MockMember<API[K]> }
+
+/**
  * Replaces the `nostojs` and `window.nostojs` functions with a mock implementation.
  */
-export function mockNostojs(mock?: Partial<API>) {
+export function mockNostojs(mock?: MockApi) {
   if (!originalNostojs) {
     originalNostojs = window.nostojs
   }
-  window.nostojs = (callback: NostojsCallback) => callback(mock as API) as Promise<unknown>
+  window.nostojs = (callback: NostojsCallback) => callback(mock as unknown as API) as Promise<unknown>
 }
 
 /**
