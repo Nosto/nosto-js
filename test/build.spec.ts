@@ -9,4 +9,9 @@ describe("exports", () => {
       expect(fs.existsSync(file)).toBe(true)
     })
   })
+
+  it("should have no imports in client/nosto.d.ts", () => {
+    const content = fs.readFileSync("./dist/client/nosto.d.ts", "utf-8")
+    expect(content).not.contain("import")
+  })
 })
