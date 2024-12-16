@@ -2,6 +2,9 @@ import { API, nostojs, NostojsCallback } from "../client/nosto"
 
 let originalNostojs: nostojs
 
+/**
+ * MockMember turns API members into functions returning partials or in case of objects partial objects.
+ */
 type MockMember<T> = T extends (...args: never[]) => unknown
   ? (...args: Parameters<T>) => Partial<ReturnType<T>>
   : T extends object
