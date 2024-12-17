@@ -11,12 +11,12 @@ type MockMember<T> = T extends (...args: never[]) => unknown
     ? { [K in keyof T]?: Partial<T[K]> }
     : T
 
-type MockApi = { [K in keyof API]?: MockMember<API[K]> }
+export type MockAPI = { [K in keyof API]?: MockMember<API[K]> }
 
 /**
  * Replaces the `nostojs` and `window.nostojs` functions with a mock implementation.
  */
-export function mockNostojs(mock?: MockApi) {
+export function mockNostojs(mock?: MockAPI) {
   if (!originalNostojs) {
     originalNostojs = window.nostojs
   }
