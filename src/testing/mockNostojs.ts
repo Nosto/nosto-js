@@ -1,4 +1,5 @@
 import { API, nostojs, NostojsCallback } from "../client/nosto"
+import { MockState } from "./mockState"
 
 let originalNostojs: nostojs
 
@@ -20,6 +21,7 @@ export function mockNostojs(mock?: MockAPI) {
   if (!originalNostojs) {
     originalNostojs = window.nostojs
   }
+  MockState.isNostoLoaded = true
   window.nostojs = (callback: NostojsCallback) => callback(mock as unknown as API) as Promise<unknown>
 }
 
@@ -31,9 +33,10 @@ export function restoreNostojs() {
 }
 
 /**
- * Clears out all Nosto related globals from the window object.
+ * Clears out all Nosto related globals from the window object and resets mocks.
  */
 export function clearNostoGlobals() {
+  MockState.isNostoLoaded = null
   Object.assign(window, {
     // clearing Nosto iframe window handle
     nosto: undefined,
@@ -42,4 +45,11 @@ export function clearNostoGlobals() {
     // clearing Shopify specific Nosto namespace
     Nosto: undefined
   })
+}
+
+/**
+ * Alias for `clearNostoGlobals`.
+ */
+export function resetNostojsMock() {
+  clearNostoGlobals()
 }
