@@ -1,8 +1,12 @@
-import { describe, it, expect, vi } from "vitest"
-import { nostojs } from "../src"
-import { mockNostojs } from "../src/testing/mockNostojs"
+import { describe, it, expect, vi, beforeEach } from "vitest"
+import { isNostoLoaded, nostojs } from "../src"
+import { mockNostojs, resetNostojsMock } from "../src/testing/mockNostojs"
 
 describe("mockNostojs", () => {
+  beforeEach(() => {
+    resetNostojsMock()
+  })
+
   it("should support function members with partial returns", async () => {
     mockNostojs({
       pageTagging: () => ({
@@ -24,5 +28,16 @@ describe("mockNostojs", () => {
     const api = await new Promise(nostojs)
     api.internal.logger.log("foo")
     expect(api.internal.logger.log).toHaveBeenCalledWith("foo")
+  })
+
+  describe("isNostoLoaded", () => {
+    it("should return false by default", async () => {
+      expect(isNostoLoaded()).toBe(false)
+    })
+
+    it("should return true when loaded", async () => {
+      mockNostojs()
+      expect(isNostoLoaded()).toBe(true)
+    })
   })
 })
