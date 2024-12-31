@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest"
-import { nostojs } from "../src"
+import { nostojs, isNostoLoaded } from "../src"
 import { mockNostojs } from "../src/testing/mockNostojs"
+import { reloadNosto } from "../src/testing/reloadNosto"
 
 describe("mockNostojs", () => {
   it("should support function members with partial returns", async () => {
@@ -24,5 +25,21 @@ describe("mockNostojs", () => {
     const api = await new Promise(nostojs)
     api.internal.logger.log("foo")
     expect(api.internal.logger.log).toHaveBeenCalledWith("foo")
+  })
+
+  it("should be loaded in mock mode", () => {
+    mockNostojs()
+    expect(isNostoLoaded()).toBe(true)
+  })
+
+  it("should support second parameter for partial window object", () => {
+    const mockWindow = {
+      reload: vi.fn(),
+      _targetWindow: window
+    }
+
+    mockNostojs({}, mockWindow)
+    reloadNosto({})
+    expect(mockWindow.reload).toHaveBeenCalled()
   })
 })
