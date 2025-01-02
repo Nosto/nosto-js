@@ -1254,6 +1254,7 @@ interface ClientScriptSettingsDTO {
     addToCartPopup?: boolean;
     anyDomain: boolean;
     browserQueueActive: boolean;
+    categoriesEnabled?: boolean;
     cmpMode: string;
     collectEmailFromURL?: boolean;
     cookieTime: number;
