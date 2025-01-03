@@ -29,6 +29,11 @@
       "import": "./dist/testing.es.js",
       "require": "./dist/testing.cjs.js",
       "types": "./dist/testing/testing.d.ts"
+    },
+    "./formatting": {
+      "import": "./dist/formatting.es.js",
+      "require": "./dist/formatting.cjs.js",
+      "types": "./dist/formatting/formatting.d.ts"
     }
   },
   "scripts": {
@@ -39,7 +44,7 @@
     "test": "vitest --run",
     "lint": "eslint",
     "preview": "vite preview",
-    "typedoc": "typedoc src/index.ts src/client/nosto.d.ts src/testing/testing.ts"
+    "typedoc": "typedoc src/index.ts src/client/nosto.d.ts src/testing/testing.ts src/formatting/formatting.ts"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",
