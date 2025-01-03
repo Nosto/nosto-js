@@ -8,6 +8,8 @@ const config = {
   currencySettings: {} as CurrencyFormats
 }
 
+export type CurrencyConfig = typeof config
+
 const currencyLocales: Record<string, string> = {
   EUR: "de-DE",
   GBP: "en-GB",
@@ -27,7 +29,7 @@ const currencyLocales: Record<string, string> = {
 /**
  * Initialize the currency formatting settings.
  */
-export function setFormattingConfig(overrides: Partial<typeof config>) {
+export function setFormattingConfig(overrides: Partial<CurrencyConfig>) {
   Object.assign(config, overrides)
 
   // load currency settings from nosto if none have been provided
