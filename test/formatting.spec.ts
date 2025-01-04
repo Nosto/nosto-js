@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest"
-import { setFormattingConfig, formatCurrency as format } from "../src/formatting/currencies"
+import { getCurrencyFormatting } from "../src/formatting/currencies"
 import { mockNostojs } from "../src/testing/mockNostojs"
 
 const currencyFormatsMock = {
@@ -35,7 +35,7 @@ const currencyFormatsMock = {
 
 describe("currency formatting", () => {
   it("should use currency formatting settings", () => {
-    setFormattingConfig({
+    const { formatCurrency: format } = getCurrencyFormatting({
       defaultCurrency: "GBP",
       currencySettings: currencyFormatsMock
     })
@@ -58,7 +58,7 @@ describe("currency formatting", () => {
   })
 
   it("should have proper fallback behaviour", () => {
-    setFormattingConfig({
+    const { formatCurrency: format } = getCurrencyFormatting({
       defaultCurrency: "GBP",
       currencySettings: {}
     })
@@ -83,10 +83,7 @@ describe("currency formatting", () => {
     }
     mockNostojs(mockApi)
 
-    setFormattingConfig({ defaultCurrency: "GBP" })
-    expect(mockApi.internal.getSettings).toHaveBeenCalledTimes(1)
-
-    setFormattingConfig({ defaultCurrency: "GBP", currencySettings: {} })
+    getCurrencyFormatting()
     expect(mockApi.internal.getSettings).toHaveBeenCalledTimes(1)
   })
 })

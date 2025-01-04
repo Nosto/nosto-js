@@ -1,14 +1,14 @@
 import { CurrencyFormats } from "../client/nosto"
 import { nostojs } from "../lib/nostojs"
 
-const config = {
+const defaultConfig = {
   defaultCurrency: "EUR",
   defaultLocale: "en-US",
   /** @hidden  */
   currencySettings: {} as CurrencyFormats
 }
 
-export type CurrencyConfig = typeof config
+export type CurrencyConfig = typeof defaultConfig
 
 const currencyLocales: Record<string, string> = {
   EUR: "de-DE",
@@ -26,55 +26,57 @@ const currencyLocales: Record<string, string> = {
   PKR: "en-IN"
 }
 
-/**
- * Initialize the currency formatting settings.
- */
-export function setFormattingConfig(overrides: Partial<CurrencyConfig>) {
-  Object.assign(config, overrides)
-
-  // load currency settings from nosto if none have been provided
+export function getCurrencyFormatting(overrides: Partial<CurrencyConfig> = {}) {
+  const config = {
+    ...defaultConfig,
+    ...overrides
+  }
   if (!overrides.currencySettings) {
     nostojs(api => {
       config.currencySettings = api.internal.getSettings().currencySettings
     })
   }
-}
 
-/**
- * Format the given monetary value using the Nosto currency settings.
- */
-export function formatCurrency(value: number, currency?: string) {
-  const { defaultCurrency, currencySettings } = config
-  const currencyCode = currency ?? defaultCurrency
-  const locale = currencyLocales[currencyCode] ?? config.defaultLocale
+  /**
+   * Format the given monetary value using the Nosto currency settings.
+   */
+  function formatCurrency(value: number, currency?: string) {
+    const { defaultCurrency, currencySettings, defaultLocale } = config
+    const currencyCode = currency ?? defaultCurrency
+    const locale = currencyLocales[currencyCode] ?? defaultLocale
 
-  if (currencyCode in currencySettings) {
-    // formatting using Nosto settings
-    const settings = currencySettings[currencyCode]!
-    const result = new Intl.NumberFormat(locale, {
-      useGrouping: !!settings.groupingSeparator,
-      minimumFractionDigits: settings.decimalPlaces,
-      maximumFractionDigits: settings.decimalPlaces
-    }).formatToParts(value)
+    if (currencyCode in currencySettings) {
+      // formatting using Nosto settings
+      const settings = currencySettings[currencyCode]!
+      const result = new Intl.NumberFormat(locale, {
+        useGrouping: !!settings.groupingSeparator,
+        minimumFractionDigits: settings.decimalPlaces,
+        maximumFractionDigits: settings.decimalPlaces
+      }).formatToParts(value)
 
-    const normalised = result
-      .map(it => {
-        if (it.type === "group") return settings.groupingSeparator
-        if (it.type === "decimal") return settings.decimalCharacter
-        return it.value
-      })
-      .join("")
+      const normalised = result
+        .map(it => {
+          if (it.type === "group") return settings.groupingSeparator
+          if (it.type === "decimal") return settings.decimalCharacter
+          return it.value
+        })
+        .join("")
 
-    if (settings?.currencyBeforeAmount) {
-      return `${settings.currencyToken}${normalised}`
+      if (settings?.currencyBeforeAmount) {
+        return `${settings.currencyToken}${normalised}`
+      }
+      return `${normalised}${settings?.currencyToken}`
     }
-    return `${normalised}${settings?.currencyToken}`
+
+    // fallback logic
+    const numberFormat = new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: currencyCode
+    })
+    return numberFormat.format(value)
   }
 
-  // fallback logic
-  const numberFormat = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: currencyCode
-  })
-  return numberFormat.format(value)
+  return {
+    formatCurrency
+  }
 }
