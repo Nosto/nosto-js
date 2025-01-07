@@ -28,7 +28,7 @@ export type InitProps = {
   scriptLoader?: (scriptSrc: string, options?: ScriptLoadOptions) => Promise<void>
 }
 
-function initShopifyInternational({ env, merchantId, shopifyInternational, scriptLoader }: InitProps) {
+function initShopifyInternationalScript({ env, merchantId, shopifyInternational, scriptLoader }: InitProps) {
   const existingScript = document.querySelector("script[nosto-language], script[nosto-market-id]")
 
   const marketId = String(shopifyInternational?.marketId || "")
@@ -60,7 +60,7 @@ function initShopifyInternational({ env, merchantId, shopifyInternational, scrip
  */
 export function init(initProps: InitProps) {
   if (initProps.shopifyInternational) {
-    return initShopifyInternational(initProps)
+    return initShopifyInternationalScript(initProps)
   }
   const { merchantId, env, options, scriptLoader } = initProps
   const loader = scriptLoader ?? defaultScriptLoader
