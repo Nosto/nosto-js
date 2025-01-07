@@ -41,7 +41,8 @@ describe("main", () => {
           marketId: "123"
         }
       })
-      const expectedUrl = "https://connect.nosto.com/script/shopify/market/nosto.js?merchant=shopify-123&market=123&locale=en"
+      const expectedUrl =
+        "https://connect.nosto.com/script/shopify/market/nosto.js?merchant=shopify-123&market=123&locale=en"
       expect(document.querySelector("script")?.getAttribute("src")).toBe(expectedUrl)
       expect(document.querySelector("script")?.getAttribute("nosto-language")).toBe("en")
       expect(document.querySelector("script")?.getAttribute("nosto-market-id")).toBe("123")
