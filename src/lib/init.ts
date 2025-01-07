@@ -19,8 +19,8 @@ export type InitProps = {
    * Shopify International specific options
    */
   shopifyInternational?: {
-    language?: string
-    marketId?: string | number
+    language: string
+    marketId: string | number
   }
   /**
    * A custom script loader function to use for loading the Nosto client script
