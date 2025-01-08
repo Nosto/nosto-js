@@ -32,7 +32,7 @@ describe("main", () => {
       expect(document.querySelector(`script[src='${expectedUrl}']`)).not.toBeNull()
     })
 
-    it("should add shopify market script to dom", () => {
+    it("should add shopify international script to dom", () => {
       init({
         merchantId: "shopify-123",
         env: "production",
@@ -46,6 +46,24 @@ describe("main", () => {
       expect(document.querySelector("script")?.getAttribute("src")).toBe(expectedUrl)
       expect(document.querySelector("script")?.getAttribute("nosto-language")).toBe("en")
       expect(document.querySelector("script")?.getAttribute("nosto-market-id")).toBe("123")
+    })
+
+    it("should pass options to script loader for shopify international", () => {
+      init({
+        merchantId: "shopify-123",
+        env: "production",
+        options: {
+          attributes: {
+            "nosto-client-script": ""
+          }
+        },
+        shopifyInternational: {
+          language: "en",
+          marketId: "123"
+        }
+      })
+      expect(document.querySelector("[nosto-client-script]")?.getAttribute("nosto-language")).toBe("en")
+      expect(document.querySelector("[nosto-client-script]")?.getAttribute("nosto-market-id")).toBe("123")
     })
   })
 })
