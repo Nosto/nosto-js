@@ -16,18 +16,55 @@ export type InitProps = {
    */
   options?: ScriptLoadOptions
   /**
+   * Shopify International specific options
+   */
+  shopifyInternational?: {
+    language: string
+    marketId: string | number
+  }
+  /**
    * A custom script loader function to use for loading the Nosto client script
    */
   scriptLoader?: (scriptSrc: string, options?: ScriptLoadOptions) => Promise<void>
 }
 
+function initShopifyInternationalScript({ env, merchantId, shopifyInternational, scriptLoader }: InitProps) {
+  const existingScript = document.querySelector("script[nosto-language], script[nosto-market-id]")
+
+  const marketId = String(shopifyInternational?.marketId || "")
+  const language = shopifyInternational?.language || ""
+
+  const attributeMismatch =
+    existingScript?.getAttribute("nosto-language") !== language ||
+    existingScript?.getAttribute("nosto-market-id") !== marketId
+
+  if (!existingScript || attributeMismatch) {
+    const nostoSandbox = document.querySelector("#nosto-sandbox")
+
+    existingScript?.parentNode?.removeChild(existingScript)
+    nostoSandbox?.parentNode?.removeChild(nostoSandbox)
+
+    const url = new URL(`/script/shopify/market/nosto.js`, getBaseUrl(env))
+    url.searchParams.append("merchant", merchantId)
+    url.searchParams.append("market", marketId)
+    url.searchParams.append("locale", language.toLowerCase())
+    const attributes = { "nosto-language": language, "nosto-market-id": marketId }
+    const loader = scriptLoader ?? defaultScriptLoader
+    return loader(url.toString(), { attributes })
+  }
+  return Promise.resolve()
+}
+
 /**
  * Initializes the Nosto client script on the page.
  */
-export function init({ merchantId, env, options, scriptLoader }: InitProps) {
-  const url = new URL(`/include/${merchantId}`, getBaseUrl(env))
-
+export function init(initProps: InitProps) {
+  if (initProps.shopifyInternational) {
+    return initShopifyInternationalScript(initProps)
+  }
+  const { merchantId, env, options, scriptLoader } = initProps
   const loader = scriptLoader ?? defaultScriptLoader
+  const url = new URL(`/include/${merchantId}`, getBaseUrl(env))
   return loader(url.toString(), options)
 }
 

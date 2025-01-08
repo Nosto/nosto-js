@@ -14,6 +14,7 @@ describe("main", () => {
       const expectedUrl = "https://connect.nosto.com/include/shopify-123"
       expect(document.querySelector(`script[src='${expectedUrl}']`)).not.toBeNull()
     })
+
     it("should add staging client script to dom", async () => {
       init({
         merchantId: "shopify-123",
@@ -22,12 +23,29 @@ describe("main", () => {
       const expectedUrl = "https://connect.staging.nosto.com/include/shopify-123"
       expect(document.querySelector(`script[src='${expectedUrl}']`)).not.toBeNull()
     })
+
     it("should add production client script to dom if env is not specified", async () => {
       init({
         merchantId: "shopify-123"
       })
       const expectedUrl = "https://connect.nosto.com/include/shopify-123"
       expect(document.querySelector(`script[src='${expectedUrl}']`)).not.toBeNull()
+    })
+
+    it("should add shopify market script to dom", () => {
+      init({
+        merchantId: "shopify-123",
+        env: "production",
+        shopifyInternational: {
+          language: "en",
+          marketId: "123"
+        }
+      })
+      const expectedUrl =
+        "https://connect.nosto.com/script/shopify/market/nosto.js?merchant=shopify-123&market=123&locale=en"
+      expect(document.querySelector("script")?.getAttribute("src")).toBe(expectedUrl)
+      expect(document.querySelector("script")?.getAttribute("nosto-language")).toBe("en")
+      expect(document.querySelector("script")?.getAttribute("nosto-market-id")).toBe("123")
     })
   })
 })
