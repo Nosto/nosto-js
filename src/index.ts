@@ -1,10 +1,11 @@
 /** @module ./ */
+/* eslint-disable barrel-files/avoid-barrel-files */
 import { initNostoStub } from "./utils/dom"
 
-export * from "./lib/helpers"
-export * from "./lib/init"
-export * from "./lib/nostojs"
-export * from "./types"
+export { isNostoLoaded, getNostoWindow } from "./lib/helpers"
+export { init } from "./lib/init"
+export { nostojs } from "./lib/nostojs"
+export type * from "./types"
 export { initNostoStub }
 
 // to make sure that the nosto-js module can also be initialized in a non-browser environment

@@ -1,3 +1,3 @@
 /** @module testing */
-export * from "./mockNostojs"
-export * from "./reloadNosto"
+export { mockNostojs } from "./mockNostojs"
+export { reloadNosto } from "./reloadNosto"
