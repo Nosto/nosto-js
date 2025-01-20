@@ -1,6 +1,5 @@
 /** @module client */
 // @ts-nocheck
-
 /**
  * @group Core
  */
@@ -212,6 +211,7 @@ interface ClientScriptSettingsDTO {
     stacklaWidgetAssetPath: string;
     stacklaWidgetDomain: string;
     subDomain: string;
+    thumbnailHost: string;
     trackingTypes: string[];
     triggerAddToCartPopupWithCookie?: boolean;
 }
@@ -2010,7 +2010,7 @@ interface Context {
     siteUrl: ParseUriResult;
     siteUrlCleaned: string;
     referer?: ParseUriResult;
-    domReady: ReturnType<typeof domReadyCreator>;
+    domReady: (fn: () => void) => void;
     debugToken: string;
     mode: Mode;
     popupShown: boolean;
@@ -3682,9 +3682,6 @@ type Install = {
     overlay: Overlay;
 };
 declare function install(callbackFn: (cb: Install) => void): void;
-/**
- * @deprecated Use settings directly. This was added for testing purposes.
- */
 declare function getSettings(): Settings;
 declare function removeCampaigns(divIds: string[]): void;
 declare function showPlacementPreviews(placement: {
