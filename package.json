@@ -18,17 +18,17 @@
   "author": "Nosto",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.es.js",
-      "require": "./dist/index.cjs.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs.js"
     },
     "./client": {
       "types": "./dist/client/nosto.d.ts"
     },
     "./testing": {
+      "types": "./dist/testing/testing.d.ts",
       "import": "./dist/testing.es.js",
-      "require": "./dist/testing.cjs.js",
-      "types": "./dist/testing/testing.d.ts"
+      "require": "./dist/testing.cjs.js"
     }
   },
   "scripts": {
@@ -36,7 +36,8 @@
     "build": "tsc && vite build && npm run build-dts && npm run typedoc",
     "build-dts": "tsc --noEmit false --emitDeclarationOnly && npm run copy-nosto-dts",
     "copy-nosto-dts": "copyfiles -u 1 \"src/client/*.d.ts\" dist",
-    "test": "vitest --run",
+    "test": "vite build && npm run build-dts && vitest --run",
+    "test-only": "vitest --run",
     "lint": "eslint '{src,test}/**/*.ts'",
     "preview": "vite preview",
     "typedoc": "typedoc src/index.ts src/client/nosto.d.ts src/testing/testing.ts"
