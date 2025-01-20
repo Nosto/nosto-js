@@ -1,5 +1,810 @@
 /** @module client */
 // @ts-nocheck
+import domReadyCreator from 'domready';
+
+/**
+ * @group Core
+ */
+type EventType = 
+/**  view product */
+"vp"
+/** like product */
+ | "lp"
+/** dislike product */
+ | "dp"
+/** remove product */
+ | "rp"
+/** bought product */
+ | "bp"
+/** view category */
+ | "vc"
+/** order */
+ | "or"
+/** internal search */
+ | "is"
+/** add to cart */
+ | "cp"
+/** external campaign */
+ | "ec"
+/** external search */
+ | "es"
+/** give coupon */
+ | "gc"
+/** source */
+ | "src"
+/** cart popup recommendations */
+ | "cpr"
+/** page load */
+ | "pl"
+/** custom campaign */
+ | "cc"
+/** content campaign */
+ | "con";
+/**
+ * @group Core
+ */
+type EventRefType = 
+/** triggered mail */
+"email"
+/** email widgets */
+ | "imgrec"
+/** onsite recommendations */
+ | "rec"
+/** api recommendations */
+ | "api"
+/** onsite campaigns */
+ | "oc"
+/** category merchandising */
+ | "cmp"
+/** onsite search */
+ | "os";
+/**
+ * @group Core
+ */
+type EventTuple = [
+    type: EventType,
+    target?: string,
+    ref?: string,
+    refSrc?: string,
+    targetFragment?: string,
+    refType?: EventRefType
+];
+/**
+ * @group Core
+ */
+interface Event {
+    type: EventType;
+    target?: string;
+    ref?: string;
+    refSrc?: string;
+    targetFragment?: string;
+    refType?: EventRefType;
+}
+
+interface AbTestDraftPreviewSettingsDTO extends AbTestPreviewSettingsBase<AbTestVariationDTO> {
+    variations: AbTestVariationDTO[];
+}
+interface AbTestPreviewSettingsBase<T> {
+    id: TestId;
+    method: Method;
+    name: string;
+    segment: string;
+    variations: T[];
+}
+interface AbTestPreviewSettingsDTO extends AbTestPreviewSettingsBase<AbTestVariationDTO> {
+    variations: AbTestVariationDTO[];
+}
+interface AbTestVariation {
+    base: boolean;
+    id: string;
+    name: string;
+}
+interface AbTestVariationDTO extends AbTestVariation {
+}
+interface AbstractFacebookPixelEvent<D> {
+    d: D;
+    n: string;
+}
+interface AbstractGid {
+}
+interface AbstractStacklaPixelEvent<D> {
+    d: D;
+    n: string;
+}
+interface ActiveVisitDTO {
+    customer: CustomerDTO;
+    visit: VisitDTO;
+}
+interface AnalyticEvent {
+    properties?: AnalyticEventProperties;
+}
+interface AnalyticEventProperties {
+    abTestAttribution?: {
+        [index: string]: string;
+    };
+}
+interface BigcommerceCustomerInfo {
+    customer_reference: string;
+    email: string;
+    first_name?: string;
+    group_id?: string;
+    last_name?: string;
+    marketing_permission?: boolean;
+}
+interface CartItem {
+    name: string;
+    price_currency_code: string;
+    product_id: string;
+    quantity: number;
+    sku_id?: string;
+    unit_price: number;
+}
+interface CategoryClick extends CategoryEvent {
+    productId: string;
+}
+interface CategoryEvent extends AnalyticEvent {
+    metadata: CategoryEventMetadata;
+}
+interface CategoryEventMetadata {
+    category: string;
+    categoryId?: string;
+}
+interface CategoryImpression extends CategoryEvent {
+    page: number;
+    productIds: string[];
+}
+interface ClientScriptSettingsDTO {
+    account: string;
+    addToCartPopup?: boolean;
+    anyDomain: boolean;
+    browserQueueActive: boolean;
+    categoriesEnabled?: boolean;
+    cmpMode: string;
+    collectEmailFromURL?: boolean;
+    cookieTime: number;
+    currencySettings: {
+        [index: string]: CurrencySettingsDTO;
+    };
+    debugRedirectUrl: string;
+    defaultCurrencyCode: string;
+    defaultVariantId: string;
+    disablePlacementAntiFlickering?: boolean;
+    discountPopupTriggers: {
+        [index: string]: PopupTriggerSettingsDTO[];
+    };
+    discountPopupVisible?: boolean;
+    emailAddressUrlParamName: string;
+    exchangeRates?: boolean;
+    externalIdentifier: string;
+    extraHosts: string[];
+    fullTaggingRequired: boolean;
+    intersectionObserved?: string[];
+    jsErrorUrl: string;
+    klaviyoCookie?: boolean;
+    measurePerformance: boolean;
+    mutationObserved?: string[];
+    nostoRefParam: string;
+    pageTypeFiltersForUntaggedPages?: boolean;
+    parameterlessAttribution?: boolean;
+    parameterlessAttributionNoQueryCheck?: boolean;
+    placements: {
+        [index: string]: DynamicPlacementDTO;
+    };
+    popupRibbonUrlFilter: boolean;
+    recoveryPopupEnabled: boolean;
+    searchApiUrl?: string;
+    searchDeploymentId?: string;
+    searchEnabled?: boolean;
+    searchQueryParam: string;
+    searchTemplateHost?: string;
+    searchTemplatesEnabled?: boolean;
+    secureCookie?: boolean;
+    segmentUrlParameters: string[];
+    sendTaggingOnlyIfNeeded?: boolean;
+    server: string;
+    serverProductPlacementFiltering?: boolean;
+    shopifyCmpRedirect?: boolean;
+    shopifySkuSelectionListener?: boolean;
+    site: string;
+    sourceParameterName: string;
+    stacklaDomain: string;
+    stacklaEmbedCodeEndpoint: string;
+    stacklaTrackingUrl?: string;
+    stacklaWidgetAssetPath: string;
+    stacklaWidgetDomain: string;
+    subDomain: string;
+    trackingTypes: string[];
+    triggerAddToCartPopupWithCookie?: boolean;
+}
+interface ConditionDTO {
+    advanced: boolean;
+    brands: string[];
+    categories: string[];
+    exc_brands: string[];
+    exc_categories: string[];
+    exc_locations: string[][];
+    exc_page_types: PageType[];
+    exc_referer_urls: string[];
+    exc_tags: string[];
+    exc_url_parameters: string[];
+    exc_urls: string[];
+    hide_on_desktop: boolean;
+    hide_on_mobile: boolean;
+    locations: string[][];
+    max_cart_size: number;
+    max_cart_value: number;
+    max_page_views: number;
+    min_cart_size: number;
+    min_cart_value: number;
+    min_page_views: number;
+    page_types: PageType[];
+    referer_urls: string[];
+    tags: string[];
+    treat_url_conditions_as_filters: boolean;
+    url_parameters: string[];
+    urls: string[];
+    enabled: boolean;
+    enabledInJs: boolean;
+}
+interface ContentDebugDTO {
+    divIds: string[];
+    enabled: boolean;
+    id: ContentId;
+    name: string;
+    rendered: boolean;
+}
+interface ConversionItem {
+    name: string;
+    price_currency_code: string;
+    product_id: string;
+    quantity?: number;
+    sku_id?: string;
+    unit_price?: number;
+}
+interface CrawlResponse {
+    message: string;
+    product_id: string;
+}
+interface CurrencySettingsDTO {
+    currencyBeforeAmount: boolean;
+    currencyToken?: string;
+    decimalCharacter?: string;
+    decimalPlaces: number;
+    groupingSeparator?: string;
+}
+interface CustomerAffinityResponse {
+    discount: number;
+    top_brands: CustomerAffinityResponseItem[];
+    top_categories: CustomerAffinityResponseItem[];
+    top_product_types: CustomerAffinityResponseItem[];
+    top_skus: {
+        [index: string]: CustomerAffinityResponseItem[];
+    };
+}
+interface CustomerAffinityResponseItem {
+    name: string;
+    score: number;
+}
+interface CustomerDTO {
+    id: string;
+    marketing_permission: boolean;
+    ref: string;
+}
+interface CustomerToken {
+    token: string;
+}
+interface DebugRequestParamsDTO {
+    at?: Date;
+    ep?: boolean;
+    fs?: string[];
+    tp?: TestPreviewsDTO;
+}
+interface DebugToolbarDataDTO {
+    contentCampaigns: ContentDebugDTO[];
+    dev: boolean;
+    draftTests: AbTestDraftPreviewSettingsDTO[];
+    loggedIn: boolean;
+    placements: PlacementDebugDTO[];
+    placementsTab: boolean;
+    popupPreviewSettings: PopupCampaignPreviewSettingsDTO[];
+    recommendationCampaigns: RecommendationDebugDTO[];
+    richSegmentsTab: boolean;
+    runningTests: AbTestPreviewSettingsDTO[];
+    segments: SegmentDebugDTO[];
+    showImprovedCampaignOverlayData: boolean;
+    showStacklaTab: boolean;
+    showTestsTab: boolean;
+    stacklaWidgets: StacklaWidgetDebugDTO[];
+}
+interface DynamicPlacementDTO {
+    cssSelector?: string;
+    enabled: boolean;
+    filters: FilterRule[];
+    id: string;
+    intersection?: boolean;
+    mode: InsertMode;
+    mutation?: boolean;
+    wrapper: WrapMode;
+}
+interface Effect {
+    delay_min: number;
+    re_entry_tolerance: number;
+    scroll_min: number;
+}
+interface EventAttributionMetadata {
+    customer_reference?: string;
+    event_date?: Date;
+    referrer?: string;
+    url?: string;
+}
+interface EventAttributionParams {
+    events: EventFields[];
+    metadata: EventAttributionMetadata;
+}
+interface EventFields {
+    event_ref_type?: string;
+    event_type: string;
+    ref?: string;
+    ref_src?: string;
+    target: string;
+    target_fragment?: string;
+}
+interface EventRequestMessageV1 {
+    affinity_signals?: {
+        [index: string]: string[];
+    };
+    cart?: CartItem[];
+    cart_hash?: string;
+    cart_popup?: boolean;
+    categories?: string[];
+    category_ids?: string[];
+    coupon_campaign?: string;
+    coupon_code?: string;
+    coupon_used?: boolean;
+    current_variant_id?: string;
+    custom_fields?: {
+        [index: string]: string[];
+    };
+    customer?: PushedCustomer;
+    debug?: DebugRequestParamsDTO;
+    debug_token?: string;
+    elements?: string[];
+    event_date?: Date;
+    events?: EventTuple[];
+    experiments?: Experiment[];
+    external_identifier?: string;
+    klaviyo_cookie?: string;
+    mail_ref?: string;
+    mail_type?: string;
+    page_type?: PageType;
+    preview?: boolean;
+    recotrace?: string;
+    ref?: string;
+    referrer?: string;
+    response_mode?: RenderMode;
+    restore_link?: string;
+    segment_codes?: string[];
+    skipcache?: boolean;
+    sort_order?: string;
+    tags?: string[];
+    url?: string;
+}
+interface EventResponseMessage {
+    af: CustomerAffinityResponse;
+    cdc: string;
+    cmpid: string;
+    cpr: string;
+    cs: number;
+    ct: number;
+    customer: string;
+    debug: DebugToolbarDataDTO;
+    ed: Date;
+    errors: string[];
+    fb: FacebookData;
+    ga: GoogleAnalyticsData;
+    gl: string[];
+    he: boolean;
+    hiic: boolean;
+    js: string;
+    nc: boolean;
+    pv: number;
+    recommendations: {
+        [index: string]: unknown;
+    };
+    se: SegmentsResponseBean;
+    sp: StacklaTrackingData;
+    visit: string;
+    processedRecommendations?: {
+        [index: string]: unknown;
+    };
+}
+interface Events {
+}
+interface Experiment {
+    id: string;
+    id_stamp?: string;
+    name?: string;
+    variation: string;
+    variation_name?: string;
+}
+interface FacebookData {
+    a: string;
+    e: AbstractFacebookPixelEvent<unknown>[];
+    p: string;
+    s: string[];
+}
+interface FilterRule {
+    field?: string;
+    negate?: boolean;
+    operator: FilterOperator;
+    values?: unknown[];
+}
+interface ForcedTestDTO {
+    t: TestId;
+    v: string;
+}
+interface GoogleAnalyticsData {
+    s?: string[];
+}
+interface NostoSku extends Sku {
+    inventory_level?: number;
+}
+interface NostoVariant {
+    availability: string;
+    available: boolean;
+    discounted: boolean;
+    list_price?: number;
+    price: number;
+    price_currency_code: string;
+    price_text?: string;
+}
+interface OrderCustomer {
+    country: string;
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+    newsletter?: string;
+    order_number: string;
+    phone: string;
+    post_code: string;
+    type?: string;
+}
+interface OrderInfo {
+    country_code: string;
+    customer_id: string;
+    customer_reference?: string;
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+    newsletter?: boolean;
+    order_number: string;
+    phone_number: string;
+    type: string;
+    zip_code: string;
+}
+interface OverlapCampaignDTO {
+    enabled: boolean;
+    feature: OnsiteFeature;
+    id: string;
+    name: string;
+    schedule?: ScheduleTime;
+}
+interface PlacementDebugDTO {
+    activeRule?: SegmentRuleDebugDTO;
+    divId: string;
+    enabled: boolean;
+    id: string;
+    name: string;
+    rules: PlacementRuleDTO[];
+}
+interface PlacementRuleDTO {
+    feature?: OnsiteFeature;
+    segment: string;
+    to?: CampaignId;
+}
+interface PopupCampaignPreviewSettingsDTO {
+    campaign_id: string;
+    campaign_title: string;
+    condition: ConditionDTO;
+    enabled: boolean;
+    popup_id: string;
+    type: string;
+}
+interface PopupCouponGiven extends PopupEvent {
+    campaignId: string;
+}
+interface PopupEmailCollected extends PopupEvent {
+    campaignId: string;
+}
+interface PopupEvent extends AnalyticEvent {
+    campaign_id: string;
+}
+interface PopupTriggerSettingsDTO {
+    condition: ConditionDTO;
+    effect: Effect;
+    enabled: boolean;
+    id: string;
+    name: string;
+    ordinal: number;
+    popup_id: string;
+}
+interface PopupTriggered extends PopupEvent {
+    campaignId: string;
+}
+interface PostPurchaseImage {
+    url: string;
+}
+interface PostPurchaseOffer {
+    customer: string;
+    discount_type: string;
+    discount_value: number;
+    options: PostPurchaseProductOption[];
+    recommendation: PostPurchaseRecommendation;
+    signature_hash: string;
+}
+interface PostPurchaseOptionValue {
+    id: ProductOptionValueGid;
+    name: string;
+    translations: PostPurchaseTranslation[];
+}
+interface PostPurchaseProductOption {
+    name: string;
+    optionValues: PostPurchaseOptionValue[];
+    translations: PostPurchaseTranslation[];
+}
+interface PostPurchaseRecommendation {
+    description: string;
+    image_url: string;
+    name: string;
+    product_id: string;
+    skus: PostPurchaseVariantNode[];
+    title: string;
+}
+interface PostPurchaseSelectedOption {
+    optionValue: PostPurchaseOptionValue;
+    value: string;
+}
+interface PostPurchaseTranslation {
+    value: string;
+}
+interface PostPurchaseVariantNode {
+    id: VariantGid;
+    image: PostPurchaseImage;
+    selectedOptions: PostPurchaseSelectedOption[];
+    title: string;
+}
+interface ProductOptionValueGid extends AbstractGid {
+}
+interface ProductPushResponse {
+    messages: string[];
+}
+interface PushedCustomer {
+    customer_reference?: string;
+    email: string;
+    first_name?: string;
+    hcid?: string;
+    last_name?: string;
+    newsletter?: boolean;
+    order_number?: string;
+    source?: string;
+    source_id?: string;
+    type?: string;
+}
+interface PushedProduct {
+    age_group?: string;
+    alternate_image_urls: string[];
+    availability: string;
+    brand?: string;
+    category: string[];
+    category_id: string[];
+    condition?: string;
+    custom_fields: {
+        [index: string]: string;
+    };
+    date_published?: Date;
+    description?: string;
+    gender?: string;
+    google_category?: string;
+    gtin?: string;
+    image_url?: string;
+    inventory_level?: number;
+    list_price?: number;
+    name: string;
+    parent_category_id: string[];
+    price: number;
+    price_currency_code: string;
+    product_id: string;
+    rating_value?: number;
+    review_count?: number;
+    skus: PushedProductSKU[];
+    source_updated?: Date;
+    supplier_cost?: number;
+    tags1: string[];
+    tags2: string[];
+    tags3: string[];
+    thumb_url?: string;
+    unit_pricing_base_measure?: number;
+    unit_pricing_measure?: number;
+    unit_pricing_unit?: string;
+    update_received?: Date;
+    url: string;
+    variation_id?: string;
+    variations: {
+        [index: string]: PushedVariation;
+    };
+}
+interface PushedProductSKU extends NostoSku {
+}
+interface PushedVariation extends NostoVariant {
+}
+interface RecommendationDebugDTO {
+    divId?: string;
+    divIds: string[];
+    enabled: boolean;
+    fbLink: string;
+    fbTitle: string;
+    fbType: string;
+    filtered: boolean;
+    id: RecommendationId;
+    ittt: boolean;
+    link: string;
+    productIds: {
+        [index: string]: string;
+    };
+    recoId: string;
+    rendered: boolean;
+    resultType: string;
+    title: string;
+    type: string;
+    variant: boolean;
+}
+interface ScheduleTime {
+    from: string;
+    fromTime?: string;
+    timezone?: string;
+    to?: string;
+    toTime?: string;
+    type?: string;
+    weekDays?: string[];
+}
+interface SearchClick extends SearchEvent {
+    productId: string;
+}
+interface SearchEvent extends AnalyticEvent {
+    metadata: SearchEventMetadata;
+}
+interface SearchEventMetadata {
+    hasResults: boolean;
+    isAutoComplete: boolean;
+    isAutoCorrect: boolean;
+    isKeyword: boolean;
+    isOrganic: boolean;
+    isRefined: boolean;
+    isSorted: boolean;
+    query: string;
+    refinedQuery?: string;
+    resultId: string;
+}
+interface SearchImpression extends SearchEvent {
+    page: number;
+    productIds: string[];
+}
+interface SegmentDebugDTO {
+    active: boolean;
+    forced: boolean;
+    id: string;
+    name: string;
+}
+interface SegmentInfoBean {
+    id: string;
+}
+interface SegmentRuleDebugDTO {
+    draft?: TestDebugDTO;
+    segment: string;
+    test?: TestDebugDTO;
+    to?: CampaignId;
+    type: TargetType;
+}
+interface SegmentsResponseBean {
+    active_segments: SegmentInfoBean[];
+}
+interface Sku {
+    availability: string;
+    custom_fields: {
+        [index: string]: string;
+    };
+    gtin?: string;
+    id: string;
+    image_url?: string;
+    list_price?: number;
+    name: string;
+    price: number;
+    url?: string;
+}
+interface StacklaTrackingData {
+    e: AbstractStacklaPixelEvent<unknown>[];
+}
+interface StacklaWidgetDebugDTO {
+    divIds: string[];
+    enabled: boolean;
+    filterType: StacklaWidgetFilterType;
+    id: StacklaWidgetEmbedId;
+    name: string;
+    rendered: boolean;
+    usedInTest: boolean;
+    widgetId: string;
+}
+interface TestDebugDTO {
+    id: TestId;
+    variation: string;
+}
+interface TestPlacementRuleDTO {
+    feature?: OnsiteFeature;
+    placement: string;
+    segment: string;
+    to?: CampaignId;
+}
+interface TestPreviewsDTO {
+    d?: ForcedTestDTO;
+    t: ForcedTestDTO[];
+    u?: UnsavedDraftPreviewSettingsDTO;
+}
+interface UnsavedDraftPreviewSettingsDTO extends AbTestPreviewSettingsBase<VariationWithRulesDTO> {
+    variations: VariationWithRulesDTO[];
+}
+interface ValidationError {
+    key: string;
+    message: string;
+}
+interface VariantGid extends AbstractGid {
+}
+interface VariationWithRulesDTO extends AbTestVariationDTO {
+    rules: TestPlacementRuleDTO[];
+}
+interface VisitDTO {
+    cart_items: CartItem[];
+    customer_id: string;
+    email: string;
+    events: Events;
+    id: string;
+}
+interface WebsiteOrder {
+    created_at?: Date;
+    external_order_ref?: string;
+    info?: OrderCustomer;
+    items: ConversionItem[];
+    order_status?: string;
+    order_status_label?: string;
+    payment_provider?: string;
+}
+interface WidgetPlacement {
+    enabled: boolean;
+    id?: string;
+    name: string;
+    rules?: WidgetPlacementRule[];
+}
+interface WidgetPlacementRule {
+    feature?: OnsiteFeature;
+    segment: string;
+    to?: string;
+}
+type ContentId = CampaignId<"ContentId">;
+type FilterOperator = "INCLUDES" | "IS" | "CONTAINS" | "MATCHES_REGEXP_PATTERN" | "LT" | "GT" | "GTE" | "LTE" | "BETWEEN" | "AND" | "OR";
+type InsertMode = "REPLACE" | "APPEND" | "PREPEND" | "INSERT_INTO" | "INSERT_AFTER_BEGIN";
+type Method = "SPLIT_TEST" | "MVT";
+type OnsiteFeature = "RECOMMENDATION" | "CONTENT_DELIVERY" | "POPUP" | "SPLIT_TESTING" | "SCHEDULING" | "STACKLA_WIDGET";
+type PageType = "front" | "category" | "product" | "cart" | "search" | "notfound" | "order" | "other" | "checkout";
+type RecommendationId = CampaignId<"RecommendationId">;
+type RenderMode = "HTML" | "SIMPLE" | "JSON_170x170" | "JSON_100_X_100" | "JSON_90x70" | "JSON_50x50" | "JSON_30x30" | "JSON_100x140" | "JSON_200x200" | "JSON_400x400" | "JSON_750x750" | "JSON_10_MAX_SQUARE" | "JSON_200x200_SQUARE" | "JSON_400x400_SQUARE" | "JSON_750x750_SQUARE" | "JSON_ORIGINAL" | "VERSION_SOURCE";
+type StacklaWidgetEmbedId = CampaignId<"StacklaWidgetEmbedId">;
+type StacklaWidgetFilterType = "LATEST" | "CATEGORY_OR_BRAND" | "PRODUCT";
+type TargetType = "RECOMMENDATION" | "ONSITE_CONTENT" | "AB_TEST" | "HIDE_CONTENT" | "STACKLA_WIDGET";
+type TestId = CampaignId<"TestId">;
+type WrapMode = "SIMPLE" | "PRESERVE_CLASS" | "CLONED" | "UNWRAPPED";
+type CampaignId<T extends string = string> = string & {
+    __kind: T;
+};
+
 interface Coupon {
     campaign?: string;
     code?: string;
@@ -1100,808 +1905,20 @@ interface ActionResponse {
 
 type Maybe<T> = NonNullable<T> | undefined;
 
-/**
- * @group Core
- */
-type EventType = 
-/**  view product */
-"vp"
-/** like product */
- | "lp"
-/** dislike product */
- | "dp"
-/** remove product */
- | "rp"
-/** bought product */
- | "bp"
-/** view category */
- | "vc"
-/** order */
- | "or"
-/** internal search */
- | "is"
-/** add to cart */
- | "cp"
-/** external campaign */
- | "ec"
-/** external search */
- | "es"
-/** give coupon */
- | "gc"
-/** source */
- | "src"
-/** cart popup recommendations */
- | "cpr"
-/** page load */
- | "pl"
-/** custom campaign */
- | "cc"
-/** content campaign */
- | "con";
-/**
- * @group Core
- */
-type EventRefType = 
-/** triggered mail */
-"email"
-/** email widgets */
- | "imgrec"
-/** onsite recommendations */
- | "rec"
-/** api recommendations */
- | "api"
-/** onsite campaigns */
- | "oc"
-/** category merchandising */
- | "cmp"
-/** onsite search */
- | "os";
-/**
- * @group Core
- */
-type EventTuple = [
-    type: EventType,
-    target?: string,
-    ref?: string,
-    refSrc?: string,
-    targetFragment?: string,
-    refType?: EventRefType
-];
-/**
- * @group Core
- */
-interface Event {
-    type: EventType;
-    target?: string;
-    ref?: string;
-    refSrc?: string;
-    targetFragment?: string;
-    refType?: EventRefType;
+interface Store {
+    getCustomerId(): Maybe<string>;
+    setCustomerId(id: string): void;
 }
 
-interface AbTestDraftPreviewSettingsDTO extends AbTestPreviewSettingsBase<AbTestVariationDTO> {
-    variations: AbTestVariationDTO[];
+interface Visits {
+    getCustomerId(): Maybe<string>;
+    getStore(): Store;
+    isDoNotTrack(): boolean;
+    setCustomerId(id: string | undefined): void;
+    setCustomerIdentifierService(s: Store): Store;
+    setDoNotTrack(dnt: boolean): boolean;
+    setStore(s: Store): Store;
 }
-interface AbTestPreviewSettingsBase<T> {
-    id: TestId;
-    method: Method;
-    name: string;
-    segment: string;
-    variations: T[];
-}
-interface AbTestPreviewSettingsDTO extends AbTestPreviewSettingsBase<AbTestVariationDTO> {
-    variations: AbTestVariationDTO[];
-}
-interface AbTestVariation {
-    base: boolean;
-    id: string;
-    name: string;
-}
-interface AbTestVariationDTO extends AbTestVariation {
-}
-interface AbstractFacebookPixelEvent<D> {
-    d: D;
-    n: string;
-}
-interface AbstractGid {
-}
-interface AbstractStacklaPixelEvent<D> {
-    d: D;
-    n: string;
-}
-interface ActiveVisitDTO {
-    customer: CustomerDTO;
-    visit: VisitDTO;
-}
-interface AnalyticEvent {
-    properties?: AnalyticEventProperties;
-}
-interface AnalyticEventProperties {
-    abTestAttribution?: {
-        [index: string]: string;
-    };
-}
-interface BigcommerceCustomerInfo {
-    customer_reference: string;
-    email: string;
-    first_name?: string;
-    group_id?: string;
-    last_name?: string;
-    marketing_permission?: boolean;
-}
-interface CartItem {
-    name: string;
-    price_currency_code: string;
-    product_id: string;
-    quantity: number;
-    sku_id?: string;
-    unit_price: number;
-}
-interface CategoryClick extends CategoryEvent {
-    productId: string;
-}
-interface CategoryEvent extends AnalyticEvent {
-    metadata: CategoryEventMetadata;
-}
-interface CategoryEventMetadata {
-    category: string;
-    categoryId?: string;
-}
-interface CategoryImpression extends CategoryEvent {
-    page: number;
-    productIds: string[];
-}
-interface ClientScriptSettingsDTO {
-    account: string;
-    addToCartPopup?: boolean;
-    anyDomain: boolean;
-    browserQueueActive: boolean;
-    categoriesEnabled?: boolean;
-    cmpMode: string;
-    collectEmailFromURL?: boolean;
-    cookieTime: number;
-    currencySettings: {
-        [index: string]: CurrencySettingsDTO;
-    };
-    debugRedirectUrl: string;
-    defaultCurrencyCode: string;
-    defaultVariantId: string;
-    disablePlacementAntiFlickering?: boolean;
-    discountPopupTriggers: {
-        [index: string]: PopupTriggerSettingsDTO[];
-    };
-    discountPopupVisible?: boolean;
-    emailAddressUrlParamName: string;
-    exchangeRates?: boolean;
-    externalIdentifier: string;
-    extraHosts: string[];
-    fullTaggingRequired: boolean;
-    intersectionObserved?: string[];
-    jsErrorUrl: string;
-    klaviyoCookie?: boolean;
-    measurePerformance: boolean;
-    mutationObserved?: string[];
-    nostoRefParam: string;
-    pageTypeFiltersForUntaggedPages?: boolean;
-    parameterlessAttribution?: boolean;
-    parameterlessAttributionNoQueryCheck?: boolean;
-    placements: {
-        [index: string]: DynamicPlacementDTO;
-    };
-    popupRibbonUrlFilter: boolean;
-    recoveryPopupEnabled: boolean;
-    searchApiUrl?: string;
-    searchDeploymentId?: string;
-    searchEnabled?: boolean;
-    searchQueryParam: string;
-    searchTemplateHost?: string;
-    searchTemplatesEnabled?: boolean;
-    secureCookie?: boolean;
-    segmentUrlParameters: string[];
-    sendTaggingOnlyIfNeeded?: boolean;
-    server: string;
-    serverProductPlacementFiltering?: boolean;
-    shopifyCmpRedirect?: boolean;
-    shopifySkuSelectionListener?: boolean;
-    site: string;
-    sourceParameterName: string;
-    stacklaDomain: string;
-    stacklaEmbedCodeEndpoint: string;
-    stacklaTrackingUrl?: string;
-    stacklaWidgetAssetPath: string;
-    stacklaWidgetDomain: string;
-    subDomain: string;
-    trackingTypes: string[];
-    triggerAddToCartPopupWithCookie?: boolean;
-}
-interface ConditionDTO {
-    advanced: boolean;
-    brands: string[];
-    categories: string[];
-    exc_brands: string[];
-    exc_categories: string[];
-    exc_locations: string[][];
-    exc_page_types: PageType[];
-    exc_referer_urls: string[];
-    exc_tags: string[];
-    exc_url_parameters: string[];
-    exc_urls: string[];
-    hide_on_desktop: boolean;
-    hide_on_mobile: boolean;
-    locations: string[][];
-    max_cart_size: number;
-    max_cart_value: number;
-    max_page_views: number;
-    min_cart_size: number;
-    min_cart_value: number;
-    min_page_views: number;
-    page_types: PageType[];
-    referer_urls: string[];
-    tags: string[];
-    treat_url_conditions_as_filters: boolean;
-    url_parameters: string[];
-    urls: string[];
-    enabled: boolean;
-    enabledInJs: boolean;
-}
-interface ContentDebugDTO {
-    divIds: string[];
-    enabled: boolean;
-    id: ContentId;
-    name: string;
-    rendered: boolean;
-}
-interface ConversionItem {
-    name: string;
-    price_currency_code: string;
-    product_id: string;
-    quantity?: number;
-    sku_id?: string;
-    unit_price?: number;
-}
-interface CrawlResponse {
-    message: string;
-    product_id: string;
-}
-interface CurrencySettingsDTO {
-    currencyBeforeAmount: boolean;
-    currencyToken?: string;
-    decimalCharacter?: string;
-    decimalPlaces: number;
-    groupingSeparator?: string;
-}
-interface CustomerAffinityResponse {
-    discount: number;
-    top_brands: CustomerAffinityResponseItem[];
-    top_categories: CustomerAffinityResponseItem[];
-    top_product_types: CustomerAffinityResponseItem[];
-    top_skus: {
-        [index: string]: CustomerAffinityResponseItem[];
-    };
-}
-interface CustomerAffinityResponseItem {
-    name: string;
-    score: number;
-}
-interface CustomerDTO {
-    id: string;
-    marketing_permission: boolean;
-    ref: string;
-}
-interface CustomerToken {
-    token: string;
-}
-interface DebugRequestParamsDTO {
-    at?: Date;
-    ep?: boolean;
-    fs?: string[];
-    tp?: TestPreviewsDTO;
-}
-interface DebugToolbarDataDTO {
-    contentCampaigns: ContentDebugDTO[];
-    dev: boolean;
-    draftTests: AbTestDraftPreviewSettingsDTO[];
-    loggedIn: boolean;
-    placements: PlacementDebugDTO[];
-    placementsTab: boolean;
-    popupPreviewSettings: PopupCampaignPreviewSettingsDTO[];
-    recommendationCampaigns: RecommendationDebugDTO[];
-    richSegmentsTab: boolean;
-    runningTests: AbTestPreviewSettingsDTO[];
-    segments: SegmentDebugDTO[];
-    showImprovedCampaignOverlayData: boolean;
-    showStacklaTab: boolean;
-    showTestsTab: boolean;
-    stacklaWidgets: StacklaWidgetDebugDTO[];
-}
-interface DynamicPlacementDTO {
-    cssSelector?: string;
-    enabled: boolean;
-    filters: FilterRule[];
-    id: string;
-    intersection?: boolean;
-    mode: InsertMode;
-    mutation?: boolean;
-    wrapper: WrapMode;
-}
-interface Effect {
-    delay_min: number;
-    re_entry_tolerance: number;
-    scroll_min: number;
-}
-interface EventAttributionMetadata {
-    customer_reference?: string;
-    event_date?: Date;
-    referrer?: string;
-    url?: string;
-}
-interface EventAttributionParams {
-    events: EventFields[];
-    metadata: EventAttributionMetadata;
-}
-interface EventFields {
-    event_ref_type?: string;
-    event_type: string;
-    ref?: string;
-    ref_src?: string;
-    target: string;
-    target_fragment?: string;
-}
-interface EventRequestMessageV1 {
-    affinity_signals?: {
-        [index: string]: string[];
-    };
-    cart?: CartItem[];
-    cart_hash?: string;
-    cart_popup?: boolean;
-    categories?: string[];
-    category_ids?: string[];
-    coupon_campaign?: string;
-    coupon_code?: string;
-    coupon_used?: boolean;
-    current_variant_id?: string;
-    custom_fields?: {
-        [index: string]: string[];
-    };
-    customer?: PushedCustomer;
-    debug?: DebugRequestParamsDTO;
-    debug_token?: string;
-    elements?: string[];
-    event_date?: Date;
-    events?: EventTuple[];
-    experiments?: Experiment[];
-    external_identifier?: string;
-    klaviyo_cookie?: string;
-    mail_ref?: string;
-    mail_type?: string;
-    page_type?: PageType;
-    preview?: boolean;
-    recotrace?: string;
-    ref?: string;
-    referrer?: string;
-    response_mode?: RenderMode;
-    restore_link?: string;
-    segment_codes?: string[];
-    skipcache?: boolean;
-    sort_order?: string;
-    tags?: string[];
-    url?: string;
-}
-interface EventResponseMessage {
-    af: CustomerAffinityResponse;
-    cdc: string;
-    cmpid: string;
-    cpr: string;
-    cs: number;
-    ct: number;
-    customer: string;
-    debug: DebugToolbarDataDTO;
-    ed: Date;
-    errors: string[];
-    fb: FacebookData;
-    ga: GoogleAnalyticsData;
-    gl: string[];
-    he: boolean;
-    hiic: boolean;
-    js: string;
-    nc: boolean;
-    pv: number;
-    recommendations: {
-        [index: string]: unknown;
-    };
-    se: SegmentsResponseBean;
-    sp: StacklaTrackingData;
-    visit: string;
-    processedRecommendations?: {
-        [index: string]: unknown;
-    };
-}
-interface Events {
-}
-interface Experiment {
-    id: string;
-    id_stamp?: string;
-    name?: string;
-    variation: string;
-    variation_name?: string;
-}
-interface FacebookData {
-    a: string;
-    e: AbstractFacebookPixelEvent<unknown>[];
-    p: string;
-    s: string[];
-}
-interface FilterRule {
-    field?: string;
-    negate?: boolean;
-    operator: FilterOperator;
-    values?: unknown[];
-}
-interface ForcedTestDTO {
-    t: TestId;
-    v: string;
-}
-interface GoogleAnalyticsData {
-    s?: string[];
-}
-interface NostoSku extends Sku {
-    inventory_level?: number;
-}
-interface NostoVariant {
-    availability: string;
-    available: boolean;
-    discounted: boolean;
-    list_price?: number;
-    price: number;
-    price_currency_code: string;
-    price_text?: string;
-}
-interface OrderCustomer {
-    country: string;
-    email?: string;
-    first_name?: string;
-    last_name?: string;
-    newsletter?: string;
-    order_number: string;
-    phone: string;
-    post_code: string;
-    type?: string;
-}
-interface OrderInfo {
-    country_code: string;
-    customer_id: string;
-    customer_reference?: string;
-    email?: string;
-    first_name?: string;
-    last_name?: string;
-    newsletter?: boolean;
-    order_number: string;
-    phone_number: string;
-    type: string;
-    zip_code: string;
-}
-interface OverlapCampaignDTO {
-    enabled: boolean;
-    feature: OnsiteFeature;
-    id: string;
-    name: string;
-    schedule?: ScheduleTime;
-}
-interface PlacementDebugDTO {
-    activeRule?: SegmentRuleDebugDTO;
-    divId: string;
-    enabled: boolean;
-    id: string;
-    name: string;
-    rules: PlacementRuleDTO[];
-}
-interface PlacementRuleDTO {
-    feature?: OnsiteFeature;
-    segment: string;
-    to?: CampaignId;
-}
-interface PopupCampaignPreviewSettingsDTO {
-    campaign_id: string;
-    campaign_title: string;
-    condition: ConditionDTO;
-    enabled: boolean;
-    popup_id: string;
-    type: string;
-}
-interface PopupCouponGiven extends PopupEvent {
-    campaignId: string;
-}
-interface PopupEmailCollected extends PopupEvent {
-    campaignId: string;
-}
-interface PopupEvent extends AnalyticEvent {
-    campaign_id: string;
-}
-interface PopupTriggerSettingsDTO {
-    condition: ConditionDTO;
-    effect: Effect;
-    enabled: boolean;
-    id: string;
-    name: string;
-    ordinal: number;
-    popup_id: string;
-}
-interface PopupTriggered extends PopupEvent {
-    campaignId: string;
-}
-interface PostPurchaseImage {
-    url: string;
-}
-interface PostPurchaseOffer {
-    customer: string;
-    discount_type: string;
-    discount_value: number;
-    options: PostPurchaseProductOption[];
-    recommendation: PostPurchaseRecommendation;
-    signature_hash: string;
-}
-interface PostPurchaseOptionValue {
-    id: ProductOptionValueGid;
-    name: string;
-    translations: PostPurchaseTranslation[];
-}
-interface PostPurchaseProductOption {
-    name: string;
-    optionValues: PostPurchaseOptionValue[];
-    translations: PostPurchaseTranslation[];
-}
-interface PostPurchaseRecommendation {
-    description: string;
-    image_url: string;
-    name: string;
-    product_id: string;
-    skus: PostPurchaseVariantNode[];
-    title: string;
-}
-interface PostPurchaseSelectedOption {
-    optionValue: PostPurchaseOptionValue;
-    value: string;
-}
-interface PostPurchaseTranslation {
-    value: string;
-}
-interface PostPurchaseVariantNode {
-    id: VariantGid;
-    image: PostPurchaseImage;
-    selectedOptions: PostPurchaseSelectedOption[];
-    title: string;
-}
-interface ProductOptionValueGid extends AbstractGid {
-}
-interface ProductPushResponse {
-    messages: string[];
-}
-interface PushedCustomer {
-    customer_reference?: string;
-    email: string;
-    first_name?: string;
-    hcid?: string;
-    last_name?: string;
-    newsletter?: boolean;
-    order_number?: string;
-    source?: string;
-    source_id?: string;
-    type?: string;
-}
-interface PushedProduct {
-    age_group?: string;
-    alternate_image_urls: string[];
-    availability: string;
-    brand?: string;
-    category: string[];
-    category_id: string[];
-    condition?: string;
-    custom_fields: {
-        [index: string]: string;
-    };
-    date_published?: Date;
-    description?: string;
-    gender?: string;
-    google_category?: string;
-    gtin?: string;
-    image_url?: string;
-    inventory_level?: number;
-    list_price?: number;
-    name: string;
-    parent_category_id: string[];
-    price: number;
-    price_currency_code: string;
-    product_id: string;
-    rating_value?: number;
-    review_count?: number;
-    skus: PushedProductSKU[];
-    source_updated?: Date;
-    supplier_cost?: number;
-    tags1: string[];
-    tags2: string[];
-    tags3: string[];
-    thumb_url?: string;
-    unit_pricing_base_measure?: number;
-    unit_pricing_measure?: number;
-    unit_pricing_unit?: string;
-    update_received?: Date;
-    url: string;
-    variation_id?: string;
-    variations: {
-        [index: string]: PushedVariation;
-    };
-}
-interface PushedProductSKU extends NostoSku {
-}
-interface PushedVariation extends NostoVariant {
-}
-interface RecommendationDebugDTO {
-    divId?: string;
-    divIds: string[];
-    enabled: boolean;
-    fbLink: string;
-    fbTitle: string;
-    fbType: string;
-    filtered: boolean;
-    id: RecommendationId;
-    ittt: boolean;
-    link: string;
-    productIds: {
-        [index: string]: string;
-    };
-    recoId: string;
-    rendered: boolean;
-    resultType: string;
-    title: string;
-    type: string;
-    variant: boolean;
-}
-interface ScheduleTime {
-    from: string;
-    fromTime?: string;
-    timezone?: string;
-    to?: string;
-    toTime?: string;
-    type?: string;
-    weekDays?: string[];
-}
-interface SearchClick extends SearchEvent {
-    productId: string;
-}
-interface SearchEvent extends AnalyticEvent {
-    metadata: SearchEventMetadata;
-}
-interface SearchEventMetadata {
-    hasResults: boolean;
-    isAutoComplete: boolean;
-    isAutoCorrect: boolean;
-    isKeyword: boolean;
-    isOrganic: boolean;
-    isRefined: boolean;
-    isSorted: boolean;
-    query: string;
-    refinedQuery?: string;
-    resultId: string;
-}
-interface SearchImpression extends SearchEvent {
-    page: number;
-    productIds: string[];
-}
-interface SegmentDebugDTO {
-    active: boolean;
-    forced: boolean;
-    id: string;
-    name: string;
-}
-interface SegmentInfoBean {
-    id: string;
-}
-interface SegmentRuleDebugDTO {
-    draft?: TestDebugDTO;
-    segment: string;
-    test?: TestDebugDTO;
-    to?: CampaignId;
-    type: TargetType;
-}
-interface SegmentsResponseBean {
-    active_segments: SegmentInfoBean[];
-}
-interface Sku {
-    availability: string;
-    custom_fields: {
-        [index: string]: string;
-    };
-    gtin?: string;
-    id: string;
-    image_url?: string;
-    list_price?: number;
-    name: string;
-    price: number;
-    url?: string;
-}
-interface StacklaTrackingData {
-    e: AbstractStacklaPixelEvent<unknown>[];
-}
-interface StacklaWidgetDebugDTO {
-    divIds: string[];
-    enabled: boolean;
-    filterType: StacklaWidgetFilterType;
-    id: StacklaWidgetEmbedId;
-    name: string;
-    rendered: boolean;
-    usedInTest: boolean;
-    widgetId: string;
-}
-interface TestDebugDTO {
-    id: TestId;
-    variation: string;
-}
-interface TestPlacementRuleDTO {
-    feature?: OnsiteFeature;
-    placement: string;
-    segment: string;
-    to?: CampaignId;
-}
-interface TestPreviewsDTO {
-    d?: ForcedTestDTO;
-    t: ForcedTestDTO[];
-    u?: UnsavedDraftPreviewSettingsDTO;
-}
-interface UnsavedDraftPreviewSettingsDTO extends AbTestPreviewSettingsBase<VariationWithRulesDTO> {
-    variations: VariationWithRulesDTO[];
-}
-interface ValidationError {
-    key: string;
-    message: string;
-}
-interface VariantGid extends AbstractGid {
-}
-interface VariationWithRulesDTO extends AbTestVariationDTO {
-    rules: TestPlacementRuleDTO[];
-}
-interface VisitDTO {
-    cart_items: CartItem[];
-    customer_id: string;
-    email: string;
-    events: Events;
-    id: string;
-}
-interface WebsiteOrder {
-    created_at?: Date;
-    external_order_ref?: string;
-    info?: OrderCustomer;
-    items: ConversionItem[];
-    order_status?: string;
-    order_status_label?: string;
-    payment_provider?: string;
-}
-interface WidgetPlacement {
-    enabled: boolean;
-    id?: string;
-    name: string;
-    rules?: WidgetPlacementRule[];
-}
-interface WidgetPlacementRule {
-    feature?: OnsiteFeature;
-    segment: string;
-    to?: string;
-}
-type ContentId = CampaignId<"ContentId">;
-type FilterOperator = "INCLUDES" | "IS" | "CONTAINS" | "MATCHES_REGEXP_PATTERN" | "LT" | "GT" | "GTE" | "LTE" | "BETWEEN" | "AND" | "OR";
-type InsertMode = "REPLACE" | "APPEND" | "PREPEND" | "INSERT_INTO" | "INSERT_AFTER_BEGIN";
-type Method = "SPLIT_TEST" | "MVT";
-type OnsiteFeature = "RECOMMENDATION" | "CONTENT_DELIVERY" | "POPUP" | "SPLIT_TESTING" | "SCHEDULING" | "STACKLA_WIDGET";
-type PageType = "front" | "category" | "product" | "cart" | "search" | "notfound" | "order" | "other" | "checkout";
-type RecommendationId = CampaignId<"RecommendationId">;
-type RenderMode = "HTML" | "SIMPLE" | "JSON_170x170" | "JSON_100_X_100" | "JSON_90x70" | "JSON_50x50" | "JSON_30x30" | "JSON_100x140" | "JSON_200x200" | "JSON_400x400" | "JSON_750x750" | "JSON_10_MAX_SQUARE" | "JSON_200x200_SQUARE" | "JSON_400x400_SQUARE" | "JSON_750x750_SQUARE" | "JSON_ORIGINAL" | "VERSION_SOURCE";
-type StacklaWidgetEmbedId = CampaignId<"StacklaWidgetEmbedId">;
-type StacklaWidgetFilterType = "LATEST" | "CATEGORY_OR_BRAND" | "PRODUCT";
-type TargetType = "RECOMMENDATION" | "ONSITE_CONTENT" | "AB_TEST" | "HIDE_CONTENT" | "STACKLA_WIDGET";
-type TestId = CampaignId<"TestId">;
-type WrapMode = "SIMPLE" | "PRESERVE_CLASS" | "CLONED" | "UNWRAPPED";
-type CampaignId<T extends string = string> = string & {
-    __kind: T;
-};
 
 type PerLinkAttributions = Record<string, Record<string, string>>;
 
@@ -1922,15 +1939,6 @@ interface Placements {
     isFilteringConfigured(placement: DynamicPlacementDTO): boolean;
     removeContent(divId: string): void;
     reset(): void;
-}
-
-interface AxiosResponse<T = unknown> {
-    data: T;
-    status: number;
-    statusText: string;
-    headers: Record<string, string>;
-    config: unknown;
-    request?: unknown;
 }
 
 type ParseUriResult = Pick<URL, "href" | "protocol" | "hostname" | "hash" | "search" | "searchParams">;
@@ -1989,16 +1997,6 @@ type nostojs = {
     o?: InitOptions;
 };
 
-declare function windowTools(win: Window, scriptLoaderWindow: Window): {
-    window: Window;
-    loadScript: (url: string, callbackFn?: () => void, options?: {
-        module?: boolean;
-    }) => Promise<void>;
-    loadOnce: (url: string, callbackFn: () => void) => void;
-    xdr: (url: string, data: EventRequestMessageV1) => Promise<AxiosResponse>;
-    domReady: (fn: () => void) => void;
-};
-type WindowTools = ReturnType<typeof windowTools>;
 /**
  * @hidden
  */
@@ -2012,13 +2010,8 @@ interface Context {
     updateSiteUrl: () => void;
     siteUrl: ParseUriResult;
     siteUrlCleaned: string;
-    requests: {
-        sent: unknown[];
-        received: unknown[];
-    };
     referer?: ParseUriResult;
-    site: WindowTools;
-    nosto: WindowTools;
+    domReady: ReturnType<typeof domReadyCreator>;
     debugToken: string;
     mode: Mode;
     popupShown: boolean;
@@ -2176,11 +2169,22 @@ interface Settings extends ClientScriptSettingsDTO {
 }
 declare function modifySettings(updates: Partial<Settings>): void;
 
-declare function recommendedProductAddedToCart(productId: string, recoId: string): Promise<void>;
+type ProductIdentifier = string | {
+    productId: string;
+    skuId?: string;
+};
+/**
+ * Sends an event to Nosto when a recommended product is added to the cart.
+ * @param product - The product identifier.
+ * @param recoId - The recommendation identifier.
+ */
+declare function reportAddToCart(product: ProductIdentifier, recoId: string): Promise<void>;
 
 declare function reportCouponGiven(campaignId: string, couponCode: string, couponUsed: boolean): Promise<void>;
 
 declare function addSegment(segment: string): Promise<void>;
+
+declare function addAffinitySignals(signals: Record<string, string[]>): Promise<void>;
 
 declare function findProducts(): Product[];
 
@@ -3483,6 +3487,7 @@ interface Scripterror {
  */
 interface Addtocart {
     productId: string;
+    skuId?: string;
     placementId: string;
 }
 /**
@@ -3587,6 +3592,89 @@ declare function isAutoLoad(): boolean;
 
 declare function setExperiments(experiments: Experiment[]): Promise<void>;
 
+type PopupCampaign = PopupTriggerSettingsDTO & {
+    type?: PopupTrigger;
+};
+declare function createOverlay(): {
+    sortedCampaignsWithType: () => PopupCampaign[];
+    activate: () => void;
+    campaignList: () => PopupCampaign[];
+    openPopup: (popupId: string, opts?: {
+        preview?: boolean;
+        effects?: Record<string, unknown>;
+    }) => string | undefined;
+    enablePopup: (popupId: string) => void;
+    disablePopup: (popupId: string) => void;
+    setTriggers: (responseData: EventResponseMessage) => void;
+    discountPopup: {
+        instance: {
+            internal: {
+                showPopup(showPopupOptions: {
+                    campaignId?: string;
+                    popupId?: string;
+                    effect: Partial<PopupEffect>;
+                    trigger: PopupTrigger;
+                    preview?: boolean;
+                    cart?: PopupCart;
+                }): void;
+                close(): void;
+            };
+            preview: (popupId: string, campaignId: string, effect?: PopupEffect) => void;
+            previewById: (popupId: string, effect: PopupEffect) => void;
+            open: (popupId: string, response: ResponseData | null, effect: PopupEffect, trigger: PopupTrigger) => void;
+            okToOpen: (popupId: string, condition: Condition, responseData?: ResponseData) => boolean;
+            openCheck: (popupId: string, condition?: Condition, responseData?: ResponseData) => string | null;
+            stampOnCheckoutPage: () => void;
+            openMinimized: () => void;
+            done: (popupId: string) => void;
+            writePopupAttribute: typeof writePopupAttribute;
+            readPopupAttributes: typeof readPopupAttributes;
+        } | null;
+        preview(popupId: string, campaignId: string, effect?: PopupEffect): {
+            internal: {
+                showPopup(showPopupOptions: {
+                    campaignId?: string;
+                    popupId?: string;
+                    effect: Partial<PopupEffect>;
+                    trigger: PopupTrigger;
+                    preview?: boolean;
+                    cart?: PopupCart;
+                }): void;
+                close(): void;
+            };
+            preview: (popupId: string, campaignId: string, effect?: PopupEffect) => void;
+            previewById: (popupId: string, effect: PopupEffect) => void;
+            open: (popupId: string, response: ResponseData | null, effect: PopupEffect, trigger: PopupTrigger) => void;
+            okToOpen: (popupId: string, condition: Condition, responseData?: ResponseData) => boolean;
+            openCheck: (popupId: string, condition?: Condition, responseData?: ResponseData) => string | null;
+            stampOnCheckoutPage: () => void;
+            openMinimized: () => void;
+            done: (popupId: string) => void;
+            writePopupAttribute: typeof writePopupAttribute;
+            readPopupAttributes: typeof readPopupAttributes;
+        };
+    };
+} | {
+    activate(): void;
+    campaignList(): (PopupTriggerSettingsDTO & {
+        type?: PopupTrigger;
+    })[];
+    openPopup(): void;
+    enablePopup(): void;
+    disablePopup(): void;
+    setTriggers(): void;
+    discountPopup: {
+        instance: {};
+        preview(): void;
+    };
+    sortedCampaignsWithType?: undefined;
+};
+
+/**
+ * @hidden
+ */
+type Overlay = ReturnType<typeof createOverlay>;
+
 declare function captureError(error: unknown, reporter: string, level?: Level): void;
 declare function customer(customer: PushedCustomer): Promise<void>;
 type Install = {
@@ -3607,6 +3695,7 @@ declare function showPlacementPreviews(placement: {
 declare function defaultSession(): Session;
 declare function createRecommendationRequest(flags?: {
     includeTagging?: boolean;
+    state?: EventRequestMessageV1;
 }): RequestBuilder;
 declare function setRecommendationsEnabled(flag: boolean): void;
 declare function listen<T extends keyof EventMapping>(phase: T, callback: (...args: EventMapping[T]) => void): void;
@@ -3779,19 +3868,20 @@ declare const api: {
     /** @hidden */
     loadCartPopupRecommendations: typeof loadCartPopupRecommendations;
     /**
-     * @param cartItemId
+     * Sends an event to Nosto when a recommended product is added to the cart.
+     *
+     * @param productId
      * @param nostoElementId
      * @return {Promise<Object>}
      */
-    reportAddToCart: typeof recommendedProductAddedToCart;
+    reportAddToCart: typeof reportAddToCart;
     /** @hidden */
     captureError: typeof captureError;
     /**
-     * @param {String} productId
-     * @param {String} nostoElementId
-     * @return {Promise<Object>}
+     * @hidden
+     * @deprecated
      */
-    recommendedProductAddedToCart: typeof recommendedProductAddedToCart;
+    recommendedProductAddedToCart: typeof reportAddToCart;
     /**
      * API method to force the current session to be a part of the given experiment.
      *
@@ -3941,6 +4031,18 @@ declare const api: {
      */
     addSegmentCodeToVisit: typeof addSegment;
     /**
+     * Manually specify user affinity signals.
+     * This is useful for features like user quizzes or surveys where they would specify their preferences.
+     * <br/><br/>
+     * Explicit affinity signals contribute to the final affinities in a weighted system, and
+     * they are weighted lower than buying an item, but higher than adding it to cart.
+     *
+     * @example
+     * <caption>to add affinity to specific brands</caption>
+     * nostojs(api => api.addAffinitySignals({ brand: ['nike', 'adidas'] }))
+     */
+    addAffinitySignals: typeof addAffinitySignals;
+    /**
      * Removes injected content from the supplied divIds
      * If campaign was injected statically, then static placement just clears its contents.
      * If dynamically, the injected element gets removed from DOM
@@ -4022,103 +4124,5 @@ declare const api: {
  * @interface
  * */
 type API = typeof api;
-
-type PopupCampaign = PopupTriggerSettingsDTO & {
-    type?: PopupTrigger;
-};
-declare function createOverlay(): {
-    sortedCampaignsWithType: () => PopupCampaign[];
-    activate: () => void;
-    campaignList: () => PopupCampaign[];
-    openPopup: (popupId: string, opts?: {
-        preview?: boolean;
-        effects?: Record<string, unknown>;
-    }) => string | undefined;
-    enablePopup: (popupId: string) => void;
-    disablePopup: (popupId: string) => void;
-    setTriggers: (responseData: EventResponseMessage) => void;
-    discountPopup: {
-        instance: {
-            internal: {
-                showPopup(showPopupOptions: {
-                    campaignId?: string;
-                    popupId?: string;
-                    effect: Partial<PopupEffect>;
-                    trigger: PopupTrigger;
-                    preview?: boolean;
-                    cart?: PopupCart;
-                }): void;
-                close(): void;
-            };
-            preview: (popupId: string, campaignId: string, effect?: PopupEffect) => void;
-            previewById: (popupId: string, effect: PopupEffect) => void;
-            open: (popupId: string, response: ResponseData | null, effect: PopupEffect, trigger: PopupTrigger) => void;
-            okToOpen: (popupId: string, condition: Condition, responseData?: ResponseData) => boolean;
-            openCheck: (popupId: string, condition?: Condition, responseData?: ResponseData) => string | null;
-            stampOnCheckoutPage: () => void;
-            openMinimized: () => void;
-            done: (popupId: string) => void;
-            writePopupAttribute: typeof writePopupAttribute;
-            readPopupAttributes: typeof readPopupAttributes;
-        } | null;
-        preview(popupId: string, campaignId: string, effect?: PopupEffect): {
-            internal: {
-                showPopup(showPopupOptions: {
-                    campaignId?: string;
-                    popupId?: string;
-                    effect: Partial<PopupEffect>;
-                    trigger: PopupTrigger;
-                    preview?: boolean;
-                    cart?: PopupCart;
-                }): void;
-                close(): void;
-            };
-            preview: (popupId: string, campaignId: string, effect?: PopupEffect) => void;
-            previewById: (popupId: string, effect: PopupEffect) => void;
-            open: (popupId: string, response: ResponseData | null, effect: PopupEffect, trigger: PopupTrigger) => void;
-            okToOpen: (popupId: string, condition: Condition, responseData?: ResponseData) => boolean;
-            openCheck: (popupId: string, condition?: Condition, responseData?: ResponseData) => string | null;
-            stampOnCheckoutPage: () => void;
-            openMinimized: () => void;
-            done: (popupId: string) => void;
-            writePopupAttribute: typeof writePopupAttribute;
-            readPopupAttributes: typeof readPopupAttributes;
-        };
-    };
-} | {
-    activate(): void;
-    campaignList(): (PopupTriggerSettingsDTO & {
-        type?: PopupTrigger;
-    })[];
-    openPopup(): void;
-    enablePopup(): void;
-    disablePopup(): void;
-    setTriggers(): void;
-    discountPopup: {
-        instance: {};
-        preview(): void;
-    };
-    sortedCampaignsWithType?: undefined;
-};
-
-/**
- * @hidden
- */
-type Overlay = ReturnType<typeof createOverlay>;
-
-interface Store {
-    getCustomerId(): Maybe<string>;
-    setCustomerId(id: string): void;
-}
-
-interface Visits {
-    getCustomerId(): Maybe<string>;
-    getStore(): Store;
-    isDoNotTrack(): boolean;
-    setCustomerId(id: string | undefined): void;
-    setCustomerIdentifierService(s: Store): Store;
-    setDoNotTrack(dnt: boolean): boolean;
-    setStore(s: Store): Store;
-}
 
 export type { ABTest, API, AbTestDraftPreviewSettingsDTO, AbTestPreviewSettingsBase, AbTestPreviewSettingsDTO, AbTestVariation, AbTestVariationDTO, AbstractFacebookPixelEvent, AbstractGid, AbstractStacklaPixelEvent, Action, ActionResponse, ActiveVisitDTO, Addtocart, AnalyticEvent, AnalyticEventProperties, AnalyticsType, BigcommerceCustomerInfo, Callback, CampaignId, Cart, CartItem, Carttaggingresent, CategoryClick, CategoryEvent, CategoryEventMetadata, CategoryImpression, ClientScriptSettingsDTO, ConditionDTO, ContentDebugDTO, ContentId, Context, ConversionItem, Coupon, Coupongiven, CrawlResponse, CurrencySettingsDTO, CustomerAffinityResponse, CustomerAffinityResponseItem, CustomerDTO, CustomerToken, DebugRequestParamsDTO, DebugToolbarDataDTO, DynamicPlacementDTO, Effect, Endpoint, Event, EventAttributionMetadata, EventAttributionParams, EventFields, EventMapping, EventRefType, EventRequestMessageV1, EventResponseMessage, EventTuple, EventType, Events, Experiment, FacebookData, FilterOperator, FilterRule, ForcedTestDTO, GoogleAnalyticsData, InputSearchABTest, InputSearchABTestVariation, InputSearchBoost, InputSearchFacetConfig, InputSearchFilter, InputSearchHighlight, InputSearchKeywords, InputSearchPin, InputSearchProducts, InputSearchQuery, InputSearchRangeFilter, InputSearchRule, InputSearchRuleMatch, InputSearchSchedule, InputSearchSort, InputSearchTopLevelFilter, InsertMode, Method, NostoSku, NostoVariant, NostojsCallback, OnsiteFeature, Order, OrderCustomer, OrderInfo, OverlapCampaignDTO, Overlay, PageType, PersonalizationBoost, PlacementDebugDTO, PlacementRuleDTO, Placements, Popup, PopupCampaignPreviewSettingsDTO, PopupCouponGiven, PopupEmailCollected, PopupEvent, PopupTriggerSettingsDTO, PopupTriggered, Popupopened, PostPurchaseImage, PostPurchaseOffer, PostPurchaseOptionValue, PostPurchaseProductOption, PostPurchaseRecommendation, PostPurchaseSelectedOption, PostPurchaseTranslation, PostPurchaseVariantNode, Postrender, Prerender, Product, ProductOptionValueGid, ProductPushResponse, PushedCustomer, PushedProduct, PushedProductSKU, PushedVariation, Query, QuerySearchArgs, RecommendationDebugDTO, RecommendationId, RecommendationRequestFlags, RenderMode, RequestBuilder, ScheduleTime, Scripterror, SearchAnalyticsOptions, SearchAutocorrect, SearchClick, SearchEvent, SearchEventMetadata, SearchExclusionBehaviour, SearchExplain, SearchExplainRule, SearchFacet, SearchFacetOrder, SearchFacetTerm, SearchFacetType, SearchFailureEventDTO, SearchHighlight, SearchHit, SearchImpression, SearchKeyword, SearchKeywords, SearchOptions, SearchOutOfStockBehaviour, SearchPageType, SearchParamComparisonFunction, SearchProduct, SearchProductAffinities, SearchProductAiDetected, SearchProductCustomField, SearchProductExtra, SearchProductKeyedVariation, SearchProductSku, SearchProductStats, SearchProducts, SearchQuery, SearchQueryField, SearchResult, SearchRuleScheduleType, SearchRuleScheduleWeekday, SearchSessionParams, SearchSortOrder, SearchStatsFacet, SearchSuccessEventDTO, SearchTermsFacet, SearchTrackOptions, SearchVariationValue, SegmentDebugDTO, SegmentInfoBean, SegmentRuleDebugDTO, Segments, SegmentsResponseBean, Session, Setexperiments, Settings, Sku, StacklaTrackingData, StacklaWidgetDebugDTO, StacklaWidgetEmbedId, StacklaWidgetFilterType, TaggingData, TargetType, TestDebugDTO, TestId, TestPlacementRuleDTO, TestPreviewsDTO, UnsavedDraftPreviewSettingsDTO, ValidationError, VariantGid, VariationWithRulesDTO, VisitDTO, Visits, WebsiteOrder, WidgetPlacement, WidgetPlacementRule, WrapMode, nostojs };
