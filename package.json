@@ -37,7 +37,7 @@
     "build-dts": "tsc --noEmit false --emitDeclarationOnly && npm run copy-nosto-dts",
     "copy-nosto-dts": "copyfiles -u 1 \"src/client/*.d.ts\" dist",
     "test": "vitest --run",
-    "lint": "eslint 'src/**/*.ts'",
+    "lint": "eslint '{src,test}/**/*.ts'",
     "preview": "vite preview",
     "typedoc": "typedoc src/index.ts src/client/nosto.d.ts src/testing/testing.ts"
   },

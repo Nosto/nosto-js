@@ -18,6 +18,7 @@ export default tseslint.config(
     plugins: {
       "barrel-files": barrelFiles
     },
+    files: ["src/**/*.{js,ts,tsx}"],
     rules: {
       "barrel-files/avoid-barrel-files": 2,
       "barrel-files/avoid-importing-barrel-files": 2,
