@@ -1,4 +1,4 @@
-import { NostojsCallback } from "../client/nosto"
+import type { NostojsCallback } from "../client/nosto"
 
 /**
  * Wrapper function for the Nosto client script.
