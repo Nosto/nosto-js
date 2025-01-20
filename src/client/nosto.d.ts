@@ -1,6 +1,5 @@
 /** @module client */
 // @ts-nocheck
-import domReadyCreator from 'domready';
 
 /**
  * @group Core
