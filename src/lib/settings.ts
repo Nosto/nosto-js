@@ -3,8 +3,8 @@ import { nostojs } from "./nostojs"
 
 let settings: Settings | null = null
 
-if (window) {
-  nostojs(async api => {
+if (typeof window !== "undefined") {
+  nostojs(api => {
     settings = api.internal.getSettings()
   })
 }
