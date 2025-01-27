@@ -9,7 +9,7 @@ if (typeof window !== "undefined") {
 }
 
 export { isNostoLoaded, getNostoWindow } from "./lib/helpers"
-export { init } from "./lib/init"
+export { init, type InitProps } from "./lib/init"
 export { getSettings } from "./lib/settings"
 export { nostojs } from "./lib/nostojs"
 export type * from "./types"
