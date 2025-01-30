@@ -1,5 +1,11 @@
 /** @module ./ */
-/* eslint-disable barrel-files/avoid-barrel-files */
+
+/**
+ * Disclaimer:
+ * For new exports, prefer new named exports (like /testing or /performance) over the main barrel file.
+ * Index file should (ideally) export only the main functionality of the package - client script init.
+ */
+
 import { initNostoStub } from "./utils/dom"
 
 // to make sure that the nosto-js module can also be initialized in a non-browser environment
