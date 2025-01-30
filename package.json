@@ -31,7 +31,7 @@
       "require": "./dist/performance.cjs.js"
     },
     "./testing": {
-      "types": "./dist/testing/testing.d.ts",
+      "types": "./dist/testing.d.ts",
       "import": "./dist/testing.es.js",
       "require": "./dist/testing.cjs.js"
     }
