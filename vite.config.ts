@@ -1,11 +1,13 @@
 import { resolve } from "path"
 import { defineConfig } from "vitest/config"
 
+const entryPoints = ["src/index.ts", "src/performance.ts", "src/testing.ts"]
+
 export default defineConfig({
   build: {
     lib: {
       name: "@nosto/nosto-js",
-      entry: [resolve(__dirname, "src/index.ts"), resolve(__dirname, "src/testing/testing.ts")],
+      entry: entryPoints.map(entry => resolve(__dirname, entry)),
       formats: ["es", "cjs"],
       fileName: (format, name) => `${name}.${format}.js`
     }

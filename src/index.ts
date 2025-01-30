@@ -1,5 +1,4 @@
 /** @module ./ */
-/* eslint-disable barrel-files/avoid-barrel-files */
 import { initNostoStub } from "./utils/dom"
 
 // to make sure that the nosto-js module can also be initialized in a non-browser environment

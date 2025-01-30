@@ -25,6 +25,11 @@
     "./client": {
       "types": "./dist/client/nosto.d.ts"
     },
+    "./performance": {
+      "types": "./dist/performance.d.ts",
+      "import": "./dist/performance.es.js",
+      "require": "./dist/performance.cjs.js"
+    },
     "./testing": {
       "types": "./dist/testing/testing.d.ts",
       "import": "./dist/testing.es.js",
