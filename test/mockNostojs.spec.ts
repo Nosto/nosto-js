@@ -42,4 +42,17 @@ describe("mockNostojs", () => {
     reloadNosto({})
     expect(mockWindow.reload).toHaveBeenCalled()
   })
+
+  it("should merge defaults into mock object", async () => {
+    mockNostojs({
+      pageTagging: () => ({
+        categories: ["foo", "bar"]
+      })
+    })
+    const api = await new Promise(nostojs)
+    // overridden behaviour
+    expect(api.pageTagging().categories).toEqual(["foo", "bar"])
+    // default behaviour
+    expect(api.internal.context.mode.isPreview()).toBe(false)
+  })
 })

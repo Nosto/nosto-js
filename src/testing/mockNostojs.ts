@@ -22,6 +22,46 @@ function mockWindow() {
   }
 }
 
+function mockDefaults(): MockAPI {
+  return {
+    pageTagging: () => ({}),
+    internal: {
+      logger: console,
+      setTaggingProvider: () => {},
+      getSettings: () => ({}),
+      modifySettings: () => {},
+      context: {
+        mode: {
+          isPreview: () => false,
+          setPreview: () => false,
+          setRecotrace: () => false,
+          setSkipCache: () => false,
+          setDev: () => false,
+          setDebugState: () => false,
+          clear: () => false,
+          isDebug: () => false,
+          isRecotraceEnabled: () => false,
+          skipCache: () => false,
+          getDebugState: () => undefined,
+          isBot: () => false
+        }
+      }
+    }
+  }
+}
+
+function mergeWithDefaults(mock: MockAPI = {}): MockAPI {
+  const { internal, ...defaults } = mockDefaults()
+  return {
+    ...defaults,
+    ...mock,
+    internal: {
+      ...internal,
+      ...mock.internal
+    }
+  }
+}
+
 /**
  * Replaces the `nostojs` and `window.nostojs` functions with a mock implementation.
  */
@@ -32,7 +72,8 @@ export function mockNostojs(mock?: MockAPI, nostoWindow: MockWindow = mockWindow
   if (!originalNosto) {
     originalNosto = window.nosto
   }
-  window.nostojs = (callback: NostojsCallback) => callback(mock as unknown as API) as Promise<unknown>
+  const fullMock = mergeWithDefaults(mock)
+  window.nostojs = (callback: NostojsCallback) => callback(fullMock as unknown as API) as Promise<unknown>
   // @ts-expect-error nostoWindow is a partial mock
   window.nosto = nostoWindow
 }
