@@ -7,7 +7,7 @@ let originalNosto: NostoSandbox | undefined
 /**
  * MockMember turns API members into functions returning partials or in case of objects partial objects.
  */
-type MockMember<T> = T extends (...args: never[]) => unknown
+export type MockMember<T> = T extends (...args: never[]) => unknown
   ? (...args: Parameters<T>) => Partial<ReturnType<T>>
   : T extends object
     ? { [K in keyof T]?: Partial<T[K]> }
