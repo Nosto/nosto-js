@@ -45,7 +45,7 @@
     "test-only": "vitest --run",
     "lint": "eslint '{src,test}/**/*.ts'",
     "preview": "vite preview",
-    "typedoc": "typedoc src/index.ts src/client/nosto.d.ts src/testing.ts"
+    "typedoc": "typedoc --treatWarningsAsErrors src/index.ts src/client/nosto.d.ts src/testing.ts"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",
