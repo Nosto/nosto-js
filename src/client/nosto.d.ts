@@ -813,7 +813,7 @@ interface Order {
     items: CartItem[];
 }
 
-interface PluginMetadata {
+export interface PluginMetadata {
     mainModule?: string;
     cmpModule?: string;
     msiModule?: string;
@@ -986,7 +986,7 @@ interface RequestBuilder {
      * and generating a SHA256 checksum will suffice.
      *
      * @deprecated
-     * @param {String} hcid the 32 character unique hash
+     * @param {String} hash the 32 character unique hash
      */
     addCartCookieHash(hash: string): RequestBuilder;
     /**
@@ -1219,7 +1219,7 @@ interface RequestBuilder {
     getData(): EventRequestMessageV1;
 }
 
-interface Attribution {
+export interface Attribution {
     recordAttribution: (event: Event) => Attribution;
     dumpData: () => EventTuple[];
     done: () => Promise<void>;
@@ -1870,7 +1870,7 @@ interface Action {
      */
     load(flags?: RecommendationRequestFlags): Promise<ActionResponse>;
 }
-interface AffinityOptions {
+export interface AffinityOptions {
     /**
      * If set to true, the current affinity signals will be cleared before setting the new ones.
      * Otherwise, the new signals will be appended to the existing ones, overriding the keys with the same name.
@@ -1902,9 +1902,9 @@ interface ActionResponse {
     cmpid: string;
 }
 
-type Maybe<T> = NonNullable<T> | undefined;
+export type Maybe<T> = NonNullable<T> | undefined;
 
-interface Store {
+export interface Store {
     getCustomerId(): Maybe<string>;
     setCustomerId(id: string): void;
 }
@@ -1919,9 +1919,9 @@ interface Visits {
     setStore(s: Store): Store;
 }
 
-type PerLinkAttributions = Record<string, Record<string, string>>;
+export type PerLinkAttributions = Record<string, Record<string, string>>;
 
-interface PlacementCampaign {
+export interface PlacementCampaign {
     html: string;
     result_id: string;
     extra_attribution?: PerLinkAttributions;
@@ -2168,7 +2168,7 @@ interface Settings extends ClientScriptSettingsDTO {
 }
 declare function modifySettings(updates: Partial<Settings>): void;
 
-type ProductIdentifier = string | {
+export type ProductIdentifier = string | {
     productId: string;
     skuId?: string;
 };
@@ -3414,16 +3414,16 @@ declare function search(query: SearchQuery, options?: SearchOptions): Promise<Se
 
 declare function getSearchSessionParams(): Promise<SearchSessionParams>;
 
-type Level = "log" | "warn" | "error" | "debug" | "info";
+export type Level = "log" | "warn" | "error" | "debug" | "info";
 
-interface Violation {
+export interface Violation {
     key: string;
     message_key: string;
 }
-interface ErrorResponse {
+export interface ErrorResponse {
     errors: Violation[];
 }
-interface OrderError {
+export interface OrderError {
     payload: WebsiteOrder;
     response: ErrorResponse;
 }
@@ -3579,7 +3579,7 @@ type InternalEvents = {
  * @interface
  */
 type EventMapping = LifecyleEvents & PopupEvents & InternalEvents;
-type E = keyof EventMapping;
+export type E = keyof EventMapping;
 type Callback<T extends E> = (...args: EventMapping[T]) => void;
 
 declare function currencyFormats(): Promise<{
@@ -3746,7 +3746,7 @@ declare const api: {
     /**
      * API method create a new session. This should be used when you might want to
      * have multiple sessions on the same page. In most cases, using
-     * @see {@link defaultSession} will suffice.
+     * @see {@link API.defaultSession} will suffice.
      *
      * @deprecated
      * @hidden
@@ -3759,7 +3759,7 @@ declare const api: {
      * the likes.
      * <br/><br/>
      * If you are not using a single-page application but require programmatic access to the
-     * Nosto request builder use {@link createRecommendationRequest}.
+     * Nosto request builder use {@link API.createRecommendationRequest}.
      *
      * @return {Session} the instance of the default session
      */
@@ -3769,7 +3769,7 @@ declare const api: {
      * require programmatic access to the Nosto request builder.
      * <br/><br/>
      * If your site is a single-page application atop a framework such as React, Vue, Angular or
-     * the likes, and  you are implementing Nosto, you must use the {@link defaultSession}
+     * the likes, and  you are implementing Nosto, you must use the {@link API.defaultSession}
      * method.
      *
      * @param {Object} flags a set of flags to customise to request behaviour (eg. {"includeTagging":true}
@@ -3815,7 +3815,7 @@ declare const api: {
      * progress.
      *
      * @param {String} phase
-     * @param {Function} cb the callback function to be invoked
+     * @param {Function} callback the callback function to be invoked
      *
      * @example
      * <caption>to log a message whenever a request is made to Nosto</caption>
@@ -4063,11 +4063,10 @@ declare const api: {
      * <br/><br/>
      * Results are cached to sessionStorage and is refreshed after cacheRefreshInterval
      *
-     * @param {SearchSessionParamsOptions} options
      * @returns {Promise<SearchSessionParams>}
      *
      * @example
-     * nostojs(api => api.getSearchSessionParams({ maxWait: 2000, cacheRefreshInterval: 60000 }).then((sessionParams) => sessionParams))
+     * nostojs(api => api.getSearchSessionParams().then((sessionParams) => sessionParams))
      */
     getSearchSessionParams: typeof getSearchSessionParams;
     /**
