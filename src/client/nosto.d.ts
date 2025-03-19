@@ -103,8 +103,6 @@ interface AbstractFacebookPixelEvent<D> {
     d: D;
     n: string;
 }
-interface AbstractGid {
-}
 interface AbstractStacklaPixelEvent<D> {
     d: D;
     n: string;
@@ -214,6 +212,7 @@ interface ClientScriptSettingsDTO {
     thumbnailHost: string;
     trackingTypes: string[];
     triggerAddToCartPopupWithCookie?: boolean;
+    webComponents?: boolean;
 }
 interface ConditionDTO {
     advanced: boolean;
@@ -457,6 +456,10 @@ interface NostoVariant {
     price_currency_code: string;
     price_text?: string;
 }
+interface Option {
+    option_title: string;
+    option_values: string[];
+}
 interface OrderCustomer {
     country: string;
     email?: string;
@@ -530,49 +533,30 @@ interface PopupTriggerSettingsDTO {
 interface PopupTriggered extends PopupEvent {
     campaignId: string;
 }
-interface PostPurchaseImage {
-    url: string;
-}
 interface PostPurchaseOffer {
     customer: string;
     discount_type: string;
     discount_value: number;
-    options: PostPurchaseProductOption[];
+    main_offer_header: string;
+    offer_end_text: string;
+    offer_time_end: number;
     recommendation: PostPurchaseRecommendation;
     signature_hash: string;
-}
-interface PostPurchaseOptionValue {
-    id: ProductOptionValueGid;
-    name: string;
-    translations: PostPurchaseTranslation[];
-}
-interface PostPurchaseProductOption {
-    name: string;
-    optionValues: PostPurchaseOptionValue[];
-    translations: PostPurchaseTranslation[];
+    sub_offer_header: string;
 }
 interface PostPurchaseRecommendation {
-    description: string;
+    description?: string;
     image_url: string;
-    name: string;
+    metafield_description?: string;
+    options: Option[];
     product_id: string;
-    skus: PostPurchaseVariantNode[];
+    result_id?: string;
+    skus: PostPurchaseRecommendationSku[];
     title: string;
 }
-interface PostPurchaseSelectedOption {
-    optionValue: PostPurchaseOptionValue;
-    value: string;
-}
-interface PostPurchaseTranslation {
-    value: string;
-}
-interface PostPurchaseVariantNode {
-    id: VariantGid;
-    image: PostPurchaseImage;
-    selectedOptions: PostPurchaseSelectedOption[];
-    title: string;
-}
-interface ProductOptionValueGid extends AbstractGid {
+interface PostPurchaseRecommendationSku {
+    id: string;
+    selected_options: string[];
 }
 interface ProductPushResponse {
     messages: string[];
@@ -755,8 +739,6 @@ interface ValidationError {
     key: string;
     message: string;
 }
-interface VariantGid extends AbstractGid {
-}
 interface VariationWithRulesDTO extends AbTestVariationDTO {
     rules: TestPlacementRuleDTO[];
 }
@@ -791,10 +773,12 @@ type ContentId = CampaignId<"ContentId">;
 type FilterOperator = "INCLUDES" | "IS" | "CONTAINS" | "MATCHES_REGEXP_PATTERN" | "LT" | "GT" | "GTE" | "LTE" | "BETWEEN" | "AND" | "OR";
 type InsertMode = "REPLACE" | "APPEND" | "PREPEND" | "INSERT_INTO" | "INSERT_AFTER_BEGIN";
 type Method = "SPLIT_TEST" | "MVT";
-type OnsiteFeature = "RECOMMENDATION" | "CONTENT_DELIVERY" | "POPUP" | "SPLIT_TESTING" | "SCHEDULING" | "STACKLA_WIDGET";
+type OnsiteFeature = "RECOMMENDATION" | "CONTENT_DELIVERY" | "POPUP" | "SPLIT_TESTING" | "SCHEDULING" | "STACKLA_WIDGET" | "DYNAMIC_BUNDLES";
 type PageType = "front" | "category" | "product" | "cart" | "search" | "notfound" | "order" | "other" | "checkout";
+type PopupId = CampaignId<"PopupId">;
 type RecommendationId = CampaignId<"RecommendationId">;
 type RenderMode = "HTML" | "SIMPLE" | "JSON_170x170" | "JSON_100_X_100" | "JSON_90x70" | "JSON_50x50" | "JSON_30x30" | "JSON_100x140" | "JSON_200x200" | "JSON_400x400" | "JSON_750x750" | "JSON_10_MAX_SQUARE" | "JSON_200x200_SQUARE" | "JSON_400x400_SQUARE" | "JSON_750x750_SQUARE" | "JSON_ORIGINAL" | "VERSION_SOURCE";
+type ScheduleEntryId = CampaignId<"ScheduleEntryId">;
 type StacklaWidgetEmbedId = CampaignId<"StacklaWidgetEmbedId">;
 type StacklaWidgetFilterType = "LATEST" | "CATEGORY_OR_BRAND" | "PRODUCT";
 type TargetType = "RECOMMENDATION" | "ONSITE_CONTENT" | "AB_TEST" | "HIDE_CONTENT" | "STACKLA_WIDGET";
@@ -986,7 +970,7 @@ interface RequestBuilder {
      * and generating a SHA256 checksum will suffice.
      *
      * @deprecated
-     * @param {String} hcid the 32 character unique hash
+     * @param {String} hash the 32 character unique hash
      */
     addCartCookieHash(hash: string): RequestBuilder;
     /**
@@ -1122,7 +1106,8 @@ interface RequestBuilder {
      * | JSON_200x200_SQUARE  | Raw JSON with 200x200px center squared images  |
      * | JSON_400x400_SQUARE  | Raw JSON with 400x400px center squared images  |
      * | JSON_750x750_SQUARE  | Raw JSON with 750x750px center squared images  |
-     * | JSON_ORIGINAL        | Raw JSON with the original untouched images    |
+     * | JSON_ORIGINAL        | Raw JSON with the original, normalized images  |
+     * | VERSION_SOURCE       | Raw JSON with the original untouched images    |
      *
      * @param {String} mode the response mode to be used
      */
@@ -2242,6 +2227,7 @@ declare function setTaggingProvider<T extends keyof TaggingData>(name: T, provid
 declare function resendAllTagging(): Promise<void>;
 
 declare function createSession(): Session;
+declare function defaultSession(): Session;
 
 /**
  * Resends the cart tagging to Nosto. Only the cart information is sent over
@@ -3405,7 +3391,8 @@ declare function recordSearchSubmit(query: string): void;
 /**
  * Record search click event
  */
-declare function recordSearchClick(type: SearchTrackOptions, hit: SearchHit): void;
+declare function recordSearchClick(type: SearchTrackOptions, hit: SearchHit): Promise<void>;
+declare function recordSearchAddToCart(type: SearchTrackOptions, hit: SearchHit): Promise<void>;
 
 /**
  * Search function
@@ -3569,8 +3556,10 @@ type InternalEvents = {
     searchsuccess: [SearchSuccessEventDTO];
     searchfailure: [SearchFailureEventDTO];
     searchclick: [SearchClick];
+    searchaddtocart: [SearchClick];
     searchimpression: [SearchImpression];
     categoryclick: [CategoryClick];
+    categoryaddtocart: [CategoryClick];
     categoryimpression: [CategoryImpression];
 };
 /**
@@ -3579,8 +3568,8 @@ type InternalEvents = {
  * @interface
  */
 type EventMapping = LifecyleEvents & PopupEvents & InternalEvents;
-type E = keyof EventMapping;
-type Callback<T extends E> = (...args: EventMapping[T]) => void;
+type BusEvent = keyof EventMapping;
+type Callback<T extends BusEvent> = (...args: EventMapping[T]) => void;
 
 declare function currencyFormats(): Promise<{
     [index: string]: CurrencySettingsDTO;
@@ -3688,7 +3677,6 @@ declare function showPlacementPreviews(placement: {
     element: HTMLElement;
     mode: InsertMode;
 }, content: string | HTMLElement): void;
-declare function defaultSession(): Session;
 declare function createRecommendationRequest(flags?: {
     includeTagging?: boolean;
     state?: EventRequestMessageV1;
@@ -3701,10 +3689,6 @@ declare function loadRecommendations(element?: string | {
 }): Promise<EventResponseMessage>;
 declare function loadCartPopupRecommendations(products: PushedProduct[], cart: Cart, alwaysShow: boolean): Promise<EventResponseMessage>;
 declare function resendCartContent(cart: Cart): Promise<void>;
-/**
- * API for recording attribution without triggering an ev1 request
- * @param event the #Event object
- */
 declare function recordAttribution(event: Event): Attribution;
 declare function noop(): void;
 /**
@@ -3815,7 +3799,7 @@ declare const api: {
      * progress.
      *
      * @param {String} phase
-     * @param {Function} cb the callback function to be invoked
+     * @param {Function} callback the callback function to be invoked
      *
      * @example
      * <caption>to log a message whenever a request is made to Nosto</caption>
@@ -4063,11 +4047,10 @@ declare const api: {
      * <br/><br/>
      * Results are cached to sessionStorage and is refreshed after cacheRefreshInterval
      *
-     * @param {SearchSessionParamsOptions} options
      * @returns {Promise<SearchSessionParams>}
      *
      * @example
-     * nostojs(api => api.getSearchSessionParams({ maxWait: 2000, cacheRefreshInterval: 60000 }).then((sessionParams) => sessionParams))
+     * nostojs(api => api.getSearchSessionParams().then((sessionParams) => sessionParams))
      */
     getSearchSessionParams: typeof getSearchSessionParams;
     /**
@@ -4107,11 +4090,28 @@ declare const api: {
      */
     recordSearchClick: typeof recordSearchClick;
     /**
+     * Record search add to cart event
+     *
+     * @param {SearchTrackOptions} type search type
+     * @param {object} hit Full hit object from search API
+     */
+    recordSearchAddToCart: typeof recordSearchAddToCart;
+    /**
      * Record search submit event (e.g. search form submit). Required to track organic searches.
      *
      * @param {string} query Search query
      */
     recordSearchSubmit: typeof recordSearchSubmit;
+    /**
+     * Record attribution events without triggering ev1 requests
+     *
+     * @example
+     * nostojs(api => api.recordAttribution({
+     *   type: "vp",
+     *   target: "6829460553806",
+     *   ref: "frontpage-1"
+     * }).done() )
+     */
     recordAttribution: typeof recordAttribution;
 };
 
@@ -4121,4 +4121,4 @@ declare const api: {
  * */
 type API = typeof api;
 
-export type { ABTest, API, AbTestDraftPreviewSettingsDTO, AbTestPreviewSettingsBase, AbTestPreviewSettingsDTO, AbTestVariation, AbTestVariationDTO, AbstractFacebookPixelEvent, AbstractGid, AbstractStacklaPixelEvent, Action, ActionResponse, ActiveVisitDTO, Addtocart, AnalyticEvent, AnalyticEventProperties, AnalyticsType, BigcommerceCustomerInfo, Callback, CampaignId, Cart, CartItem, Carttaggingresent, CategoryClick, CategoryEvent, CategoryEventMetadata, CategoryImpression, ClientScriptSettingsDTO, ConditionDTO, ContentDebugDTO, ContentId, Context, ConversionItem, Coupon, Coupongiven, CrawlResponse, CurrencySettingsDTO, CustomerAffinityResponse, CustomerAffinityResponseItem, CustomerDTO, CustomerToken, DebugRequestParamsDTO, DebugToolbarDataDTO, DynamicPlacementDTO, Effect, Endpoint, Event, EventAttributionMetadata, EventAttributionParams, EventFields, EventMapping, EventRefType, EventRequestMessageV1, EventResponseMessage, EventTuple, EventType, Events, Experiment, FacebookData, FilterOperator, FilterRule, ForcedTestDTO, GoogleAnalyticsData, InputSearchABTest, InputSearchABTestVariation, InputSearchBoost, InputSearchFacetConfig, InputSearchFilter, InputSearchHighlight, InputSearchKeywords, InputSearchPin, InputSearchProducts, InputSearchQuery, InputSearchRangeFilter, InputSearchRule, InputSearchRuleMatch, InputSearchSchedule, InputSearchSort, InputSearchTopLevelFilter, InsertMode, Method, NostoSku, NostoVariant, NostojsCallback, OnsiteFeature, Order, OrderCustomer, OrderInfo, OverlapCampaignDTO, Overlay, PageType, PersonalizationBoost, PlacementDebugDTO, PlacementRuleDTO, Placements, Popup, PopupCampaignPreviewSettingsDTO, PopupCouponGiven, PopupEmailCollected, PopupEvent, PopupTriggerSettingsDTO, PopupTriggered, Popupopened, PostPurchaseImage, PostPurchaseOffer, PostPurchaseOptionValue, PostPurchaseProductOption, PostPurchaseRecommendation, PostPurchaseSelectedOption, PostPurchaseTranslation, PostPurchaseVariantNode, Postrender, Prerender, Product, ProductOptionValueGid, ProductPushResponse, PushedCustomer, PushedProduct, PushedProductSKU, PushedVariation, Query, QuerySearchArgs, RecommendationDebugDTO, RecommendationId, RecommendationRequestFlags, RenderMode, RequestBuilder, ScheduleTime, Scripterror, SearchAnalyticsOptions, SearchAutocorrect, SearchClick, SearchEvent, SearchEventMetadata, SearchExclusionBehaviour, SearchExplain, SearchExplainRule, SearchFacet, SearchFacetOrder, SearchFacetTerm, SearchFacetType, SearchFailureEventDTO, SearchHighlight, SearchHit, SearchImpression, SearchKeyword, SearchKeywords, SearchOptions, SearchOutOfStockBehaviour, SearchPageType, SearchParamComparisonFunction, SearchProduct, SearchProductAffinities, SearchProductAiDetected, SearchProductCustomField, SearchProductExtra, SearchProductKeyedVariation, SearchProductSku, SearchProductStats, SearchProducts, SearchQuery, SearchQueryField, SearchResult, SearchRuleScheduleType, SearchRuleScheduleWeekday, SearchSessionParams, SearchSortOrder, SearchStatsFacet, SearchSuccessEventDTO, SearchTermsFacet, SearchTrackOptions, SearchVariationValue, SegmentDebugDTO, SegmentInfoBean, SegmentRuleDebugDTO, Segments, SegmentsResponseBean, Session, Setexperiments, Settings, Sku, StacklaTrackingData, StacklaWidgetDebugDTO, StacklaWidgetEmbedId, StacklaWidgetFilterType, TaggingData, TargetType, TestDebugDTO, TestId, TestPlacementRuleDTO, TestPreviewsDTO, UnsavedDraftPreviewSettingsDTO, ValidationError, VariantGid, VariationWithRulesDTO, VisitDTO, Visits, WebsiteOrder, WidgetPlacement, WidgetPlacementRule, WrapMode, nostojs };
+export type { ABTest, API, AbTestDraftPreviewSettingsDTO, AbTestPreviewSettingsBase, AbTestPreviewSettingsDTO, AbTestVariation, AbTestVariationDTO, AbstractFacebookPixelEvent, AbstractStacklaPixelEvent, Action, ActionResponse, ActiveVisitDTO, Addtocart, AffinityOptions, AnalyticEvent, AnalyticEventProperties, AnalyticsType, Attribution, BigcommerceCustomerInfo, BusEvent, Callback, CampaignId, Cart, CartItem, Carttaggingresent, CategoryClick, CategoryEvent, CategoryEventMetadata, CategoryImpression, ClientScriptSettingsDTO, ConditionDTO, ContentDebugDTO, ContentId, Context, ConversionItem, Coupon, Coupongiven, CrawlResponse, CurrencySettingsDTO, CustomerAffinityResponse, CustomerAffinityResponseItem, CustomerDTO, CustomerToken, DebugRequestParamsDTO, DebugToolbarDataDTO, DynamicPlacementDTO, Effect, Endpoint, ErrorResponse, Event, EventAttributionMetadata, EventAttributionParams, EventFields, EventMapping, EventRefType, EventRequestMessageV1, EventResponseMessage, EventTuple, EventType, Events, Experiment, FacebookData, FilterOperator, FilterRule, ForcedTestDTO, GoogleAnalyticsData, InputSearchABTest, InputSearchABTestVariation, InputSearchBoost, InputSearchFacetConfig, InputSearchFilter, InputSearchHighlight, InputSearchKeywords, InputSearchPin, InputSearchProducts, InputSearchQuery, InputSearchRangeFilter, InputSearchRule, InputSearchRuleMatch, InputSearchSchedule, InputSearchSort, InputSearchTopLevelFilter, InsertMode, Level, Maybe, Method, NostoSku, NostoVariant, NostojsCallback, OnsiteFeature, Option, Order, OrderCustomer, OrderError, OrderInfo, OverlapCampaignDTO, Overlay, PageType, PerLinkAttributions, PersonalizationBoost, PlacementCampaign, PlacementDebugDTO, PlacementRuleDTO, Placements, PluginMetadata, Popup, PopupCampaignPreviewSettingsDTO, PopupCouponGiven, PopupEmailCollected, PopupEvent, PopupId, PopupTriggerSettingsDTO, PopupTriggered, Popupopened, PostPurchaseOffer, PostPurchaseRecommendation, PostPurchaseRecommendationSku, Postrender, Prerender, Product, ProductIdentifier, ProductPushResponse, PushedCustomer, PushedProduct, PushedProductSKU, PushedVariation, Query, QuerySearchArgs, RecommendationDebugDTO, RecommendationId, RecommendationRequestFlags, RenderMode, RequestBuilder, ScheduleEntryId, ScheduleTime, Scripterror, SearchAnalyticsOptions, SearchAutocorrect, SearchClick, SearchEvent, SearchEventMetadata, SearchExclusionBehaviour, SearchExplain, SearchExplainRule, SearchFacet, SearchFacetOrder, SearchFacetTerm, SearchFacetType, SearchFailureEventDTO, SearchHighlight, SearchHit, SearchImpression, SearchKeyword, SearchKeywords, SearchOptions, SearchOutOfStockBehaviour, SearchPageType, SearchParamComparisonFunction, SearchProduct, SearchProductAffinities, SearchProductAiDetected, SearchProductCustomField, SearchProductExtra, SearchProductKeyedVariation, SearchProductSku, SearchProductStats, SearchProducts, SearchQuery, SearchQueryField, SearchResult, SearchRuleScheduleType, SearchRuleScheduleWeekday, SearchSessionParams, SearchSortOrder, SearchStatsFacet, SearchSuccessEventDTO, SearchTermsFacet, SearchTrackOptions, SearchVariationValue, SegmentDebugDTO, SegmentInfoBean, SegmentRuleDebugDTO, Segments, SegmentsResponseBean, Session, Setexperiments, Settings, Sku, StacklaTrackingData, StacklaWidgetDebugDTO, StacklaWidgetEmbedId, StacklaWidgetFilterType, Store, TaggingData, TargetType, TestDebugDTO, TestId, TestPlacementRuleDTO, TestPreviewsDTO, UnsavedDraftPreviewSettingsDTO, ValidationError, VariationWithRulesDTO, Violation, VisitDTO, Visits, WebsiteOrder, WidgetPlacement, WidgetPlacementRule, WrapMode, nostojs };
