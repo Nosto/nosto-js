@@ -18,5 +18,6 @@ export { isNostoLoaded, getNostoWindow } from "./lib/helpers"
 export { init, type InitProps } from "./lib/init"
 export { getSettings } from "./lib/settings"
 export { nostojs } from "./lib/nostojs"
+export { addSkuToCart, type ProductIdentifier, type SlotReference } from "./lib/addSkuToCart"
 export type * from "./types"
 export { initNostoStub }
