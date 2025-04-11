@@ -1,0 +1,1 @@
+node .husky/validate-commit-msg.js "$1"
