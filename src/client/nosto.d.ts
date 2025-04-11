@@ -458,7 +458,11 @@ interface NostoVariant {
 }
 interface Option {
     option_title: string;
-    option_values: string[];
+    option_values: OptionValue[];
+}
+interface OptionValue {
+    available_for_sale: boolean;
+    name: string;
 }
 interface OrderCustomer {
     country: string;
@@ -545,6 +549,7 @@ interface PostPurchaseOffer {
     sub_offer_header: string;
 }
 interface PostPurchaseRecommendation {
+    available_for_sale: boolean;
     description?: string;
     image_url: string;
     metafield_description?: string;
@@ -1891,17 +1896,16 @@ type Maybe<T> = NonNullable<T> | undefined;
 
 interface Store {
     getCustomerId(): Maybe<string>;
-    setCustomerId(id: string): void;
+    setCustomerId(id: Maybe<string>): void;
 }
 
 interface Visits {
     getCustomerId(): Maybe<string>;
-    getStore(): Store;
-    isDoNotTrack(): boolean;
     setCustomerId(id: string | undefined): void;
-    setCustomerIdentifierService(s: Store): Store;
+    isDoNotTrack(): boolean;
     setDoNotTrack(dnt: boolean): boolean;
     setStore(s: Store): Store;
+    setCustomerIdentifierService(s: Store): Store;
 }
 
 type PerLinkAttributions = Record<string, Record<string, string>>;
@@ -2216,7 +2220,9 @@ declare const taggingProviders: {
 type Options = {
     priority?: boolean;
 };
-declare function setTaggingProvider<T extends keyof TaggingData>(name: T, provider: (typeof taggingProviders)[T], options?: Options): void;
+type TaggingProviders = typeof taggingProviders;
+type MaybeProvider<T extends keyof TaggingData> = TaggingProviders[T] | ReturnType<TaggingProviders[T]>;
+declare function setTaggingProvider<T extends keyof TaggingData>(name: T, provider: MaybeProvider<T>, options?: Options): void;
 
 /**
  * Resends all the tagging to Nosto. Only the page tagging is sent over
@@ -3663,6 +3669,12 @@ declare function createOverlay(): {
  */
 type Overlay = ReturnType<typeof createOverlay>;
 
+type Campaign = {
+    result_id: string;
+    extra_attribution?: PerLinkAttributions;
+};
+declare function attributeProductClicksInCampaign(element: HTMLElement, { result_id, extra_attribution }: Campaign): void;
+
 declare function captureError(error: unknown, reporter: string, level?: Level): void;
 declare function customer(customer: PushedCustomer): Promise<void>;
 type Install = {
@@ -4113,6 +4125,35 @@ declare const api: {
      * }).done() )
      */
     recordAttribution: typeof recordAttribution;
+    /**
+     * Parameterless attribution for all products in a single campaign
+     * Only recommended when all of the following are true
+     * a) Campaigns are not rendered by Nosto
+     * b) ev1 response renderMode is JSON
+     * c) placement element id is NOT div_id or reco_id. Usually the id of DOM element where the recommendation template is injected into
+     *
+     * @remarks
+     * Need to be called individually for each campaign returned in ev1 response
+     *
+     * @param {HTMLElement} campaignElement - DOM element where recommendation template is injected into
+     * @param {Campaign} campaign - single campaign object from the value of ev1 response (reponse.recommendations[div_id])
+     *
+     * @example
+     * nostojs(api => api
+     *  .createRecommendationRequest()
+     *  .setResponseMode('JSON_ORIGINAL')
+     *  .addElements('bestseller-home')
+     *  .load()
+     *  .then((response) => {
+     *    const recommendations = response.recommendations
+     *    recommendations.forEach((recommendation) => {
+     *      const divElement = document.getElementById(recommendation.div_id);
+     *      // Add logic for campaign injection
+     *      api.attributeProductClicksInCampaign(divElement, recommendation)
+     *    }
+     * });
+     */
+    attributeProductClicksInCampaign: typeof attributeProductClicksInCampaign;
 };
 
 /**
@@ -4121,4 +4162,4 @@ declare const api: {
  * */
 type API = typeof api;
 
-export type { ABTest, API, AbTestDraftPreviewSettingsDTO, AbTestPreviewSettingsBase, AbTestPreviewSettingsDTO, AbTestVariation, AbTestVariationDTO, AbstractFacebookPixelEvent, AbstractStacklaPixelEvent, Action, ActionResponse, ActiveVisitDTO, Addtocart, AffinityOptions, AnalyticEvent, AnalyticEventProperties, AnalyticsType, Attribution, BigcommerceCustomerInfo, BusEvent, Callback, CampaignId, Cart, CartItem, Carttaggingresent, CategoryClick, CategoryEvent, CategoryEventMetadata, CategoryImpression, ClientScriptSettingsDTO, ConditionDTO, ContentDebugDTO, ContentId, Context, ConversionItem, Coupon, Coupongiven, CrawlResponse, CurrencySettingsDTO, CustomerAffinityResponse, CustomerAffinityResponseItem, CustomerDTO, CustomerToken, DebugRequestParamsDTO, DebugToolbarDataDTO, DynamicPlacementDTO, Effect, Endpoint, ErrorResponse, Event, EventAttributionMetadata, EventAttributionParams, EventFields, EventMapping, EventRefType, EventRequestMessageV1, EventResponseMessage, EventTuple, EventType, Events, Experiment, FacebookData, FilterOperator, FilterRule, ForcedTestDTO, GoogleAnalyticsData, InputSearchABTest, InputSearchABTestVariation, InputSearchBoost, InputSearchFacetConfig, InputSearchFilter, InputSearchHighlight, InputSearchKeywords, InputSearchPin, InputSearchProducts, InputSearchQuery, InputSearchRangeFilter, InputSearchRule, InputSearchRuleMatch, InputSearchSchedule, InputSearchSort, InputSearchTopLevelFilter, InsertMode, Level, Maybe, Method, NostoSku, NostoVariant, NostojsCallback, OnsiteFeature, Option, Order, OrderCustomer, OrderError, OrderInfo, OverlapCampaignDTO, Overlay, PageType, PerLinkAttributions, PersonalizationBoost, PlacementCampaign, PlacementDebugDTO, PlacementRuleDTO, Placements, PluginMetadata, Popup, PopupCampaignPreviewSettingsDTO, PopupCouponGiven, PopupEmailCollected, PopupEvent, PopupId, PopupTriggerSettingsDTO, PopupTriggered, Popupopened, PostPurchaseOffer, PostPurchaseRecommendation, PostPurchaseRecommendationSku, Postrender, Prerender, Product, ProductIdentifier, ProductPushResponse, PushedCustomer, PushedProduct, PushedProductSKU, PushedVariation, Query, QuerySearchArgs, RecommendationDebugDTO, RecommendationId, RecommendationRequestFlags, RenderMode, RequestBuilder, ScheduleEntryId, ScheduleTime, Scripterror, SearchAnalyticsOptions, SearchAutocorrect, SearchClick, SearchEvent, SearchEventMetadata, SearchExclusionBehaviour, SearchExplain, SearchExplainRule, SearchFacet, SearchFacetOrder, SearchFacetTerm, SearchFacetType, SearchFailureEventDTO, SearchHighlight, SearchHit, SearchImpression, SearchKeyword, SearchKeywords, SearchOptions, SearchOutOfStockBehaviour, SearchPageType, SearchParamComparisonFunction, SearchProduct, SearchProductAffinities, SearchProductAiDetected, SearchProductCustomField, SearchProductExtra, SearchProductKeyedVariation, SearchProductSku, SearchProductStats, SearchProducts, SearchQuery, SearchQueryField, SearchResult, SearchRuleScheduleType, SearchRuleScheduleWeekday, SearchSessionParams, SearchSortOrder, SearchStatsFacet, SearchSuccessEventDTO, SearchTermsFacet, SearchTrackOptions, SearchVariationValue, SegmentDebugDTO, SegmentInfoBean, SegmentRuleDebugDTO, Segments, SegmentsResponseBean, Session, Setexperiments, Settings, Sku, StacklaTrackingData, StacklaWidgetDebugDTO, StacklaWidgetEmbedId, StacklaWidgetFilterType, Store, TaggingData, TargetType, TestDebugDTO, TestId, TestPlacementRuleDTO, TestPreviewsDTO, UnsavedDraftPreviewSettingsDTO, ValidationError, VariationWithRulesDTO, Violation, VisitDTO, Visits, WebsiteOrder, WidgetPlacement, WidgetPlacementRule, WrapMode, nostojs };
+export type { ABTest, API, AbTestDraftPreviewSettingsDTO, AbTestPreviewSettingsBase, AbTestPreviewSettingsDTO, AbTestVariation, AbTestVariationDTO, AbstractFacebookPixelEvent, AbstractStacklaPixelEvent, Action, ActionResponse, ActiveVisitDTO, Addtocart, AffinityOptions, AnalyticEvent, AnalyticEventProperties, AnalyticsType, Attribution, BigcommerceCustomerInfo, BusEvent, Callback, CampaignId, Cart, CartItem, Carttaggingresent, CategoryClick, CategoryEvent, CategoryEventMetadata, CategoryImpression, ClientScriptSettingsDTO, ConditionDTO, ContentDebugDTO, ContentId, Context, ConversionItem, Coupon, Coupongiven, CrawlResponse, CurrencySettingsDTO, CustomerAffinityResponse, CustomerAffinityResponseItem, CustomerDTO, CustomerToken, DebugRequestParamsDTO, DebugToolbarDataDTO, DynamicPlacementDTO, Effect, Endpoint, ErrorResponse, Event, EventAttributionMetadata, EventAttributionParams, EventFields, EventMapping, EventRefType, EventRequestMessageV1, EventResponseMessage, EventTuple, EventType, Events, Experiment, FacebookData, FilterOperator, FilterRule, ForcedTestDTO, GoogleAnalyticsData, InputSearchABTest, InputSearchABTestVariation, InputSearchBoost, InputSearchFacetConfig, InputSearchFilter, InputSearchHighlight, InputSearchKeywords, InputSearchPin, InputSearchProducts, InputSearchQuery, InputSearchRangeFilter, InputSearchRule, InputSearchRuleMatch, InputSearchSchedule, InputSearchSort, InputSearchTopLevelFilter, InsertMode, Level, Maybe, Method, NostoSku, NostoVariant, NostojsCallback, OnsiteFeature, Option, OptionValue, Order, OrderCustomer, OrderError, OrderInfo, OverlapCampaignDTO, Overlay, PageType, PerLinkAttributions, PersonalizationBoost, PlacementCampaign, PlacementDebugDTO, PlacementRuleDTO, Placements, PluginMetadata, Popup, PopupCampaignPreviewSettingsDTO, PopupCouponGiven, PopupEmailCollected, PopupEvent, PopupId, PopupTriggerSettingsDTO, PopupTriggered, Popupopened, PostPurchaseOffer, PostPurchaseRecommendation, PostPurchaseRecommendationSku, Postrender, Prerender, Product, ProductIdentifier, ProductPushResponse, PushedCustomer, PushedProduct, PushedProductSKU, PushedVariation, Query, QuerySearchArgs, RecommendationDebugDTO, RecommendationId, RecommendationRequestFlags, RenderMode, RequestBuilder, ScheduleEntryId, ScheduleTime, Scripterror, SearchAnalyticsOptions, SearchAutocorrect, SearchClick, SearchEvent, SearchEventMetadata, SearchExclusionBehaviour, SearchExplain, SearchExplainRule, SearchFacet, SearchFacetOrder, SearchFacetTerm, SearchFacetType, SearchFailureEventDTO, SearchHighlight, SearchHit, SearchImpression, SearchKeyword, SearchKeywords, SearchOptions, SearchOutOfStockBehaviour, SearchPageType, SearchParamComparisonFunction, SearchProduct, SearchProductAffinities, SearchProductAiDetected, SearchProductCustomField, SearchProductExtra, SearchProductKeyedVariation, SearchProductSku, SearchProductStats, SearchProducts, SearchQuery, SearchQueryField, SearchResult, SearchRuleScheduleType, SearchRuleScheduleWeekday, SearchSessionParams, SearchSortOrder, SearchStatsFacet, SearchSuccessEventDTO, SearchTermsFacet, SearchTrackOptions, SearchVariationValue, SegmentDebugDTO, SegmentInfoBean, SegmentRuleDebugDTO, Segments, SegmentsResponseBean, Session, Setexperiments, Settings, Sku, StacklaTrackingData, StacklaWidgetDebugDTO, StacklaWidgetEmbedId, StacklaWidgetFilterType, Store, TaggingData, TargetType, TestDebugDTO, TestId, TestPlacementRuleDTO, TestPreviewsDTO, UnsavedDraftPreviewSettingsDTO, ValidationError, VariationWithRulesDTO, Violation, VisitDTO, Visits, WebsiteOrder, WidgetPlacement, WidgetPlacementRule, WrapMode, nostojs };
