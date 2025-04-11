@@ -45,7 +45,8 @@
     "test-only": "vitest --run",
     "lint": "eslint '{src,test}/**/*.ts'",
     "preview": "vite preview",
-    "typedoc": "typedoc src/index.ts src/client/nosto.d.ts src/testing.ts"
+    "typedoc": "typedoc src/index.ts src/client/nosto.d.ts src/testing.ts",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",
@@ -56,6 +57,7 @@
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-barrel-files": "^3.0.1",
     "eslint-plugin-prettier": "^5.2.1",
+    "husky": "^9.1.7",
     "jsdom": "^26.0.0",
     "prettier": "^3.3.3",
     "typedoc": "^0.28.0",
