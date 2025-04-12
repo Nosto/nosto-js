@@ -3,7 +3,7 @@ const commitMsgFile = process.argv[2]
 const commitMsg = fs.readFileSync(commitMsgFile, "utf8").trim()
 
 // Conventional Commits pattern
-const pattern = /^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z-]+\))?: .+/
+const pattern = /^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|BREAKING CHANGE)(\([a-z-]+\))?: .+/
 
 if (!pattern.test(commitMsg)) {
   console.error("\x1b[31mError: Commit message does not follow Conventional Commits format!\x1b[0m")
