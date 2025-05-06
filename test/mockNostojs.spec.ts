@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest"
 import { nostojs, isNostoLoaded } from "../src"
-import { mockNostojs } from "../src/testing/mockNostojs"
+import { mockNostojs, restoreNostojs } from "../src/testing/mockNostojs"
 import { reloadNosto } from "../src/testing/reloadNosto"
 
 describe("mockNostojs", () => {
@@ -54,5 +54,16 @@ describe("mockNostojs", () => {
     expect(api.pageTagging().categories).toEqual(["foo", "bar"])
     // default behaviour
     expect(api.internal.context.mode.isPreview()).toBe(false)
+  })
+})
+
+describe("restoreNostojs", () => {
+  it("should restore the original nostojs function", () => {
+    mockNostojs()
+    // @ts-expect-error Mocking window object
+    const overridden = window.nostojs
+    restoreNostojs()
+    // @ts-expect-error Mocking window object
+    expect(window.nostojs).not.toBe(overridden)
   })
 })
