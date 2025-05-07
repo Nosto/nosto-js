@@ -41,17 +41,19 @@
     "build": "tsc && vite build && npm run build-dts && npm run typedoc",
     "build-dts": "tsc --noEmit false --emitDeclarationOnly && npm run copy-nosto-dts",
     "copy-nosto-dts": "copyfiles -u 1 \"src/client/*.d.ts\" dist",
-    "test": "vite build && npm run build-dts && vitest --run",
-    "test-only": "vitest --run",
+    "test": "vitest --run --coverage",
     "lint": "eslint '{src,test}/**/*.ts'",
     "preview": "vite preview",
     "typedoc": "typedoc src/index.ts src/client/nosto.d.ts src/testing.ts",
     "prepare": "husky"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
     "@testing-library/dom": "^10.4.0",
     "@types/eslint-config-prettier": "^6.11.3",
     "@types/node": "^22.8.7",
+    "@vitest/coverage-v8": "^3.1.1",
     "copyfiles": "^2.4.1",
     "eslint": "^9.14.0",
     "eslint-config-prettier": "^10.0.1",
@@ -64,8 +66,6 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.12.2",
     "vite": "^6.0.3",
-    "vitest": "^3.0.2",
-    "@commitlint/cli": "^19.8.0",
-    "@commitlint/config-conventional": "^19.8.0"
+    "vitest": "^3.0.2"
   }
 }
