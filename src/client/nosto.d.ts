@@ -645,6 +645,7 @@ interface PushedProduct {
     custom_fields: {
         [index: string]: string;
     };
+    cta_button_copy?: string;
     date_published?: Date;
     description?: string;
     gender?: string;
@@ -1953,8 +1954,8 @@ interface Recommendation {
     additional_params: AdditionalParams
     result_id: string;
 }
-
 type PlacementId = string;
+
 
 /**
  * Result object for an action that contains the recommendations and content that was requested for the current action.
