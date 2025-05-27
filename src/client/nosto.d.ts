@@ -1942,6 +1942,20 @@ interface AffinityOptions {
      */
     clear?: boolean;
 }
+
+interface AdditionalParams {
+    buy_button_copy?: string;
+}
+
+interface Recommendation {
+    products: Product[];
+    url: string;
+    additional_params: AdditionalParams
+    result_id: string;
+}
+
+type PlacementId = string;
+
 /**
  * Result object for an action that contains the recommendations and content that was requested for the current action.
  *
@@ -1949,7 +1963,7 @@ interface AffinityOptions {
  */
 interface ActionResponse {
     /** Recommendations that were requested for the current action. */
-    recommendations: Record<string, unknown>;
+    recommendations: Record<PlacementId, Recommendation>;
     /** Recommendations and content that was requested for the current action. */
     campaigns?: {
         recommendations: Record<string, unknown>;
