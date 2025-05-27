@@ -24,3 +24,5 @@ export type ScriptLoadOptions = {
    */
   attributes?: Record<string, string>
 }
+
+export * from './client/nosto';
