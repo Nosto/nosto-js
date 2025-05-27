@@ -1954,6 +1954,7 @@ interface Recommendation {
     additional_params: AdditionalParams
     result_id: string;
 }
+
 type PlacementId = string;
 
 
