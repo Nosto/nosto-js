@@ -119,7 +119,6 @@ interface AnalyticEventProperties {
 }
 interface AttributedCampaignResult {
     div_id: string;
-    extra_attribution?: Record<string, unknown>;
     html: string;
     result_id: string;
 }
@@ -2005,7 +2004,7 @@ interface Visits {
 interface Placements {
     getPlacements(): string[];
     initialBody(): null | HTMLElement;
-    injectCampaigns(campaigns: Record<string, string | AttributedCampaignResult>): Promise<{
+    injectCampaigns(campaigns: Record<string, string | AttributedCampaignResult>, targets?: Record<string, HTMLElement>): Promise<{
         filledElements: string[];
         unFilledElements: string[];
     }>;
