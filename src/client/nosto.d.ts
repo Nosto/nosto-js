@@ -345,6 +345,7 @@ interface EventFields {
 }
 interface EventPreviewMessage {
     affinity_signals?: Record<string, string[]>;
+    brands?: string[];
     cart?: CartItem[];
     cart_hash?: string;
     cart_popup?: boolean;
@@ -367,7 +368,6 @@ interface EventPreviewMessage {
     klaviyo_cookie?: string;
     mail_ref?: string;
     mail_type?: string;
-    page: string;
     page_type?: PageType;
     post_purchase_result_id?: string;
     preview?: boolean;
@@ -386,6 +386,7 @@ interface EventPreviewMessage {
 }
 interface EventRequestMessageV1 {
     affinity_signals?: Record<string, string[]>;
+    brands?: string[];
     cart?: CartItem[];
     cart_hash?: string;
     cart_popup?: boolean;
@@ -900,6 +901,7 @@ interface TaggingData {
     products: Product[];
     order: WebsiteOrder | undefined;
     searchTerms: string[] | undefined;
+    brands: string[] | undefined;
     categories: string[] | undefined;
     categoryIds: string[] | undefined;
     parentCategoryIds: string[] | undefined;
@@ -941,6 +943,13 @@ interface RequestBuilder {
      * @param {String[]} segments the list of force segment identifiers
      */
     setSegmentCodes(segments: string[]): RequestBuilder;
+    /**
+     * Override targets for campaign injection. The targets are used to
+     * identify the elements in the DOM into which campaign results should be injected.
+     *
+     * @params {Record<string, HTMLElement>} map from placement id to DOM element
+     */
+    setTargets(targets: Record<string, HTMLElement>): RequestBuilder;
     /**
      * Sets the identifier of the current page type to the current request. The different
      * page types are product, front, search, cart, order, category, notfound and other.
@@ -1077,6 +1086,20 @@ interface RequestBuilder {
      * @param {String} [ref] the placement id that resulted in the product views
      */
     setProducts(products: Product[], ref?: string): RequestBuilder;
+    /**
+     * Adds the given brand names to the request. Any brand name specified here
+     * are simply added to the request as personalisation filtering hints.
+     *
+     * @param {String[]} brand the array of category ids
+     */
+    addCurrentBrands(brands: string[]): RequestBuilder;
+    /**
+     * Sets the given brand names to the request. Any brand names specified here
+     * override the brand names in the request.
+     *
+     * @param {String[]} brands the array of category ids
+     */
+    setCurrentBrands(brands: string[]): RequestBuilder;
     /**
      * Adds the given category names to the request. Any category name specified here
      * are simply added to the request as personalisation filtering hints.
@@ -1825,6 +1848,15 @@ interface Action {
      * You must invoke [the load method]{@link Action#load} on the resultant
      * action in order for the request to be made.
      *
+     * @param {Array<String>} brands
+     * @return {Action}
+     */
+    setBrands(brands: string[]): Action;
+    /**
+     * <br/><br/>
+     * You must invoke [the load method]{@link Action#load} on the resultant
+     * action in order for the request to be made.
+     *
      * @param {Array<String>} categories
      * @return {Action}
      */
@@ -2271,6 +2303,7 @@ declare function findPluginVersions(): PluginMetadata | undefined;
 declare function findCurrentVariation(): Maybe<string>;
 declare function findSearchTerms(): Maybe<string[]>;
 declare function findCurrentCategories(): Maybe<string[]>;
+declare function findCurrentBrands(): Maybe<string[]>;
 declare function findCurrentCategoryIds(): Maybe<string[]>;
 declare function findCurrentParentCategoryIds(): Maybe<string[]>;
 declare function findCurrentTags(): Maybe<string[]>;
@@ -2289,6 +2322,7 @@ declare const taggingProviders: {
     customer: typeof findCustomer;
     order: typeof findOrder;
     searchTerms: typeof findSearchTerms;
+    brands: typeof findCurrentBrands;
     categories: typeof findCurrentCategories;
     categoryIds: typeof findCurrentCategoryIds;
     parentCategoryIds: typeof findCurrentParentCategoryIds;
@@ -3108,9 +3142,9 @@ interface SearchFacetTerm {
  */
 type SearchFacetType = 
 /** Returns min and max values for a numeric field */
-"stats"
+SearchStatsFacet["type"]
 /** Returns all unique terms in a field */
- | "terms";
+ | SearchTermsFacet["type"];
 /**
  * @group Search
  */
@@ -3401,7 +3435,7 @@ interface SearchStatsFacet {
     /** Minimum value of faceted field */
     min: number;
     name: string;
-    type: SearchFacetType;
+    type: "stats";
 }
 /**
  * @group Search
@@ -3413,7 +3447,7 @@ interface SearchTermsFacet {
     field: string;
     id: string;
     name: string;
-    type: SearchFacetType;
+    type: "terms";
 }
 /**
  * @group Search
@@ -3482,7 +3516,7 @@ declare function recordSearchSubmit(query: string): void;
 /**
  * Record search click event
  */
-declare function recordSearchClick(type: SearchTrackOptions, hit: SearchHit): Promise<void>;
+declare function recordSearchClick(type: SearchTrackOptions, hit: SearchHit): Promise<void> | undefined;
 declare function recordSearchAddToCart(type: SearchTrackOptions, hit: SearchHit): Promise<void>;
 
 /**
@@ -3807,6 +3841,7 @@ declare const api: {
             error: (...args: unknown[]) => void;
             debug: (...args: unknown[]) => void;
         };
+        /** @deprecated */
         setTaggingProvider: typeof setTaggingProvider;
         getSettings: typeof getSettings;
         modifySettings: typeof modifySettings;
@@ -3817,6 +3852,16 @@ declare const api: {
         couponGiven: typeof reportCouponGiven;
         getCustomAffinities: () => Promise<CustomerAffinityResponse>;
     };
+    /**
+     * Override the tagging value for the given field
+     *
+     * @example
+     * nostojs(api => {
+     *   api.setTaggingProvider("pageType", "category")
+     *   api.setTaggingProvider("categories", ["Shoes"])
+     * })
+     */
+    setTaggingProvider: typeof setTaggingProvider;
     placements: Placements;
     visit: Visits;
     /**
@@ -4186,7 +4231,7 @@ declare const api: {
      */
     recordSearch: typeof recordSearch;
     /**
-     * Record search click event
+     * Record search click event.
      *
      * @param {SearchTrackOptions} type search type
      * @param {object} hit Full hit object from search API
