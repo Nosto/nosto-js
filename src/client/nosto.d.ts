@@ -4276,25 +4276,22 @@ declare const api: {
      *
      * @example
      * // When using JSON response mode to manually render recommendations:
-     * nostojs(api => api
-     *  .createRecommendationRequest()
-     *  .setResponseMode('JSON_ORIGINAL')
-     *  .addElements(['frontpage-nosto-1'])
-     *  .load()
-     *  .then((response) => {
-     *    // For each recommendation campaign in the response
-     *    response.recommendations.forEach((recommendation) => {
-     *      // Get or create the container element where you'll render the products
-     *      const containerElement = document.getElementById(recommendation.div_id);
+     * nostojs(api => {
+     *   const placementId = "frontpage-nosto-1"
      *
-     *      // Render the products into the container (your custom rendering logic)
-     *      renderProductsToContainer(containerElement, recommendation.products);
+     *   const response = await api
+     *     .createRecommendationRequest({ includeTagging: true })
+     *     .setResponseMode("JSON_ORIGINAL")
+     *     .setElements([placementId])
+     *     .load()
      *
-     *      // Set up click tracking for all products in this campaign
-     *      api.attributeProductClicksInCampaign(containerElement, recommendation);
-     *    });
-     *  })
-     * );
+     *   const recommendation = response.recommendations[placementId]
+     *   const container = document.getElementById(placementId)
+     *   if (recommendation && container) {
+     *     renderProductsToContainer(containerElement, recommendation)
+     *     api.attributeProductClicksInCampaign(container, recommendation)
+     *   }
+     * })
      */
     attributeProductClicksInCampaign: typeof attributeProductClicksInCampaign;
 };
