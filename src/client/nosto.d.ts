@@ -3851,6 +3851,7 @@ declare const api: {
         getCurrencyFormats: typeof currencyFormats;
         couponGiven: typeof reportCouponGiven;
         getCustomAffinities: () => Promise<CustomerAffinityResponse>;
+        getSegments: () => Promise<string[]>;
     };
     /**
      * Override the tagging value for the given field
