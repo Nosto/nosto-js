@@ -18,3 +18,7 @@
 * Use 'beforeEach' for setup
 * Use 'afterEach' for cleanup
 * Use 'expect' for assertions
+
+## Commits
+
+* Use conventional commits format: `<type>(<scope>): <subject>`
