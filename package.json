@@ -43,6 +43,7 @@
     "copy-nosto-dts": "copyfiles -u 1 \"src/client/*.d.ts\" dist",
     "test": "vitest --run --coverage",
     "lint": "eslint '{src,test}/**/*.ts'",
+    "lint-fix": "eslint '{src,test}/**/*.ts' --fix",
     "preview": "vite preview",
     "typedoc": "typedoc src/index.ts src/client/nosto.d.ts src/testing.ts",
     "prepare": "husky"
