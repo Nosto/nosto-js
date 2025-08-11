@@ -1,4 +1,4 @@
-import { reloadNosto } from "../src/testing/testing"
+import { reloadNosto } from "../src/testing"
 
 export function bypassLocalhostBlock() {
   const interval = setInterval(() => {
