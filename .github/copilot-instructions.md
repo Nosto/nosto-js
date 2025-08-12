@@ -76,15 +76,6 @@ npm run lint-fix      # Auto-fix issues (~2 seconds)
 
 ## Development and Testing
 
-### Run Development Server
-```bash
-npm run dev
-```
-- Starts Vite dev server at http://localhost:8080
-- Serves demo application from `./demo/main.ts`
-- **Takes ~1 second to start**
-- Demo demonstrates Nosto JS initialization and basic functionality
-
 ### Manual Validation Scenarios
 **ALWAYS test these scenarios after making changes:**
 
