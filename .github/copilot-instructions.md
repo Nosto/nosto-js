@@ -85,22 +85,7 @@ npm run lint-fix      # Auto-fix issues (~2 seconds)
    ```
    - Verify all module formats are generated: index.es.js, index.cjs.js, *.d.ts files
 
-2. **Demo Application Testing**:
-   ```bash
-   npm run dev
-   ```
-   - Navigate to http://localhost:8080
-   - Open browser console to verify "Nosto client script ready" message
-   - Check for no TypeScript/module loading errors
-
-3. **Test Coverage Validation**:
-   ```bash
-   npm test
-   ```
-   - Ensure all tests pass (35/35)
-   - Verify coverage stays above 80% thresholds
-
-4. **Type Safety Check**:
+2. **Type Safety Check**:
    ```bash
    npx tsc --noEmit
    ```
@@ -157,11 +142,6 @@ The library provides multiple entry points:
 1. Create `.spec.ts` files in `./test/` directory
 2. Follow existing test patterns using vitest
 3. Run `npm test` to verify tests pass and coverage
-
-### Updating TypeScript Definitions
-1. Edit `src/client/nosto.d.ts` for client API types
-2. Edit other `.d.ts` files for library types
-3. Run `npm run build-dts` to regenerate declarations
 
 ### Before Committing Changes
 **ALWAYS run this validation sequence:**
