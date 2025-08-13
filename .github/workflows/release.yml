@@ -20,12 +20,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout current branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
         with:
           persist-credentials: false
 
       - name: Setup NodeJS
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@5e2628c959b9ade56971c0afcebbe5332d44b398 # v4
         with:
           node-version: 22
           cache: "npm"
@@ -40,7 +40,7 @@ jobs:
         run: npm test
 
       - name: Publish project
-        uses: cycjimmy/semantic-release-action@v4
+        uses: cycjimmy/semantic-release-action@9a24fc62fd6dbf0c523b81421b634ee3c2c2ad55 # v4
         id: semantic
         with:
           extra_plugins: |
@@ -62,9 +62,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@5e2628c959b9ade56971c0afcebbe5332d44b398 # v4
         with:
           node-version: 22
           cache: "npm"
@@ -75,13 +75,13 @@ jobs:
       - run: npm run build
 
       - name: Setup Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@d5606572c479bee637007364c6b4800ac4fc8573 # v3
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@2d163be3ddce01512f3eea7ac5b7023b5d643ce1 # v3
         with:
           path: "docs"
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@854d7aa1b99e4509c4d1b53d69b7ba4eaf39215a # v4
