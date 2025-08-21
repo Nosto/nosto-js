@@ -477,29 +477,30 @@ interface GoogleAnalyticsData {
 }
 interface JSONProduct {
     alternate_image_urls: string[];
-    brand: string;
+    brand?: string;
     categories: string[];
     custom_fields: Record<string, string>;
-    date_published: number;
-    description: string;
+    date_published?: number;
+    description?: string;
+    handle: string;
     image_url?: string;
-    list_price: number;
+    list_price?: number;
     list_price_text?: string;
     name: string;
     price: number;
     price_currency_code: string;
     price_text?: string;
     product_id: string;
-    rating_value: number;
+    rating_value?: number;
     recommended_sku?: JSONSku;
-    review_count: number;
+    review_count?: number;
     skus: JSONSku[];
     tags1: string[];
     tags2: string[];
     tags3: string[];
-    thumb_url: string;
+    thumb_url?: string;
     url: string;
-    variant_id: string;
+    variant_id?: string;
 }
 interface JSONResult extends RenderResult<JSONResult> {
     element: string;
@@ -614,6 +615,7 @@ interface PostPurchaseOffer {
     customer: string;
     discount_type: string;
     discount_value: number;
+    hide_description: boolean;
     main_offer_header: string;
     offer_end_text: string;
     offer_time_end: number;
