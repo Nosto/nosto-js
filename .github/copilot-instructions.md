@@ -165,7 +165,7 @@ The GitHub Actions CI pipeline runs:
 ## Commits and Git Hooks
 
 ### Commit Format
-- Use conventional commits: `<type>(<scope>): <subject>`
+- When committing code, ALWAYS use valid conventional commit format.
 - Examples: `feat(api): add new helper function`, `fix(build): resolve TypeScript error`
 - Husky enforces conventional commit format via commitlint
 
