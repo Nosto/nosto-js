@@ -7,11 +7,14 @@
  */
 
 import { initNostoStub } from "./utils/dom"
+import { registerBundledCampaign } from "./lib/bundledCampaign"
 
 // to make sure that the nosto-js module can also be initialized in a non-browser environment
 if (typeof window !== "undefined") {
   // Side effect to ensure the nostojs stub is available immediately
   initNostoStub()
+  // Register the BundledCampaign custom element
+  registerBundledCampaign()
 }
 
 export { isNostoLoaded, getNostoWindow } from "./lib/helpers"
@@ -19,5 +22,6 @@ export { init, type InitProps } from "./lib/init"
 export { getSettings } from "./lib/settings"
 export { nostojs } from "./lib/nostojs"
 export { addSkuToCart, type ProductIdentifier, type SlotReference } from "./lib/addSkuToCart"
+export { BundledCampaign, registerBundledCampaign } from "./lib/bundledCampaign"
 export type * from "./types"
 export { initNostoStub }

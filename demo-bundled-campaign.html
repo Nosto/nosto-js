@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BundledCampaign Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .example {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        nosto-bundled-campaign {
+            display: block;
+            border: 2px dashed #ccc;
+            padding: 20px;
+            margin: 10px 0;
+            background-color: #f9f9f9;
+        }
+        nosto-bundled-campaign:empty::before {
+            content: "BundledCampaign custom element (empty - waiting for content)";
+            color: #666;
+            font-style: italic;
+        }
+        .controls {
+            margin: 10px 0;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>BundledCampaign Custom Element Demo</h1>
+    
+    <div class="example">
+        <h2>Example 1: Basic Usage</h2>
+        <p>A BundledCampaign element with placement and handles attributes:</p>
+        <nosto-bundled-campaign 
+            placement="frontpage-nosto-1" 
+            handles="product-1:product-2">
+        </nosto-bundled-campaign>
+    </div>
+
+    <div class="example">
+        <h2>Example 2: Dynamic Controls</h2>
+        <p>Interact with a BundledCampaign element:</p>
+        
+        <div class="controls">
+            <label>Placement: 
+                <input type="text" id="placementInput" value="category-bestsellers" />
+            </label>
+            <button onclick="updatePlacement()">Update Placement</button>
+        </div>
+        
+        <div class="controls">
+            <label>Handles: 
+                <input type="text" id="handlesInput" value="product-a:product-b:product-c" />
+            </label>
+            <button onclick="updateHandles()">Update Handles</button>
+        </div>
+        
+        <nosto-bundled-campaign 
+            id="dynamicElement"
+            placement="category-bestsellers" 
+            handles="product-a:product-b">
+        </nosto-bundled-campaign>
+        
+        <div class="controls">
+            <button onclick="showElementInfo()">Show Element Info</button>
+            <button onclick="triggerReload()">Trigger Reload</button>
+        </div>
+        
+        <div id="info"></div>
+    </div>
+
+    <div class="example">
+        <h2>Example 3: Programmatic Creation</h2>
+        <p>Create elements via JavaScript:</p>
+        <button onclick="createNewElement()">Create New BundledCampaign</button>
+        <div id="container"></div>
+    </div>
+
+    <script type="module">
+        // Import the library (in a real scenario, this would be from a CDN or npm package)
+        import { BundledCampaign, registerBundledCampaign } from './dist/index.es.js';
+        
+        // The custom element should already be registered via the side effect import,
+        // but we can also register it manually if needed
+        if (!customElements.get('nosto-bundled-campaign')) {
+            registerBundledCampaign();
+        }
+
+        // Mock Nosto API for demo purposes
+        window.nostojs = function(callback) {
+            const mockAPI = {
+                createRecommendationRequest: function(options) {
+                    console.log('Mock: createRecommendationRequest called with:', options);
+                    return this;
+                },
+                setResponseMode: function(mode) {
+                    console.log('Mock: setResponseMode called with:', mode);
+                    return this;
+                },
+                setElements: function(elements) {
+                    console.log('Mock: setElements called with:', elements);
+                    return this;
+                },
+                load: function() {
+                    console.log('Mock: load called');
+                    return Promise.resolve({
+                        recommendations: {
+                            [this.lastElements?.[0] || 'test']: {
+                                products: [
+                                    { product_id: 'demo-product-1', handle: 'demo-handle-1' },
+                                    { product_id: 'demo-product-2', handle: 'demo-handle-2' }
+                                ]
+                            }
+                        }
+                    });
+                },
+                attributeProductClicksInCampaign: function(element, recommendation) {
+                    console.log('Mock: attributeProductClicksInCampaign called with:', element, recommendation);
+                }
+            };
+            
+            // Store elements for mock response
+            const originalSetElements = mockAPI.setElements;
+            mockAPI.setElements = function(elements) {
+                this.lastElements = elements;
+                return originalSetElements.call(this, elements);
+            };
+            
+            return callback(mockAPI);
+        };
+
+        // Mock fetch for Shopify API
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options) {
+            if (url === '/cart/update.js') {
+                console.log('Mock: Shopify API called with:', url, options);
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve({
+                        sections: {
+                            [`nosto-bundled-campaign[placement="${new URLSearchParams(options.body).get('sections').match(/placement="([^"]+)"/)?.[1]}"]`]: 
+                                '<div style="padding: 10px; background: #e6f3ff; border: 1px solid #0066cc; border-radius: 4px;">🛍️ <strong>Bundled Campaign Content</strong><br>This content was loaded from the mock Shopify API.<br>Products: demo-handle-1, demo-handle-2</div>'
+                        }
+                    })
+                });
+            }
+            return originalFetch?.call(this, url, options) || Promise.reject(new Error('Fetch not available'));
+        };
+
+        // Make functions available globally for onclick handlers
+        window.updatePlacement = function() {
+            const element = document.getElementById('dynamicElement');
+            const input = document.getElementById('placementInput');
+            element.placement = input.value;
+            console.log('Updated placement to:', input.value);
+        };
+
+        window.updateHandles = function() {
+            const element = document.getElementById('dynamicElement');
+            const input = document.getElementById('handlesInput');
+            element.handles = input.value;
+            console.log('Updated handles to:', input.value);
+        };
+
+        window.showElementInfo = function() {
+            const element = document.getElementById('dynamicElement');
+            const info = document.getElementById('info');
+            info.innerHTML = `
+                <h4>Element Information:</h4>
+                <ul>
+                    <li><strong>Tag Name:</strong> ${element.tagName.toLowerCase()}</li>
+                    <li><strong>Placement:</strong> ${element.placement}</li>
+                    <li><strong>Handles:</strong> ${element.handles}</li>
+                    <li><strong>Inner HTML:</strong> ${element.innerHTML || '(empty)'}</li>
+                </ul>
+            `;
+        };
+
+        window.triggerReload = function() {
+            const element = document.getElementById('dynamicElement');
+            // Simulate attribute change to trigger reload
+            const currentPlacement = element.placement;
+            element.placement = '';
+            setTimeout(() => {
+                element.placement = currentPlacement;
+            }, 100);
+        };
+
+        window.createNewElement = function() {
+            const container = document.getElementById('container');
+            const element = document.createElement('nosto-bundled-campaign');
+            element.placement = 'dynamic-' + Date.now();
+            element.handles = 'dynamic-handle-1:dynamic-handle-2';
+            container.appendChild(element);
+            console.log('Created new element with placement:', element.placement);
+        };
+
+        console.log('BundledCampaign demo loaded. Check the console for API calls.');
+    </script>
+</body>
+</html>
