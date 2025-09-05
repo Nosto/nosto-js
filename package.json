@@ -46,6 +46,7 @@
     "lint-fix": "eslint '{src,test}/**/*.ts' --fix",
     "preview": "vite preview",
     "typedoc": "typedoc src/index.ts src/client/nosto.d.ts src/testing.ts",
+    "typedoc-json": "typedoc src/index.ts src/client/nosto.d.ts src/testing.ts --json dist/typedoc.json",
     "prepare": "husky"
   },
   "devDependencies": {
