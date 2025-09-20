@@ -66,8 +66,9 @@ describe("currency formatting", () => {
     expect(format(12345.0)).toEqual("£12,345.00")
     expect(format(123450.0)).toEqual("£123,450.00")
 
-    expect(format(12345.0, "EUR")).toEqual("12.345,00 €")
-    expect(format(123450.0, "EUR")).toEqual("123.450,00 €")
+    // Using non-breaking space character (Unicode 160) as returned by Intl.NumberFormat
+    expect(format(12345.0, "EUR")).toEqual("12.345,00 €")
+    expect(format(123450.0, "EUR")).toEqual("123.450,00 €")
 
     expect(format(12345.0, "USD")).toEqual("$12,345.00")
     expect(format(123450.0, "USD")).toEqual("$123,450.00")
