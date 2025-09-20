@@ -19,5 +19,6 @@ export { init, type InitProps } from "./lib/init"
 export { getSettings } from "./lib/settings"
 export { nostojs } from "./lib/nostojs"
 export { addSkuToCart, type ProductIdentifier, type SlotReference } from "./lib/addSkuToCart"
+export { getCurrencyFormatting, type CurrencyConfig, type CurrencyFormats } from "./lib/getCurrencyFormatting"
 export type * from "./types"
 export { initNostoStub }
