@@ -6,7 +6,7 @@ export type CurrencyFormats = Record<string, CurrencySettingsDTO>
 const defaultConfig = {
   defaultCurrency: "EUR",
   defaultLocale: "en-US",
-  /** @hidden  */
+  /** @internal */
   currencySettings: {}
 } satisfies CurrencyConfig
 
