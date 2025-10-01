@@ -1,4 +1,4 @@
-/** @module ./ */
+/** @module core */
 
 /**
  * Disclaimer:
