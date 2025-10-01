@@ -78,7 +78,7 @@ jobs:
         uses: actions/configure-pages@d5606572c479bee637007364c6b4800ac4fc8573 # v3
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@2d163be3ddce01512f3eea7ac5b7023b5d643ce1 # v3
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v3
         with:
           path: "docs"
 
