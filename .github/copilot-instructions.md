@@ -6,14 +6,6 @@
 
 Nosto JS is a TypeScript wrapper library for the Nosto client script, providing an easy way to interact with the Nosto service from JavaScript or TypeScript applications. It builds to multiple module formats (ESM, CJS) and includes comprehensive TypeScript type definitions.
 
-## Bootstrap
-
-Install node v22 and run:
-
-```bash
-npm ci
-```
-
 ## Repository Structure and Navigation
 
 ### Key Directories
@@ -50,7 +42,7 @@ npm test              # Run tests (~4 seconds)
 ## Commits and Git Hooks
 
 ### Commit Format
-- When committing code, ALWAYS use valid conventional commit format.
+- When committing code, **ALWAYS** use valid conventional commit format.
 - Examples: `feat(api): add new helper function`, `fix(build): resolve TypeScript error`
 - Husky enforces conventional commit format via commitlint
 
