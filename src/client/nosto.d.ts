@@ -1,3 +1,5 @@
+/** @module client */
+// @ts-nocheck
 /**
  * @group Core
  */
