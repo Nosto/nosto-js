@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programmatic Search API - Nosto JS Presentation</title>
+    <link rel="stylesheet" href="../node_modules/reveal.js/dist/reset.css">
+    <link rel="stylesheet" href="../node_modules/reveal.js/dist/reveal.css">
+    <link rel="stylesheet" href="../node_modules/reveal.js/dist/theme/black.css">
+    <link rel="stylesheet" href="../node_modules/reveal.js/plugin/highlight/monokai.css">
+    <style>
+        .reveal h1, .reveal h2, .reveal h3 {
+            text-transform: none;
+        }
+        .reveal pre code {
+            max-height: 500px;
+        }
+        .reveal code {
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides" id="markdown-slides"></div>
+    </div>
+
+    <script src="../node_modules/reveal.js/dist/reveal.js"></script>
+    <script src="../node_modules/reveal.js/plugin/markdown/markdown.js"></script>
+    <script src="../node_modules/reveal.js/plugin/highlight/highlight.js"></script>
+    <script src="../node_modules/reveal.js/plugin/notes/notes.js"></script>
+    
+    <script>
+        // Load markdown content
+        fetch('programmatic-search-api.md')
+            .then(response => response.text())
+            .then(markdown => {
+                document.getElementById('markdown-slides').setAttribute('data-markdown', '');
+                document.getElementById('markdown-slides').innerHTML = 
+                    '<textarea data-template>' + markdown + '</textarea>';
+                
+                // Initialize Reveal
+                Reveal.initialize({
+                    hash: true,
+                    slideNumber: true,
+                    transition: 'slide',
+                    plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+                });
+            });
+    </script>
+</body>
+</html>

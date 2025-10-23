@@ -28,3 +28,17 @@ npm install @nosto/nosto-js --save
 Read [Nosto Techdocs](https://docs.nosto.com/techdocs/apis/frontend/oss/nosto-js) for more information on how to use the library.
 
 [Library TypeDoc page](https://nosto.github.io/nosto-js/) includes detailed library helpers documentation and examples.
+
+## Presentations
+
+Interactive presentations covering key topics are available in the [presentations](./presentations/) directory:
+
+- **Session API** - Learn how to implement Nosto's Session API for SPAs and PWAs
+- **Tagging Provider** - Understand how to provide product and page metadata dynamically
+- **Programmatic Search API** - Master Nosto's Search API to build custom search experiences
+
+To view the presentations locally, run:
+
+```bash
+npm run presentations
+```

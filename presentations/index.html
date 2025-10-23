@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nosto JS - Technical Presentations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .presentations {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .presentation-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .presentation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .presentation-card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+        
+        .presentation-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .presentation-card .topics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .topic-tag {
+            background: #f0f0f0;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            color: #555;
+        }
+        
+        .cta {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+        
+        .cta:hover {
+            background: #5568d3;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 50px;
+            opacity: 0.8;
+        }
+        
+        footer a {
+            color: white;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Nosto JS</h1>
+            <p class="subtitle">Technical Presentations</p>
+        </header>
+        
+        <div class="presentations">
+            <a href="session-api.html" class="presentation-card">
+                <h2>Session API</h2>
+                <p>Learn how to implement Nosto's Session API for Single-Page Applications and Progressive Web Apps.</p>
+                <div class="topics">
+                    <span class="topic-tag">SPA</span>
+                    <span class="topic-tag">PWA</span>
+                    <span class="topic-tag">Dynamic Tracking</span>
+                    <span class="topic-tag">React/Vue</span>
+                </div>
+                <span class="cta">View Presentation →</span>
+            </a>
+            
+            <a href="tagging-provider.html" class="presentation-card">
+                <h2>Tagging Provider</h2>
+                <p>Understand how to provide product and page metadata dynamically using the Tagging Provider pattern.</p>
+                <div class="topics">
+                    <span class="topic-tag">Metadata</span>
+                    <span class="topic-tag">Dynamic Data</span>
+                    <span class="topic-tag">Product Tagging</span>
+                    <span class="topic-tag">Integration</span>
+                </div>
+                <span class="cta">View Presentation →</span>
+            </a>
+            
+            <a href="programmatic-search-api.html" class="presentation-card">
+                <h2>Programmatic Search API</h2>
+                <p>Master Nosto's Search API to build custom search experiences with advanced filtering and faceting.</p>
+                <div class="topics">
+                    <span class="topic-tag">Search</span>
+                    <span class="topic-tag">Filtering</span>
+                    <span class="topic-tag">Facets</span>
+                    <span class="topic-tag">Custom UI</span>
+                </div>
+                <span class="cta">View Presentation →</span>
+            </a>
+        </div>
+        
+        <footer>
+            <p>Built with <a href="https://revealjs.com/" target="_blank">Reveal.js</a></p>
+            <p><a href="https://github.com/Nosto/nosto-js" target="_blank">Nosto JS on GitHub</a> | 
+               <a href="https://docs.nosto.com/techdocs/" target="_blank">Documentation</a></p>
+        </footer>
+    </div>
+</body>
+</html>

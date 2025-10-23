@@ -45,6 +45,7 @@
     "lint": "eslint '{src,test}/**/*.ts'",
     "lint-fix": "eslint '{src,test}/**/*.ts' --fix",
     "preview": "vite preview",
+    "presentations": "vite --open /presentations/",
     "typedoc": "typedoc src/index.ts src/client/nosto.d.ts src/testing.ts",
     "typedoc-json": "typedoc src/index.ts src/client/nosto.d.ts src/testing.ts --json dist/typedoc.json",
     "prepare": "husky"
@@ -64,6 +65,7 @@
     "husky": "^9.1.7",
     "jsdom": "^27.0.0",
     "prettier": "^3.3.3",
+    "reveal.js": "^5.2.1",
     "typedoc": "^0.28.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.39.0",
