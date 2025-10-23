@@ -2769,8 +2769,10 @@ interface InputSearchProducts {
     size?: number;
     /** Sets how results should be sorted. After sorting by all the options provided in sort param, or in case sort param is not set, results will be sorted by relevance. For example, if you set sort by availability status, products with the same availability status will be sorted by relevance. */
     sort?: InputSearchSort[];
-    /** Selects product variation or currency */
+    /** Selects product variation */
     variationId?: string;
+    /** Selects product currency */
+    currency?: string;
 }
 /**
  * @group Search
@@ -3701,7 +3703,7 @@ type InternalEvents = {
     categoryimpression: [CategoryImpression];
 };
 type TaggingEvents = {
-    cartUpdated: [];
+    cartupdated: [];
 };
 /**
  * Mapping from event name to payload type
@@ -3712,7 +3714,7 @@ type EventMapping = LifecyleEvents & PopupEvents & InternalEvents & TaggingEvent
 /**
  * Keys of {@link EventMapping}
  */
-type BusEvent = "prerequest" | "prerender" | "postrender" | "taggingsent" | "taggingresent" | "carttaggingresent" | "customertaggingresent" | "emailgiven" | "scripterror" | "servererror" | "popupopened" | "popupmaximized" | "popupminimized" | "coupongiven" | "popupclosed" | "popupribbonshown" | "sendabandonedcartemail" | "ordererror" | "setexperiments" | "setsegments" | "setcustomaffinities" | "setcart" | "addtocart" | "ev1end" | "debugdata" | "searchsuccess" | "searchfailure" | "searchclick" | "searchaddtocart" | "searchimpression" | "categoryclick" | "categoryaddtocart" | "categoryimpression" | "cartUpdated";
+type BusEvent = "prerequest" | "prerender" | "postrender" | "taggingsent" | "taggingresent" | "carttaggingresent" | "customertaggingresent" | "emailgiven" | "scripterror" | "servererror" | "popupopened" | "popupmaximized" | "popupminimized" | "coupongiven" | "popupclosed" | "popupribbonshown" | "sendabandonedcartemail" | "ordererror" | "setexperiments" | "setsegments" | "setcustomaffinities" | "setcart" | "addtocart" | "ev1end" | "debugdata" | "searchsuccess" | "searchfailure" | "searchclick" | "searchaddtocart" | "searchimpression" | "categoryclick" | "categoryaddtocart" | "categoryimpression" | "cartupdated";
 type Callback<T extends BusEvent> = (...args: EventMapping[T]) => void;
 /** @hidden */
 type tests = [
@@ -4086,7 +4088,6 @@ declare const api: {
      * }))
      */
     customer: typeof customer;
-    /** @hidden */
     popupCampaigns: typeof popupCampaigns;
     /** @hidden */
     reloadOverlay: typeof noop;
