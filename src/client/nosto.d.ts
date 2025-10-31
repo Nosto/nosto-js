@@ -162,6 +162,7 @@ interface ClientScriptSettingsDTO {
     collectEmailFromURL?: boolean;
     cookieTime: number;
     currencySettings: Record<string, CurrencySettingsDTO>;
+    debugParameterName: string;
     debugRedirectUrl: string;
     defaultCurrencyCode: string;
     defaultVariantId: string;
@@ -747,6 +748,7 @@ interface SearchEventMetadata {
     isAutoCorrect: boolean;
     isKeyword: boolean;
     isOrganic: boolean;
+    isPopular: boolean;
     isRefined: boolean;
     isSorted: boolean;
     query: string;
@@ -2392,6 +2394,7 @@ type SearchTrackOptions = "serp" | "autocomplete" | "category";
  */
 type SearchAnalyticsOptions = {
     isKeyword?: boolean;
+    isPopular?: boolean;
 };
 /**
  * @group Search
@@ -2788,6 +2791,10 @@ interface InputSearchQuery {
     keywords?: InputSearchKeywords;
     /** Product specific parameters */
     products?: InputSearchProducts;
+    /** Popular searches specific parameters */
+    popularSearches?: InputSearchPopularSearches;
+    /** Category specific parameters */
+    categories?: InputSearchCategories;
     /** Search text (raw user input) */
     query?: string;
     redirect?: string;
@@ -3163,12 +3170,6 @@ SearchStatsFacet["type"]
 /**
  * @group Search
  */
-interface SearchHighlight {
-    keyword?: string;
-}
-/**
- * @group Search
- */
 interface SearchKeyword {
     _explain?: unknown;
     _highlight?: SearchHighlight;
@@ -3424,6 +3425,54 @@ interface SearchResult {
     /** Returns redirect url if redirect rule matched */
     redirect?: string;
     abTests?: ABTest[];
+    categories?: SearchCategories;
+    popularSearches?: SearchPopularSearches;
+}
+/**
+ * @group Search
+ */
+interface SearchCategories {
+    hits: SearchCategory[];
+    total: number;
+    size?: number;
+    from?: number;
+    fuzzy?: boolean;
+}
+/**
+ * @group Search
+ */
+interface SearchCategory {
+    name?: string;
+    fullName?: string;
+    externalId?: string;
+    parentExternalId?: string;
+    url?: string;
+    urlPath?: string;
+    _hightlight?: SearchHighlight;
+}
+/**
+ * @group Search
+ */
+interface SearchPopularSearches {
+    hits: SearchPopularSearch[];
+    total: number;
+    size?: number;
+    from?: number;
+    fuzzy?: boolean;
+}
+/**
+ * @group Search
+ */
+interface SearchPopularSearch {
+    query?: string;
+    total?: number;
+    _hightlight?: SearchHighlight;
+}
+/**
+ * @group Search
+ */
+interface SearchHighlight {
+    keyword?: string;
 }
 /**
  * @group Search
@@ -3479,6 +3528,30 @@ interface SearchVariationValue {
 type SearchPageType = "search" | "category" | "autocomplete";
 /**
  * @group Search
+ */
+type InputSearchPopularSearches = {
+    size?: number;
+    from?: number;
+    emptyQueryMatchesAll?: boolean;
+    filter?: InputSearchTopLevelFilter[];
+    sort?: InputSearchSort[];
+    boost?: InputSearchBoost[];
+    highlight?: InputSearchHighlight;
+};
+/**
+ * @group Search
+ */
+type InputSearchCategories = {
+    size?: number;
+    from?: number;
+    emptyQueryMatchesAll?: boolean;
+    filter?: InputSearchTopLevelFilter[];
+    sort?: InputSearchSort[];
+    boost?: InputSearchBoost[];
+    highlight?: InputSearchHighlight;
+};
+/**
+ * @group Search
  * @interface
  * */
 type SearchQuery = Omit<InputSearchQuery, "keywords" | "products"> & {
@@ -3489,6 +3562,12 @@ type SearchQuery = Omit<InputSearchQuery, "keywords" | "products"> & {
     products?: InputSearchQuery["products"] & {
         fields?: string[];
         facets?: string[];
+    };
+    popularSearches?: InputSearchQuery["popularSearches"] & {
+        fields?: string[];
+    };
+    categories?: InputSearchQuery["categories"] & {
+        fields?: string[];
     };
 } & {
     name?: string;
@@ -4335,4 +4414,4 @@ declare const api: {
  * */
 type API = typeof api;
 
-export type { ABTest, API, AbTestDraftPreviewSettingsDTO, AbTestPreviewSettingsBase, AbTestPreviewSettingsDTO, AbTestVariation, AbTestVariationDTO, AbstractFacebookPixelEvent, AbstractStacklaPixelEvent, Action, ActionResponse, ActiveVisitDTO, Addtocart, AffinityOptions, AnalyticEvent, AnalyticEventProperties, AnalyticsType, AttributedCampaignResult, Attribution, BigcommerceCustomerInfo, BusEvent, Callback, Campaign, CampaignId, CampaignResult, Cart, CartItem, Carttaggingresent, CategoryClick, CategoryEvent, CategoryEventMetadata, CategoryImpression, ClientScriptSettingsDTO, ConditionDTO, ContentDebugDTO, ContentId, Context, ConversionItem, Coupon, Coupongiven, CrawlResponse, CurrencySettingsDTO, CustomerAffinityResponse, CustomerAffinityResponseItem, CustomerDTO, CustomerToken, DebugRequestParamsDTO, DebugToolbarDataDTO, DynamicPlacementDTO, Effect, Endpoint, ErrorResponse, Event, EventAttributionMetadata, EventAttributionParams, EventFields, EventMapping, EventPreviewMessage, EventRefType, EventRequestMessageV1, EventResponseMessage, EventTuple, EventType, Events, Experiment, FacebookData, FilterOperator, FilterRule, ForcedTestDTO, GoogleAnalyticsData, InputSearchABTest, InputSearchABTestVariation, InputSearchBoost, InputSearchFacetConfig, InputSearchFilter, InputSearchHighlight, InputSearchKeywords, InputSearchPin, InputSearchProducts, InputSearchQuery, InputSearchRangeFilter, InputSearchRule, InputSearchRuleMatch, InputSearchSchedule, InputSearchSort, InputSearchTopLevelFilter, InsertMode, JSONProduct, JSONResult, JSONSku, Level, Maybe, Method, NostoSku, NostoVariant, NostojsCallback, OnsiteFeature, Option, OptionValue, Order, OrderCustomer, OrderError, OrderInfo, OverlapCampaignDTO, Overlay, PageType, PerLinkAttributions, PersonalizationBoost, PlacementDebugDTO, PlacementRuleDTO, Placements, PluginMetadata, Popup, PopupCampaignPreviewSettingsDTO, PopupCouponGiven, PopupEmailCollected, PopupEvent, PopupId, PopupTriggerSettingsDTO, PopupTriggered, Popupopened, PostPurchaseOffer, PostPurchaseRecommendation, PostPurchaseRecommendationSku, Postrender, Prerender, Product, ProductIdentifier, ProductPushResponse, PushedCustomer, PushedProduct, PushedProductSKU, PushedVariation, Query, QuerySearchArgs, RecommendationDebugDTO, RecommendationId, RecommendationRequestFlags, RenderMode, RenderResult, RequestBuilder, ResultType, ScheduleEntryId, ScheduleTime, Scripterror, SearchAnalyticsOptions, SearchAutocorrect, SearchClick, SearchEvent, SearchEventMetadata, SearchExclusionBehaviour, SearchExplain, SearchExplainRule, SearchFacet, SearchFacetOrder, SearchFacetTerm, SearchFacetType, SearchFacetValueVisual, SearchFailureEventDTO, SearchHighlight, SearchHit, SearchImpression, SearchKeyword, SearchKeywords, SearchOptions, SearchOutOfStockBehaviour, SearchPageType, SearchParamComparisonFunction, SearchProduct, SearchProductAffinities, SearchProductAiDetected, SearchProductCustomField, SearchProductExtra, SearchProductKeyedVariation, SearchProductSku, SearchProductStats, SearchProducts, SearchQuery, SearchQueryField, SearchResult, SearchRuleScheduleType, SearchRuleScheduleWeekday, SearchSessionParams, SearchSortOrder, SearchStatsFacet, SearchSuccessEventDTO, SearchTermsFacet, SearchTrackOptions, SearchVariationValue, SegmentDebugDTO, SegmentInfoBean, SegmentRuleDebugDTO, Segments, SegmentsResponseBean, Session, Setexperiments, Settings, Sku, StacklaTrackingData, StacklaWidgetDebugDTO, StacklaWidgetEmbedId, StacklaWidgetFilterType, Store, TaggingData, TaggingProviderOptions, TargetType, TestDebugDTO, TestId, TestPlacementRuleDTO, TestPreviewsDTO, UnsavedDraftPreviewSettingsDTO, ValidationError, VariationWithRulesDTO, Violation, VisitDTO, Visits, WebsiteOrder, WidgetPlacement, WidgetPlacementRule, WrapMode, nostojs, tests };
+export type { ABTest, API, AbTestDraftPreviewSettingsDTO, AbTestPreviewSettingsBase, AbTestPreviewSettingsDTO, AbTestVariation, AbTestVariationDTO, AbstractFacebookPixelEvent, AbstractStacklaPixelEvent, Action, ActionResponse, ActiveVisitDTO, Addtocart, AffinityOptions, AnalyticEvent, AnalyticEventProperties, AnalyticsType, AttributedCampaignResult, Attribution, BigcommerceCustomerInfo, BusEvent, Callback, Campaign, CampaignId, CampaignResult, Cart, CartItem, Carttaggingresent, CategoryClick, CategoryEvent, CategoryEventMetadata, CategoryImpression, ClientScriptSettingsDTO, ConditionDTO, ContentDebugDTO, ContentId, Context, ConversionItem, Coupon, Coupongiven, CrawlResponse, CurrencySettingsDTO, CustomerAffinityResponse, CustomerAffinityResponseItem, CustomerDTO, CustomerToken, DebugRequestParamsDTO, DebugToolbarDataDTO, DynamicPlacementDTO, Effect, Endpoint, ErrorResponse, Event, EventAttributionMetadata, EventAttributionParams, EventFields, EventMapping, EventPreviewMessage, EventRefType, EventRequestMessageV1, EventResponseMessage, EventTuple, EventType, Events, Experiment, FacebookData, FilterOperator, FilterRule, ForcedTestDTO, GoogleAnalyticsData, InputSearchABTest, InputSearchABTestVariation, InputSearchBoost, InputSearchCategories, InputSearchFacetConfig, InputSearchFilter, InputSearchHighlight, InputSearchKeywords, InputSearchPin, InputSearchPopularSearches, InputSearchProducts, InputSearchQuery, InputSearchRangeFilter, InputSearchRule, InputSearchRuleMatch, InputSearchSchedule, InputSearchSort, InputSearchTopLevelFilter, InsertMode, JSONProduct, JSONResult, JSONSku, Level, Maybe, Method, NostoSku, NostoVariant, NostojsCallback, OnsiteFeature, Option, OptionValue, Order, OrderCustomer, OrderError, OrderInfo, OverlapCampaignDTO, Overlay, PageType, PerLinkAttributions, PersonalizationBoost, PlacementDebugDTO, PlacementRuleDTO, Placements, PluginMetadata, Popup, PopupCampaignPreviewSettingsDTO, PopupCouponGiven, PopupEmailCollected, PopupEvent, PopupId, PopupTriggerSettingsDTO, PopupTriggered, Popupopened, PostPurchaseOffer, PostPurchaseRecommendation, PostPurchaseRecommendationSku, Postrender, Prerender, Product, ProductIdentifier, ProductPushResponse, PushedCustomer, PushedProduct, PushedProductSKU, PushedVariation, Query, QuerySearchArgs, RecommendationDebugDTO, RecommendationId, RecommendationRequestFlags, RenderMode, RenderResult, RequestBuilder, ResultType, ScheduleEntryId, ScheduleTime, Scripterror, SearchAnalyticsOptions, SearchAutocorrect, SearchCategories, SearchCategory, SearchClick, SearchEvent, SearchEventMetadata, SearchExclusionBehaviour, SearchExplain, SearchExplainRule, SearchFacet, SearchFacetOrder, SearchFacetTerm, SearchFacetType, SearchFacetValueVisual, SearchFailureEventDTO, SearchHighlight, SearchHit, SearchImpression, SearchKeyword, SearchKeywords, SearchOptions, SearchOutOfStockBehaviour, SearchPageType, SearchParamComparisonFunction, SearchPopularSearch, SearchPopularSearches, SearchProduct, SearchProductAffinities, SearchProductAiDetected, SearchProductCustomField, SearchProductExtra, SearchProductKeyedVariation, SearchProductSku, SearchProductStats, SearchProducts, SearchQuery, SearchQueryField, SearchResult, SearchRuleScheduleType, SearchRuleScheduleWeekday, SearchSessionParams, SearchSortOrder, SearchStatsFacet, SearchSuccessEventDTO, SearchTermsFacet, SearchTrackOptions, SearchVariationValue, SegmentDebugDTO, SegmentInfoBean, SegmentRuleDebugDTO, Segments, SegmentsResponseBean, Session, Setexperiments, Settings, Sku, StacklaTrackingData, StacklaWidgetDebugDTO, StacklaWidgetEmbedId, StacklaWidgetFilterType, Store, TaggingData, TaggingProviderOptions, TargetType, TestDebugDTO, TestId, TestPlacementRuleDTO, TestPreviewsDTO, UnsavedDraftPreviewSettingsDTO, ValidationError, VariationWithRulesDTO, Violation, VisitDTO, Visits, WebsiteOrder, WidgetPlacement, WidgetPlacementRule, WrapMode, nostojs, tests };
