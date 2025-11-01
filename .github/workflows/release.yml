@@ -40,7 +40,7 @@ jobs:
         run: npm test
 
       - name: Publish project
-        uses: cycjimmy/semantic-release-action@8f46764b734c73a89c9b0d242b3876d1c261ce4e # v4
+        uses: cycjimmy/semantic-release-action@e03fa181e172824c9fea3d99850909c3b0d6ac8e # v4
         id: semantic
         with:
           extra_plugins: |
