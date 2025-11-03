@@ -3448,7 +3448,7 @@ interface SearchCategory {
     parentExternalId?: string;
     url?: string;
     urlPath?: string;
-    _hightlight?: SearchHighlight;
+    _highlight?: SearchHighlight;
 }
 /**
  * @group Search
@@ -3466,7 +3466,7 @@ interface SearchPopularSearches {
 interface SearchPopularSearch {
     query?: string;
     total?: number;
-    _hightlight?: SearchHighlight;
+    _highlight?: SearchHighlight;
 }
 /**
  * @group Search
