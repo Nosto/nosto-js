@@ -7,6 +7,34 @@ updates:
     commit-message:
       prefix: "deps"
     open-pull-requests-limit: 10
+    groups:
+      linting:
+        patterns:
+          - "eslint*"
+          - "prettier*"
+          - "@types/eslint-config-prettier"
+      testing:
+        patterns:
+          - "vitest*"
+          - "@vitest/*"
+          - "jsdom"
+          - "@testing-library/*"
+      typescript:
+        patterns:
+          - "typescript"
+          - "typescript-eslint"
+          - "@types/node"
+      build-tools:
+        patterns:
+          - "vite"
+          - "copyfiles"
+      documentation:
+        patterns:
+          - "typedoc"
+      git-tools:
+        patterns:
+          - "husky"
+          - "@commitlint/*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -22,3 +50,16 @@ updates:
     open-pull-requests-limit: 5
     reviewers:
       - "manikandan-ravikumar"
+    groups:
+      core-actions:
+        patterns:
+          - "actions/checkout*"
+          - "actions/setup-node*"
+      pages-deployment:
+        patterns:
+          - "actions/configure-pages*"
+          - "actions/upload-pages-artifact*"
+          - "actions/deploy-pages*"
+      release-actions:
+        patterns:
+          - "cycjimmy/semantic-release-action*"
