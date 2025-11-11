@@ -7,6 +7,14 @@ updates:
     commit-message:
       prefix: "deps"
     open-pull-requests-limit: 10
+    groups:
+      eslint:
+        patterns:
+          - "eslint*"
+      vitest:
+        patterns:
+          - "vitest*"
+          - "@vitest/*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
