@@ -11,8 +11,6 @@ updates:
       eslint:
         patterns:
           - "eslint*"
-          - "prettier*"
-          - "@types/eslint-config-prettier"
       vitest:
         patterns:
           - "vitest*"
