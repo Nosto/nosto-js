@@ -9,3 +9,4 @@ export {
 } from "./testing/mockNostojs"
 export { reloadNosto } from "./testing/reloadNosto"
 export { mockSettings } from "./testing/mockSettings"
+export { mockAddSkuToCart } from "./testing/mockAddSkuToCart"
