@@ -1,10 +1,6 @@
-import type { ProductIdentifier, SlotReference } from "../lib/addSkuToCart"
+import { addSkuToCart } from "../lib/addSkuToCart"
 
-export type AddSkuToCartFunction = (
-  product: ProductIdentifier,
-  slotIdOrElement?: SlotReference,
-  quantity?: number
-) => Promise<void>
+export type AddSkuToCartFunction = typeof addSkuToCart
 
 /**
  * Registers a mock function and assigns it to window.Nosto.addSkuToCart.
@@ -12,14 +8,12 @@ export type AddSkuToCartFunction = (
  * @param mockFn - Optional mock function to use. If not provided, a simple implementation is used.
  * @returns The mock function that was assigned to window.Nosto.addSkuToCart.
  */
-export function mockAddSkuToCart(mockFn?: AddSkuToCartFunction): AddSkuToCartFunction {
-  const finalMockFn = mockFn || (async () => {})
-
+export function mockAddSkuToCart(mockFn: AddSkuToCartFunction = async () => {}): AddSkuToCartFunction {
   if (!window.Nosto) {
     window.Nosto = {}
   }
 
-  window.Nosto.addSkuToCart = finalMockFn
+  window.Nosto.addSkuToCart = mockFn
 
-  return finalMockFn
+  return mockFn
 }

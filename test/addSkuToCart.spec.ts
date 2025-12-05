@@ -17,8 +17,7 @@ describe("addSkuToCart", () => {
   })
 
   it("should call window.Nosto.addSkuToCart with correct parameters", async () => {
-    const mockFn = vi.fn().mockResolvedValue(undefined)
-    mockAddSkuToCart(mockFn)
+    const mockFn = mockAddSkuToCart(vi.fn().mockResolvedValue(undefined))
 
     const slot: string = "slot1"
     const quantity: number = 2
