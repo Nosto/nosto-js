@@ -51,7 +51,6 @@ jobs:
             ]
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_PAT_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPMJS_TOKEN }}
 
   publish-docs:
     needs: release
