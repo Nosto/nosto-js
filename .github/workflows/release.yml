@@ -39,6 +39,13 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Create GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@b96fde71c0080358ed6e2d162f11c612c92a97d1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Publish project
         uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6.0.0
         id: semantic
@@ -51,7 +58,7 @@ jobs:
               "main"
             ]
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
   publish-docs:
     needs: release
