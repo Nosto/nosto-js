@@ -44,7 +44,7 @@ jobs:
 
       - name: Create GitHub App Token
         id: app-token
-        uses: actions/create-github-app-token@b96fde71c0080358ed6e2d162f11c612c92a97d1
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf
         with:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
