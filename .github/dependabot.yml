@@ -15,6 +15,9 @@ updates:
         patterns:
           - "vitest*"
           - "@vitest/*"
+      commitlint:
+        patterns:
+          - "@commitlint/*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
