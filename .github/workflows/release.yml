@@ -20,12 +20,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout current branch
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
 
       - name: Setup NodeJS
-        uses: actions/setup-node@89d709d423dc495668cd762a18dd4a070611be3f
+        uses: actions/setup-node@89d709d423dc495668cd762a18dd4a070611be3f # v4.0.2
         with:
           node-version: 24
           cache: "npm"
@@ -44,13 +44,13 @@ jobs:
 
       - name: Create GitHub App Token
         id: app-token
-        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
         with:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Publish project
-        uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90
+        uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v4
         id: semantic
         with:
           semantic_version: 25.0.2
@@ -72,9 +72,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
-      - uses: actions/setup-node@89d709d423dc495668cd762a18dd4a070611be3f
+      - uses: actions/setup-node@89d709d423dc495668cd762a18dd4a070611be3f # v4.0.2
         with:
           node-version: 24
           cache: "npm"
@@ -88,13 +88,13 @@ jobs:
       - run: npm run build
 
       - name: Setup Pages
-        uses: actions/configure-pages@d5606572c479bee637007364c6b4800ac4fc8573
+        uses: actions/configure-pages@d5606572c479bee637007364c6b4800ac4fc8573 # v5
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v3
         with:
           path: "docs"
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@854d7aa1b99e4509c4d1b53d69b7ba4eaf39215a
+        uses: actions/deploy-pages@854d7aa1b99e4509c4d1b53d69b7ba4eaf39215a # v4
