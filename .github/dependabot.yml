@@ -8,6 +8,9 @@ updates:
       prefix: "deps"
     open-pull-requests-limit: 10
     groups:
+      patch-updates:
+        update-types:
+          - "patch"
       eslint:
         patterns:
           - "eslint*"
