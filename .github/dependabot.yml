@@ -11,6 +11,9 @@ updates:
       patch-updates:
         update-types:
           - "patch"
+      minor-updates:
+        update-types:
+          - "minor"
       eslint:
         patterns:
           - "eslint*"
