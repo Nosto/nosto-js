@@ -62,7 +62,7 @@
     "eslint-plugin-barrel-files": "^3.0.1",
     "eslint-plugin-prettier": "^5.2.1",
     "husky": "^9.1.7",
-    "jsdom": "^27.0.0",
+    "jsdom": "^28.0.0",
     "prettier": "^3.3.3",
     "typedoc": "^0.28.0",
     "typescript": "^5.9.2",
