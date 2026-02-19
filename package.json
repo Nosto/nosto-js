@@ -2,7 +2,7 @@
   "name": "@nosto/nosto-js",
   "description": "NostoJS is a wrapper for the Nosto client script, providing an easy way to interact with the Nosto service from your JavaScript or TypeScript applications.",
   "version": "2.11.0",
-  "license": "ISC",
+  "license": "BSD-3-Clause",
   "type": "module",
   "files": [
     "dist"
@@ -76,7 +76,6 @@
     "url": "git+https://github.com/Nosto/nosto-js.git"
   },
   "overrides": {
-    "@eslint/eslintrc>minimatch": "3.1.2",
-    "@typescript-eslint/typescript-estree>minimatch": "9.0.5"
+    "minimatch": "^10.2.1"
   }
 }
