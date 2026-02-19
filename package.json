@@ -76,6 +76,7 @@
     "url": "git+https://github.com/Nosto/nosto-js.git"
   },
   "overrides": {
-    "minimatch": "^10.2.1"
+    "@eslint/eslintrc>minimatch": "3.1.2",
+    "@typescript-eslint/typescript-estree>minimatch": "9.0.5"
   }
 }
