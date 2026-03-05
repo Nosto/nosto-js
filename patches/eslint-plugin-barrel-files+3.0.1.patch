@@ -1,0 +1,13 @@
+diff --git a/node_modules/eslint-plugin-barrel-files/lib/rules/avoid-importing-barrel-files.js b/node_modules/eslint-plugin-barrel-files/lib/rules/avoid-importing-barrel-files.js
+index 34c2174..526604e 100644
+--- a/node_modules/eslint-plugin-barrel-files/lib/rules/avoid-importing-barrel-files.js
++++ b/node_modules/eslint-plugin-barrel-files/lib/rules/avoid-importing-barrel-files.js
+@@ -177,7 +177,7 @@ export default {
+     return {
+       ImportDeclaration(node) {
+         const moduleSpecifier = node.source.value;
+-        const currentFileName = context.getFilename();
++        const currentFileName = context.filename;
+ 
+         if (options?.allowList?.includes(moduleSpecifier)) {
+           return;
