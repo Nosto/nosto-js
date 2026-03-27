@@ -84,7 +84,7 @@ async function getNostoTagging(): Promise<Partial<TaggingData>> {
 
 export async function updateNostoTagging(merchantId: string) {
   const data = await getNostoTagging()
-  nostojs(async api => {
+  nostojs(api => {
     Object.entries(data).forEach(([key, value]) => {
       api.setTaggingProvider(key as keyof TaggingData, value)
     })
