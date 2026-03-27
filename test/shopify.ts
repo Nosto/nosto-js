@@ -2,19 +2,30 @@ import type { TaggingData } from "../src/client/nosto"
 import { nostojs } from "../src/lib/nostojs"
 import { init } from "../src/lib/init"
 
+declare const ShopifyAnalytics: {
+  meta: {
+    page: {
+      pageType: string
+      resourceId: number
+    }
+    selectedVariantId: string
+  }
+}
+
 declare const Shopify: {
   routes: {
     root?: string
   }
 }
 
-function getSearchTerms() {
-  const urlParams = new URLSearchParams(window.location.search)
-  const searchTerm = urlParams.get("q")
-  return searchTerm ? [searchTerm] : []
-}
-
 async function getProductData(): Promise<Partial<TaggingData>> {
+  if (ShopifyAnalytics?.meta?.page?.resourceId) {
+    const productId = ShopifyAnalytics.meta.page.resourceId
+    return {
+      pageType: "product",
+      products: [{ product_id: String(productId) }]
+    }
+  }
   const response = await fetch(`${location.pathname}.json`)
   const data = await response.json()
   return {
@@ -24,6 +35,13 @@ async function getProductData(): Promise<Partial<TaggingData>> {
 }
 
 async function getCollectionData(): Promise<Partial<TaggingData>> {
+  if (ShopifyAnalytics?.meta?.page?.resourceId) {
+    const collectionId = ShopifyAnalytics.meta.page.resourceId
+    return {
+      pageType: "category",
+      categoryIds: [String(collectionId)]
+    }
+  }
   const response = await fetch(`${location.pathname}.json`)
   const data = await response.json()
   return {
@@ -34,9 +52,11 @@ async function getCollectionData(): Promise<Partial<TaggingData>> {
 }
 
 async function getSearchData(): Promise<Partial<TaggingData>> {
+  const urlParams = new URLSearchParams(window.location.search)
+  const searchTerm = urlParams.get("q")
   return {
     pageType: "search",
-    searchTerms: getSearchTerms()
+    searchTerms: searchTerm ? [searchTerm] : []
   }
 }
 
@@ -49,6 +69,9 @@ async function getNostoTagging(): Promise<Partial<TaggingData>> {
   }
   if (pathname === "/search") {
     return getSearchData()
+  }
+  if (pathname === "/cart") {
+    return { pageType: "cart" }
   }
   if (pathname.includes("/products/")) {
     return getProductData()
