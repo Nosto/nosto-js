@@ -82,14 +82,12 @@ async function getNostoTagging(): Promise<Partial<TaggingData>> {
   return { pageType: "other" }
 }
 
-export function updateNostoTagging(merchantId: string) {
-  nostojs(api => api.setAutoLoad(false))
-  init({ merchantId })
+export async function updateNostoTagging(merchantId: string) {
+  const data = await getNostoTagging()
   nostojs(async api => {
-    const data = await getNostoTagging()
     Object.entries(data).forEach(([key, value]) => {
       api.setTaggingProvider(key as keyof TaggingData, value)
     })
-    api.load()
   })
+  init({ merchantId })
 }
