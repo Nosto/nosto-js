@@ -1,6 +1,5 @@
 import type { TaggingData } from "./client/nosto"
-import { nostojs } from "./lib/nostojs"
-import { init } from "./lib/init"
+import { init, nostojs } from "."
 
 declare const ShopifyAnalytics: {
   meta: {
