@@ -60,6 +60,23 @@ async function getSearchData(): Promise<Partial<TaggingData>> {
   }
 }
 
+async function getCartData(): Promise<Partial<TaggingData>> {
+  const response = await fetch("/cart.js")
+  const data = await response.json()
+  return {
+    pageType: "cart",
+    cart: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      items: data.items.map((item: any) => ({
+        product_id: String(item.product_id),
+        variant_id: String(item.variant_id),
+        quantity: item.quantity,
+        price: item.price
+      }))
+    }
+  }
+}
+
 async function getNostoTagging(): Promise<Partial<TaggingData>> {
   const root = Shopify?.routes?.root ?? "/"
   const pathname = window.location.pathname.substring(root.length - 1)
@@ -71,7 +88,7 @@ async function getNostoTagging(): Promise<Partial<TaggingData>> {
     return getSearchData()
   }
   if (pathname === "/cart") {
-    return { pageType: "cart" }
+    return getCartData()
   }
   if (pathname.includes("/products/")) {
     return getProductData()
