@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { describe, it, expect, vi, beforeAll, beforeEach, afterAll, afterEach } from "vitest"
+import { http, HttpResponse } from "msw"
+import { setupServer } from "msw/node"
 
 vi.mock("../src", () => ({
   nostojs: vi.fn(),
@@ -8,8 +10,15 @@ vi.mock("../src", () => ({
 import { updateNostoTagging } from "../src/shopify"
 import { nostojs, init } from "../src"
 
+const server = setupServer()
+
 function setLocation(pathname: string, search = "") {
-  vi.stubGlobal("location", { pathname, search })
+  vi.stubGlobal("location", {
+    pathname,
+    search,
+    origin: "http://localhost",
+    href: `http://localhost${pathname}${search}`
+  })
 }
 
 function invokeTaggingCallback() {
@@ -21,6 +30,8 @@ function invokeTaggingCallback() {
 }
 
 describe("shopify", () => {
+  beforeAll(() => server.listen())
+
   beforeEach(() => {
     // @ts-expect-error Shopify global
     globalThis.Shopify = { routes: { root: "/" } }
@@ -37,7 +48,10 @@ describe("shopify", () => {
     delete globalThis.ShopifyAnalytics
     vi.unstubAllGlobals()
     vi.restoreAllMocks()
+    server.resetHandlers()
   })
+
+  afterAll(() => server.close())
 
   describe("page type detection", () => {
     it("should detect front page", async () => {
@@ -65,14 +79,12 @@ describe("shopify", () => {
 
     it("should detect cart page and fetch cart data", async () => {
       setLocation("/cart")
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockResolvedValue({
-          json: () =>
-            Promise.resolve({
-              items: [{ product_id: 111, variant_id: 222, quantity: 2, price: 1999 }]
-            })
-        })
+      server.use(
+        http.get("*/cart.js", () =>
+          HttpResponse.json({
+            items: [{ product_id: 111, variant_id: 222, quantity: 2, price: 1999 }]
+          })
+        )
       )
       await updateNostoTagging("test-123")
       const setProvider = invokeTaggingCallback()
@@ -80,7 +92,6 @@ describe("shopify", () => {
       expect(setProvider).toHaveBeenCalledWith("cart", {
         items: [{ product_id: "111", variant_id: "222", quantity: 2, price: 1999 }]
       })
-      expect(fetch).toHaveBeenCalledWith("/cart.js")
     })
 
     it("should detect product page using ShopifyAnalytics", async () => {
@@ -95,17 +106,11 @@ describe("shopify", () => {
 
     it("should detect product page using fetch fallback", async () => {
       setLocation("/products/my-product")
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockResolvedValue({
-          json: () => Promise.resolve({ product: { id: "prod-99" } })
-        })
-      )
+      server.use(http.get("*/products/my-product.json", () => HttpResponse.json({ product: { id: "prod-99" } })))
       await updateNostoTagging("test-123")
       const setProvider = invokeTaggingCallback()
       expect(setProvider).toHaveBeenCalledWith("pageType", "product")
       expect(setProvider).toHaveBeenCalledWith("products", [{ product_id: "prod-99" }])
-      expect(fetch).toHaveBeenCalledWith("/products/my-product.json")
     })
 
     it("should detect collection page using ShopifyAnalytics", async () => {
@@ -120,18 +125,16 @@ describe("shopify", () => {
 
     it("should detect collection page using fetch fallback", async () => {
       setLocation("/collections/summer")
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockResolvedValue({
-          json: () => Promise.resolve({ collection: { id: "col-42", title: "Summer Collection" } })
-        })
+      server.use(
+        http.get("*/collections/summer.json", () =>
+          HttpResponse.json({ collection: { id: "col-42", title: "Summer Collection" } })
+        )
       )
       await updateNostoTagging("test-123")
       const setProvider = invokeTaggingCallback()
       expect(setProvider).toHaveBeenCalledWith("pageType", "category")
       expect(setProvider).toHaveBeenCalledWith("categories", ["Summer Collection"])
       expect(setProvider).toHaveBeenCalledWith("categoryIds", ["col-42"])
-      expect(fetch).toHaveBeenCalledWith("/collections/summer.json")
     })
 
     it("should detect other page type for unknown paths", async () => {
