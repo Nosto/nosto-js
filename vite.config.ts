@@ -1,7 +1,7 @@
 import { resolve } from "path"
 import { defineConfig } from "vitest/config"
 
-const entryPoints = ["src/index.ts", "src/performance.ts", "src/testing.ts"]
+const entryPoints = ["src/index.ts", "src/performance.ts", "src/testing.ts", "src/shopify.ts"]
 
 export default defineConfig({
   build: {
