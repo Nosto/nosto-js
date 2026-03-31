@@ -11,13 +11,14 @@ import { updateNostoTagging } from "../src/shopify"
 import { nostojs, init } from "../src"
 
 const server = setupServer()
+const TEST_ORIGIN = "http://localhost"
 
 function setLocation(pathname: string, search = "") {
   vi.stubGlobal("location", {
     pathname,
     search,
-    origin: "http://localhost",
-    href: `http://localhost${pathname}${search}`
+    origin: TEST_ORIGIN,
+    href: `${TEST_ORIGIN}${pathname}${search}`
   })
 }
 
