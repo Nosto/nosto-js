@@ -7,8 +7,6 @@ updates:
     commit-message:
       prefix: "deps"
     open-pull-requests-limit: 10
-    allow:
-      - dependency-type: "all"
     groups:
       patch-and-minor-updates:
         update-types:
