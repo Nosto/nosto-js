@@ -8,7 +8,7 @@ updates:
       prefix: "deps"
     open-pull-requests-limit: 10
     allow:
-      - dependency-type: "all"
+      - dependency-type: "direct"
     groups:
       patch-and-minor-updates:
         update-types:
@@ -24,6 +24,16 @@ updates:
       commitlint:
         patterns:
           - "@commitlint/*"
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "deps"
+    open-pull-requests-limit: 0
+    allow:
+      - dependency-type: "all"
 
   - package-ecosystem: "github-actions"
     directory: "/"
