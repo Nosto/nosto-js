@@ -20,9 +20,10 @@ declare const Shopify: {
 async function getProductData(): Promise<Partial<TaggingData>> {
   if (ShopifyAnalytics?.meta?.page?.resourceId) {
     const productId = ShopifyAnalytics.meta.page.resourceId
+    const skuId = new URLSearchParams(window.location.search).get("variant") || undefined
     return {
       pageType: "product",
-      products: [{ product_id: String(productId) }]
+      products: [{ product_id: String(productId), selected_sku_id: skuId }]
     }
   }
   const response = await fetch(`${location.pathname}.json`)
