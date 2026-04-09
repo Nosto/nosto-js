@@ -70,7 +70,9 @@ async function getCartData(): Promise<Partial<TaggingData>> {
         product_id: String(item.product_id),
         variant_id: String(item.variant_id),
         quantity: item.quantity,
-        price: item.price
+        price: item.line_price / 100,
+        unit_price: item.price / 100,
+        price_currency_code: data.currency
       }))
     }
   }
