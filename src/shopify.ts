@@ -36,9 +36,11 @@ async function getProductData(): Promise<Partial<TaggingData>> {
 async function getCollectionData(): Promise<Partial<TaggingData>> {
   if (ShopifyAnalytics?.meta?.page?.resourceId) {
     const collectionId = ShopifyAnalytics.meta.page.resourceId
+    const collectionTitle = document.querySelector("meta[property='og:title']")?.getAttribute("content") ?? "Unknown"
     return {
       pageType: "category",
-      categoryIds: [String(collectionId)]
+      categoryIds: [String(collectionId)],
+      categories: [collectionTitle]
     }
   }
   if (location.pathname.endsWith("/all")) {
