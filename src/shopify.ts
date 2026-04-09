@@ -41,6 +41,12 @@ async function getCollectionData(): Promise<Partial<TaggingData>> {
       categoryIds: [String(collectionId)]
     }
   }
+  if (location.pathname.endsWith("/all")) {
+    return {
+      pageType: "category",
+      categories: ["All"]
+    }
+  }
   const response = await fetch(`${location.pathname}.json`)
   const data = await response.json()
   return {
